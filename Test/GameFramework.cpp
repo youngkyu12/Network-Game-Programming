@@ -3,11 +3,33 @@
 
 CGameFramework::CGameFramework()
 {
-	for (int i = 0; i < m_nSwapChainBuffers; i++) 
-		m_ppd3dSwapChainBackBuffers[i] = nullptr;
+	m_pdxgiFactory = NULL;
+	m_pdxgiSwapChain = NULL;
+	m_pd3dDevice = NULL;
+
+	m_pd3dCommandAllocator = NULL;
+	m_pd3dCommandQueue = NULL;
+	m_pd3dPipelineState = NULL;
+	m_pd3dCommandList = NULL;
 
 	for (int i = 0; i < m_nSwapChainBuffers; i++) 
-		m_nFenceValues[i] = 0;
+		m_ppd3dSwapChainBackBuffers[i] = NULL;
+
+	m_pd3dRtvDescriptorHeap = NULL;
+	m_nRtvDescriptorIncrementSize = 0;
+	m_pd3dDepthStencilBuffer = NULL;
+	m_pd3dDsvDescriptorHeap = NULL;
+	m_nDsvDescriptorIncrementSize = 0;
+	m_nSwapChainBufferIndex = 0;
+
+	m_hFenceEvent = NULL;
+	m_pd3dFence = NULL;
+	for (int i = 0; i < m_nSwapChainBuffers; i++) m_nFenceValues[i] = 0;
+
+	m_pScene = NULL;
+
+	m_nWndClientWidth = FRAME_BUFFER_WIDTH;
+	m_nWndClientHeight = FRAME_BUFFER_HEIGHT;
 
 	_tcscpy_s(m_pszFrameRate, _T("LapProject ("));
 }
@@ -48,6 +70,7 @@ void CGameFramework::OnDestroy()
 	if (m_pd3dDsvDescriptorHeap) m_pd3dDsvDescriptorHeap->Release();
 	if (m_pd3dCommandAllocator) m_pd3dCommandAllocator->Release();
 	if (m_pd3dCommandQueue) m_pd3dCommandQueue->Release();
+	if (m_pd3dPipelineState) m_pd3dPipelineState->Release();
 	if (m_pd3dCommandList) m_pd3dCommandList->Release();
 	if (m_pd3dFence) m_pd3dFence->Release();
 	m_pdxgiSwapChain->SetFullscreenState(FALSE, NULL);

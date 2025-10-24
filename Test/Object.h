@@ -19,19 +19,13 @@ public:
 
 	//상수 버퍼의 내용을 갱신한다.
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList);
-	virtual void UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4X4* pxmf4x4World);
-
 	virtual void ReleaseShaderVariables() {}
 
 	void SetMesh(CMesh* pMesh);
 	void SetMesh(int nIndex, CMesh* pMesh);
 	virtual void SetShader(CShader* pShader);
 
-	void SetChild(CGameObject* pChild, bool bReferenceUpdate = false);
-
-	virtual void OnInitialize() {}
 	virtual void Animate(float fTimeElapsed);
-	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent);
 	virtual void OnPrepareRender();
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
 
@@ -46,8 +40,6 @@ public:
 	//게임 객체의 위치를 설정한다.
 	void SetPosition(float x, float y, float z);
 	void SetPosition(XMFLOAT3 xmf3Position);
-	void SetScale(float x, float y, float z);
-	void SetNumSubMesh(int nSubMeshes) { m_nSubMeshes = nSubMeshes; }
 
 	//게임 객체를 로컬 x-축, y-축, z-축 방향으로 이동한다.
 	void MoveStrafe(float fDistance = 1.0f);
@@ -57,32 +49,9 @@ public:
 	void Rotate(XMFLOAT3* pxmf3Axis, float fAngle);
 	void Rotate(float fPitch = 10.0f, float fYaw = 10.0f, float fRoll = 10.0f);
 
-	static CMeshLoadInfo* LoadMeshInfoFromFile(FILE* pInFile);
-
-	static CGameObject* LoadFrameHierarchyFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, FILE* pInFile);
-	static CGameObject* LoadGeometryFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, char* pstrFileName);
-
-	static void PrintFrameInfo(CGameObject* pGameObject, CGameObject* pParent);
-
-	CGameObject* GetParent() { return(m_pParent); }
-	void UpdateTransform(XMFLOAT4X4* pxmf4x4Parent = NULL);
-	CGameObject* FindFrame(char* pstrFrameName);
-
-	UINT GetMeshType() { return((m_pMesh) ? m_pMesh->GetType() : 0); }
-
-	XMFLOAT4X4						m_xmf4x4Transform;
-	XMFLOAT4X4						m_xmf4x4World;
-
-	CGameObject* m_pParent = NULL;
-	CGameObject* m_pChild = NULL;
-	CGameObject* m_pSibling = NULL;
-
-	char							m_pstrFrameName[64];
-
-	CMesh* m_pMesh = NULL;
-	int m_nSubMeshes = 0;
 
 protected:
+	XMFLOAT4X4 m_xmf4x4World;
 
 	//게임 객체는 여러 개의 메쉬를 포함하는 경우 게임 객체가 가지는 메쉬들에 대한 포인터와 그 개수이다.
 	CMesh** m_ppMeshes = NULL;
@@ -108,32 +77,6 @@ private:
 	XMFLOAT3 m_xmf3RotationAxis;
 	float m_fRotationSpeed;
 };
-
-class CTankObject : public CGameObject
-{
-public:
-	CTankObject() {}
-	virtual ~CTankObject() {}
-
-protected:
-	CGameObject* m_pTurretFrame = NULL;
-	CGameObject* m_pCannonFrame = NULL;
-	CGameObject* m_pGunFrame = NULL;
-
-public:
-	virtual void OnInitialize() {}
-	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
-};
-
-class CM26Object : public CTankObject
-{
-public:
-	CM26Object() {}
-	virtual ~CM26Object() {}
-
-	virtual void OnInitialize();
-};
-
 
 class CHeightMapTerrain : public CGameObject
 {
@@ -168,4 +111,86 @@ public:
 	//지형의 크기(가로/세로)를 반환한다. 높이 맵의 크기에 스케일을 곱한 값이다.
 	float GetWidth() { return(m_nWidth * m_xmf3Scale.x); }
 	float GetLength() { return(m_nLength * m_xmf3Scale.z); }
+};
+
+class CPlayerObject
+{
+private:
+	int								m_nReferences = 0;
+
+public:
+	void AddRef();
+	void Release();
+
+public:
+	CPlayerObject();
+	virtual ~CPlayerObject();
+
+public:
+	char							m_pstrFrameName[64];
+
+	int m_nSubMeshes;
+	CMesh* m_pMesh = NULL;
+	CShader* m_pShader = NULL;
+
+	XMFLOAT4X4						m_xmf4x4Transform;
+	XMFLOAT4X4						m_xmf4x4World;
+
+	CPlayerObject* m_pParent = NULL;
+	CPlayerObject* m_pChild = NULL;
+	CPlayerObject* m_pSibling = NULL;
+
+	void SetMesh(CMesh* pMesh);
+	void SetShader(CShader* pShader);
+
+	void SetChild(CPlayerObject* pChild, bool bReferenceUpdate = false);
+	void SetSubMeshes(int nSubMeshes);
+
+	virtual void BuildMaterials(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList) {}
+
+	virtual void OnInitialize() {}
+	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
+
+	virtual void OnPrepareRender() {}
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera = NULL);
+
+	virtual void CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList);
+	virtual void ReleaseShaderVariables();
+
+	virtual void UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4X4* pxmf4x4World);
+
+	virtual void ReleaseUploadBuffers();
+
+	XMFLOAT3 GetPosition();
+	XMFLOAT3 GetLook();
+	XMFLOAT3 GetUp();
+	XMFLOAT3 GetRight();
+
+	void SetPosition(float x, float y, float z);
+	void SetPosition(XMFLOAT3 xmf3Position);
+	void SetScale(float x, float y, float z);
+
+	void MoveStrafe(float fDistance = 1.0f);
+	void MoveUp(float fDistance = 1.0f);
+	void MoveForward(float fDistance = 1.0f);
+
+	void Rotate(float fPitch = 10.0f, float fYaw = 10.0f, float fRoll = 10.0f);
+	void Rotate(XMFLOAT3* pxmf3Axis, float fAngle);
+	void Rotate(XMFLOAT4* pxmf4Quaternion);
+
+	CPlayerObject* GetParent() { return(m_pParent); }
+	void UpdateTransform(XMFLOAT4X4* pxmf4x4Parent = NULL);
+	CPlayerObject* FindFrame(char* pstrFrameName);
+
+	UINT GetMeshType() { return((m_pMesh) ? m_pMesh->GetType() : 0); }
+
+public:
+	static void LoadMaterialsInfoFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, FILE* pInFile);
+	static CMeshLoadInfo* LoadMeshInfoFromFile(FILE* pInFile);
+
+	static CPlayerObject* LoadFrameHierarchyFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, FILE* pInFile);
+	static CPlayerObject* LoadGeometryFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, char* pstrFileName);
+
+	static void PrintFrameInfo(CPlayerObject* pGameObject, CPlayerObject* pParent);
 };

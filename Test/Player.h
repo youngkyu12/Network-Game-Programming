@@ -10,9 +10,9 @@
 #include "Object.h"
 #include "Camera.h"
 
-class CPlayer : public CGameObject {
+class CPlayer : public CPlayerObject {
 public:
-	CPlayer(int nMeshes = 1);
+	CPlayer();
 	virtual ~CPlayer();
 	
 	XMFLOAT3 GetPosition() { return(m_xmf3Position); }
@@ -106,16 +106,6 @@ protected:
 	CCamera* m_pCamera = NULL;
 };
 
-class CAirplanePlayer : public CPlayer {
-public:
-	CAirplanePlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList,
-		ID3D12RootSignature* pd3dGraphicsRootSignature, int nMeshes = 1);
-	virtual ~CAirplanePlayer();
-
-	virtual CCamera* ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed);
-	virtual void OnPrepareRender();
-};
-
 class CTerrainPlayer : public CPlayer
 {
 public:
@@ -125,4 +115,12 @@ public:
 	virtual CCamera* ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed);
 	virtual void OnPlayerUpdateCallback(float fTimeElapsed);
 	virtual void OnCameraUpdateCallback(float fTimeElapsed);
+
+	virtual void OnInitialize();
+	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
+
+protected:
+	CPlayerObject* m_pTurretFrame = NULL;
+	CPlayerObject* m_pCannonFrame = NULL;
+	CPlayerObject* m_pGunFrame = NULL;
 };

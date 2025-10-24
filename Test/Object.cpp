@@ -43,21 +43,6 @@ void CGameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandLi
 	pd3dCommandList->SetGraphicsRoot32BitConstants(0, 16, &xmf4x4World, 0);
 }
 
-
-void CGameObject::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4X4* pxmf4x4World)
-{
-	XMFLOAT4X4 xmf4x4World;
-	XMStoreFloat4x4(&xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(pxmf4x4World)));
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4World, 0);
-}
-
-void CGameObject::SetMesh(CMesh* pMesh)
-{
-	if (m_pMesh) m_pMesh->Release();
-	m_pMesh = pMesh;
-	if (m_pMesh) m_pMesh->AddRef();
-}
-
 void CGameObject::SetMesh(int nIndex, CMesh* pMesh)
 {
 	if (m_ppMeshes)
@@ -75,33 +60,9 @@ void CGameObject::SetShader(CShader* pShader)
 	if (m_pShader) m_pShader->AddRef();
 }
 
-void CGameObject::SetChild(CGameObject* pChild, bool bReferenceUpdate)
-{
-	if (pChild)
-	{
-		pChild->m_pParent = this;
-		if (bReferenceUpdate) pChild->AddRef();
-	}
-	if (m_pChild)
-	{
-		if (pChild) pChild->m_pSibling = m_pChild->m_pSibling;
-		m_pChild->m_pSibling = pChild;
-	}
-	else
-	{
-		m_pChild = pChild;
-	}
-}
-
 void CGameObject::ReleaseUploadBuffers()
 {
 	// 정점 버퍼를 위한 업로드 버퍼를 소멸시킨다.
-
-	if (m_pMesh) m_pMesh->ReleaseUploadBuffers();
-
-	if (m_pSibling) m_pSibling->ReleaseUploadBuffers();
-	if (m_pChild) m_pChild->ReleaseUploadBuffers();
-
 	if (m_ppMeshes)
 	{
 		for (int i = 0; i < m_nMeshes; i++)
@@ -115,12 +76,6 @@ void CGameObject::Animate(float fTimeElapsed)
 {
 }
 
-void CGameObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
-{
-	if (m_pSibling) m_pSibling->Animate(fTimeElapsed, pxmf4x4Parent);
-	if (m_pChild) m_pChild->Animate(fTimeElapsed, &m_xmf4x4World);
-}
-
 void CGameObject::OnPrepareRender()
 {
 }
@@ -131,7 +86,6 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 
 	//객체의 정보를 셰이더 변수(상수 버퍼)로 복사한다.
 	UpdateShaderVariables(pd3dCommandList);
-	
 
 	if (m_pShader) m_pShader->Render(pd3dCommandList, pCamera);
 	//게임 객체가 포함하는 모든 메쉬를 렌더링한다.
@@ -142,13 +96,6 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 			if (m_ppMeshes[i]) m_ppMeshes[i]->Render(pd3dCommandList);
 		}
 	}
-	if (m_pMesh) {
-		UpdateShaderVariable(pd3dCommandList, &m_xmf4x4World);
-		for (int i = 0; i < m_nSubMeshes; i++)
-			m_pMesh->Render(pd3dCommandList, i);
-	}
-	if (m_pSibling) m_pSibling->Render(pd3dCommandList, pCamera);
-	if (m_pChild) m_pChild->Render(pd3dCommandList, pCamera);
 }
 
 XMFLOAT3 CGameObject::GetPosition()
@@ -184,14 +131,6 @@ void CGameObject::SetPosition(float x, float y, float z)
 void CGameObject::SetPosition(XMFLOAT3 xmf3Position)
 {
 	SetPosition(xmf3Position.x, xmf3Position.y, xmf3Position.z);
-}
-
-void CGameObject::SetScale(float x, float y, float z)
-{
-	XMMATRIX mtxScale = XMMatrixScaling(x, y, z);
-	m_xmf4x4Transform = Matrix4x4::Multiply(mtxScale, m_xmf4x4Transform);
-
-	UpdateTransform(NULL);
 }
 
 //게임 객체를 로컬 x-축 방향으로 이동한다.
@@ -234,6 +173,311 @@ void CGameObject::Rotate(float fPitch, float fYaw, float fRoll)
 	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
 }
 
+CRotatingObject::CRotatingObject(int nMeshes)
+	: CGameObject(nMeshes)
+{
+	m_xmf3RotationAxis = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	m_fRotationSpeed = 15.0f;
+}
+
+CRotatingObject::~CRotatingObject()
+{
+}
+
+void CRotatingObject::Animate(float fTimeElapsed)
+{
+	CGameObject::Rotate(&m_xmf3RotationAxis, m_fRotationSpeed * fTimeElapsed);
+}
+
+// (pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, 
+// _T("Assets/Image/Terrain/terrain2.raw"),
+// 257, 257, 257, 257, xmf3Scale, xmf4Color)
+CHeightMapTerrain::CHeightMapTerrain(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, 
+	LPCTSTR pFileName, int	nWidth, int nLength, int nBlockWidth, int nBlockLength, 
+	XMFLOAT3 xmf3Scale, XMFLOAT4 xmf4Color)
+	: CGameObject(0)
+{
+	// 지형에 사용할 높이 맵의 가로, 세로의 크기이다.
+	m_nWidth = nWidth;
+	m_nLength = nLength;
+
+	// 지형 객체는 격자 메쉬들의 배열로 만들 것이다. 
+	// nBlockWidth, nBlockLength는 격자 메쉬 하나의 가로, 세로 크기이다. 
+	// cxQuadsPerBlock, czQuadsPerBlock은 격자 메쉬의 가로 방향과 세로 방향 사각형의 개수이다.
+	int cxQuadsPerBlock = nBlockWidth - 1;
+	int czQuadsPerBlock = nBlockLength - 1;
+
+	// xmf3Scale는 지형을 실제로 몇 배 확대할 것인가를 나타낸다.
+	m_xmf3Scale = xmf3Scale;
+
+	// 지형에 사용할 높이 맵을 생성한다.
+	m_pHeightMapImage = new CHeightMapImage(pFileName, nWidth, nLength, xmf3Scale);
+
+	// 지형에서 가로 방향, 세로 방향으로 격자 메쉬가 몇 개가 있는 가를 나타낸다.
+	long cxBlocks = (m_nWidth - 1) / cxQuadsPerBlock;
+	long czBlocks = (m_nLength - 1) / czQuadsPerBlock;
+
+	//지형 전체를 표현하기 위한 격자 메쉬의 개수이다.
+	m_nMeshes = cxBlocks * czBlocks;
+
+	//지형 전체를 표현하기 위한 격자 메쉬에 대한 포인터 배열을 생성한다.
+	m_ppMeshes = new CMesh * [m_nMeshes];
+	for (int i = 0; i < m_nMeshes; i++)
+		m_ppMeshes[i] = NULL;
+
+	CHeightMapGridMesh* pHeightMapGridMesh = NULL;
+	for (int z = 0, zStart = 0; z < czBlocks; z++)
+	{
+		for (int x = 0, xStart = 0; x < cxBlocks; x++)
+		{
+			//지형의 일부분을 나타내는 격자 메쉬의 시작 위치(좌표)이다.
+			xStart = x * (nBlockWidth - 1);
+			zStart = z * (nBlockLength - 1);
+			//지형의 일부분을 나타내는 격자 메쉬를 생성하여 지형 메쉬에 저장한다.
+			pHeightMapGridMesh = new CHeightMapGridMesh(pd3dDevice, pd3dCommandList, 
+				xStart,	zStart, nBlockWidth, nBlockLength, xmf3Scale, xmf4Color, m_pHeightMapImage);
+			SetMesh(x + (z * cxBlocks), pHeightMapGridMesh);
+		}
+	}
+
+	//지형을 렌더링하기 위한 셰이더를 생성한다.
+	CTerrainShader* pShader = new CTerrainShader();
+	pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
+	SetShader(pShader);
+}
+
+CHeightMapTerrain::~CHeightMapTerrain(void)
+{
+	if (m_pHeightMapImage) delete m_pHeightMapImage;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+CPlayerObject::CPlayerObject()
+{
+	m_xmf4x4Transform = Matrix4x4::Identity();
+	m_xmf4x4World = Matrix4x4::Identity();
+}
+
+CPlayerObject::~CPlayerObject()
+{
+	if (m_pMesh) m_pMesh->Release();
+	if (m_pShader) m_pShader->Release();
+}
+
+void CPlayerObject::AddRef()
+{
+	m_nReferences++;
+
+	if (m_pSibling) m_pSibling->AddRef();
+	if (m_pChild) m_pChild->AddRef();
+}
+
+void CPlayerObject::Release()
+{
+	if (m_pChild) m_pChild->Release();
+	if (m_pSibling) m_pSibling->Release();
+
+	if (--m_nReferences <= 0) delete this;
+}
+
+void CPlayerObject::SetChild(CPlayerObject* pChild, bool bReferenceUpdate)
+{
+	if (pChild)
+	{
+		pChild->m_pParent = this;
+		if (bReferenceUpdate) pChild->AddRef();
+	}
+	if (m_pChild)
+	{
+		if (pChild) pChild->m_pSibling = m_pChild->m_pSibling;
+		m_pChild->m_pSibling = pChild;
+	}
+	else
+	{
+		m_pChild = pChild;
+	}
+}
+
+void CPlayerObject::SetSubMeshes(int nSubMeshes)
+{
+	m_nSubMeshes = nSubMeshes;
+}
+
+void CPlayerObject::SetMesh(CMesh* pMesh)
+{
+	if (m_pMesh) m_pMesh->Release();
+	m_pMesh = pMesh;
+	if (m_pMesh) m_pMesh->AddRef();
+}
+
+void CPlayerObject::SetShader(CShader* pShader)
+{
+	if (m_pShader) m_pShader->Release();
+	m_pShader = pShader;
+	if (m_pShader) m_pShader->AddRef();
+
+	if (m_pChild) m_pChild->SetShader(pShader);
+	if (m_pSibling) m_pSibling->SetShader(pShader);
+}
+
+void CPlayerObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
+{
+	if (m_pSibling) m_pSibling->Animate(fTimeElapsed, pxmf4x4Parent);
+	if (m_pChild) m_pChild->Animate(fTimeElapsed, &m_xmf4x4World);
+}
+
+CPlayerObject* CPlayerObject::FindFrame(char* pstrFrameName)
+{
+	CPlayerObject* pFrameObject = NULL;
+	if (!strncmp(m_pstrFrameName, pstrFrameName, strlen(pstrFrameName))) return(this);
+
+	if (m_pSibling) if (pFrameObject = m_pSibling->FindFrame(pstrFrameName)) return(pFrameObject);
+	if (m_pChild) if (pFrameObject = m_pChild->FindFrame(pstrFrameName)) return(pFrameObject);
+
+	return(NULL);
+}
+
+void CPlayerObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+{
+	OnPrepareRender();
+
+	UpdateShaderVariable(pd3dCommandList, &m_xmf4x4World);
+	
+	if (m_pShader) m_pShader->Render(pd3dCommandList, pCamera);
+	
+	if (m_pMesh) m_pMesh->Render(pd3dCommandList, 0);
+	if (m_pSibling) m_pSibling->Render(pd3dCommandList, pCamera);
+	if (m_pChild) m_pChild->Render(pd3dCommandList, pCamera);
+}
+
+void CPlayerObject::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+{
+}
+
+void CPlayerObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
+{
+}
+
+void CPlayerObject::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4X4* pxmf4x4World)
+{
+	XMFLOAT4X4 xmf4x4World;
+	XMStoreFloat4x4(&xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(pxmf4x4World)));
+	pd3dCommandList->SetGraphicsRoot32BitConstants(0, 16, &xmf4x4World, 0);
+}
+
+void CPlayerObject::ReleaseShaderVariables()
+{
+}
+
+void CPlayerObject::ReleaseUploadBuffers()
+{
+	if (m_pMesh) m_pMesh->ReleaseUploadBuffers();
+
+	if (m_pSibling) m_pSibling->ReleaseUploadBuffers();
+	if (m_pChild) m_pChild->ReleaseUploadBuffers();
+}
+
+void CPlayerObject::UpdateTransform(XMFLOAT4X4* pxmf4x4Parent)
+{
+	m_xmf4x4World = (pxmf4x4Parent) ? Matrix4x4::Multiply(m_xmf4x4Transform, *pxmf4x4Parent) : m_xmf4x4Transform;
+
+	if (m_pSibling) m_pSibling->UpdateTransform(pxmf4x4Parent);
+	if (m_pChild) m_pChild->UpdateTransform(&m_xmf4x4World);
+}
+
+void CPlayerObject::SetPosition(float x, float y, float z)
+{
+	m_xmf4x4Transform._41 = x;
+	m_xmf4x4Transform._42 = y;
+	m_xmf4x4Transform._43 = z;
+
+	UpdateTransform(NULL);
+}
+
+void CPlayerObject::SetPosition(XMFLOAT3 xmf3Position)
+{
+	SetPosition(xmf3Position.x, xmf3Position.y, xmf3Position.z);
+}
+
+void CPlayerObject::SetScale(float x, float y, float z)
+{
+	XMMATRIX mtxScale = XMMatrixScaling(x, y, z);
+	m_xmf4x4Transform = Matrix4x4::Multiply(mtxScale, m_xmf4x4Transform);
+
+	UpdateTransform(NULL);
+}
+
+XMFLOAT3 CPlayerObject::GetPosition()
+{
+	return(XMFLOAT3(m_xmf4x4World._41, m_xmf4x4World._42, m_xmf4x4World._43));
+}
+
+XMFLOAT3 CPlayerObject::GetLook()
+{
+	return(Vector3::Normalize(XMFLOAT3(m_xmf4x4World._31, m_xmf4x4World._32, m_xmf4x4World._33)));
+}
+
+XMFLOAT3 CPlayerObject::GetUp()
+{
+	return(Vector3::Normalize(XMFLOAT3(m_xmf4x4World._21, m_xmf4x4World._22, m_xmf4x4World._23)));
+}
+
+XMFLOAT3 CPlayerObject::GetRight()
+{
+	return(Vector3::Normalize(XMFLOAT3(m_xmf4x4World._11, m_xmf4x4World._12, m_xmf4x4World._13)));
+}
+
+void CPlayerObject::MoveStrafe(float fDistance)
+{
+	XMFLOAT3 xmf3Position = GetPosition();
+	XMFLOAT3 xmf3Right = GetRight();
+	xmf3Position = Vector3::Add(xmf3Position, xmf3Right, fDistance);
+	CPlayerObject::SetPosition(xmf3Position);
+}
+
+void CPlayerObject::MoveUp(float fDistance)
+{
+	XMFLOAT3 xmf3Position = GetPosition();
+	XMFLOAT3 xmf3Up = GetUp();
+	xmf3Position = Vector3::Add(xmf3Position, xmf3Up, fDistance);
+	CPlayerObject::SetPosition(xmf3Position);
+}
+
+void CPlayerObject::MoveForward(float fDistance)
+{
+	XMFLOAT3 xmf3Position = GetPosition();
+	XMFLOAT3 xmf3Look = GetLook();
+	xmf3Position = Vector3::Add(xmf3Position, xmf3Look, fDistance);
+	CPlayerObject::SetPosition(xmf3Position);
+}
+
+void CPlayerObject::Rotate(float fPitch, float fYaw, float fRoll)
+{
+	XMMATRIX mtxRotate = XMMatrixRotationRollPitchYaw(XMConvertToRadians(fPitch), XMConvertToRadians(fYaw), XMConvertToRadians(fRoll));
+	m_xmf4x4Transform = Matrix4x4::Multiply(mtxRotate, m_xmf4x4Transform);
+
+	UpdateTransform(NULL);
+}
+
+void CPlayerObject::Rotate(XMFLOAT3* pxmf3Axis, float fAngle)
+{
+	XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(pxmf3Axis), XMConvertToRadians(fAngle));
+	m_xmf4x4Transform = Matrix4x4::Multiply(mtxRotate, m_xmf4x4Transform);
+
+	UpdateTransform(NULL);
+}
+
+void CPlayerObject::Rotate(XMFLOAT4* pxmf4Quaternion)
+{
+	XMMATRIX mtxRotate = XMMatrixRotationQuaternion(XMLoadFloat4(pxmf4Quaternion));
+	m_xmf4x4Transform = Matrix4x4::Multiply(mtxRotate, m_xmf4x4Transform);
+
+	UpdateTransform(NULL);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 int ReadIntegerFromFile(FILE* pInFile)
 {
 	int nValue = 0;
@@ -261,7 +505,7 @@ BYTE ReadStringFromFile(FILE* pInFile, char* pstrToken)
 
 #define _WITH_DEBUG_FRAME_HIERARCHY
 
-CMeshLoadInfo* CGameObject::LoadMeshInfoFromFile(FILE* pInFile)
+CMeshLoadInfo* CPlayerObject::LoadMeshInfoFromFile(FILE* pInFile)
 {
 	char pstrToken[64] = { '\0' };
 	UINT nReads = 0;
@@ -354,21 +598,77 @@ CMeshLoadInfo* CGameObject::LoadMeshInfoFromFile(FILE* pInFile)
 	return(pMeshInfo);
 }
 
-CGameObject* CGameObject::LoadFrameHierarchyFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, FILE* pInFile)
+void CPlayerObject::LoadMaterialsInfoFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, FILE* pInFile)
+{
+	char pstrToken[64] = { '\0' };
+	UINT nReads = 0;
+
+	float dumy;
+	
+	::ReadIntegerFromFile(pInFile);
+
+	for (; ; )
+	{
+		::ReadStringFromFile(pInFile, pstrToken);
+
+		if (!strcmp(pstrToken, "<Material>:"))
+		{
+			::ReadIntegerFromFile(pInFile);
+		}
+		else if (!strcmp(pstrToken, "<AlbedoColor>:"))
+		{
+			nReads = (UINT)::fread(&dumy, sizeof(float), 4, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<EmissiveColor>:"))
+		{
+			nReads = (UINT)::fread(&dumy, sizeof(float), 4, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<SpecularColor>:"))
+		{
+			nReads = (UINT)::fread(&dumy, sizeof(float), 4, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<Glossiness>:"))
+		{
+			nReads = (UINT)::fread(&dumy, sizeof(float), 1, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<Smoothness>:"))
+		{
+			nReads = (UINT)::fread(&dumy, sizeof(float), 1, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<Metallic>:"))
+		{
+			nReads = (UINT)::fread(&dumy, sizeof(float), 1, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<SpecularHighlight>:"))
+		{
+			nReads = (UINT)::fread(&dumy, sizeof(float), 1, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<GlossyReflection>:"))
+		{
+			nReads = (UINT)::fread(&dumy, sizeof(float), 1, pInFile);
+		}
+		else if (!strcmp(pstrToken, "</Materials>"))
+		{
+			break;
+		}
+	}
+}
+
+CPlayerObject* CPlayerObject::LoadFrameHierarchyFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, FILE* pInFile)
 {
 	char pstrToken[64] = { '\0' };
 	UINT nReads = 0;
 
 	int nFrame = 0;
 
-	CGameObject* pGameObject = NULL;
+	CPlayerObject* pGameObject = NULL;
 
 	for (; ; )
 	{
 		::ReadStringFromFile(pInFile, pstrToken);
 		if (!strcmp(pstrToken, "<Frame>:"))
 		{
-			pGameObject = new CGameObject();
+			pGameObject = new CPlayerObject();
 
 			nFrame = ::ReadIntegerFromFile(pInFile);
 			::ReadStringFromFile(pInFile, pGameObject->m_pstrFrameName);
@@ -389,6 +689,7 @@ CGameObject* CGameObject::LoadFrameHierarchyFromFile(ID3D12Device* pd3dDevice, I
 		else if (!strcmp(pstrToken, "<Mesh>:"))
 		{
 			CMeshLoadInfo* pMeshInfo = pGameObject->LoadMeshInfoFromFile(pInFile);
+			pGameObject->SetSubMeshes(pMeshInfo->m_nSubMeshes);
 			if (pMeshInfo)
 			{
 				CMesh* pMesh = NULL;
@@ -397,9 +698,14 @@ CGameObject* CGameObject::LoadFrameHierarchyFromFile(ID3D12Device* pd3dDevice, I
 					pMesh = new CMeshFromFile(pd3dDevice, pd3dCommandList, pMeshInfo);
 				}
 				if (pMesh) pGameObject->SetMesh(pMesh);
-				pGameObject->SetNumSubMesh(pMeshInfo->m_nSubMeshes);
 				delete pMeshInfo;
 			}
+		}
+		else if (!strcmp(pstrToken, "<Materials>:"))
+		{
+			pGameObject->LoadMaterialsInfoFromFile(pd3dDevice, pd3dCommandList, pInFile);
+			
+			
 		}
 		else if (!strcmp(pstrToken, "<Children>:"))
 		{
@@ -408,7 +714,7 @@ CGameObject* CGameObject::LoadFrameHierarchyFromFile(ID3D12Device* pd3dDevice, I
 			{
 				for (int i = 0; i < nChilds; i++)
 				{
-					CGameObject* pChild = CGameObject::LoadFrameHierarchyFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, pInFile);
+					CPlayerObject* pChild = CPlayerObject::LoadFrameHierarchyFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, pInFile);
 					if (pChild) pGameObject->SetChild(pChild);
 #ifdef _WITH_DEBUG_RUNTIME_FRAME_HIERARCHY
 					TCHAR pstrDebug[256] = { 0 };
@@ -426,13 +732,24 @@ CGameObject* CGameObject::LoadFrameHierarchyFromFile(ID3D12Device* pd3dDevice, I
 	return(pGameObject);
 }
 
-CGameObject* CGameObject::LoadGeometryFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, char* pstrFileName)
+void CPlayerObject::PrintFrameInfo(CPlayerObject* pGameObject, CPlayerObject* pParent)
+{
+	TCHAR pstrDebug[256] = { 0 };
+
+	_stprintf_s(pstrDebug, 256, _T("(Frame: %p) (Parent: %p)\n"), pGameObject, pParent);
+	OutputDebugString(pstrDebug);
+
+	if (pGameObject->m_pSibling) CPlayerObject::PrintFrameInfo(pGameObject->m_pSibling, pParent);
+	if (pGameObject->m_pChild) CPlayerObject::PrintFrameInfo(pGameObject->m_pChild, pGameObject);
+}
+
+CPlayerObject* CPlayerObject::LoadGeometryFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, char* pstrFileName)
 {
 	FILE* pInFile = NULL;
 	::fopen_s(&pInFile, pstrFileName, "rb");
 	::rewind(pInFile);
 
-	CGameObject* pGameObject = NULL;
+	CPlayerObject* pGameObject = NULL;
 	char pstrToken[64] = { '\0' };
 
 	for (; ; )
@@ -441,7 +758,7 @@ CGameObject* CGameObject::LoadGeometryFromFile(ID3D12Device* pd3dDevice, ID3D12G
 
 		if (!strcmp(pstrToken, "<Hierarchy>:"))
 		{
-			pGameObject = CGameObject::LoadFrameHierarchyFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, pInFile);
+			pGameObject = CPlayerObject::LoadFrameHierarchyFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, pInFile);
 		}
 		else if (!strcmp(pstrToken, "</Hierarchy>"))
 		{
@@ -454,117 +771,8 @@ CGameObject* CGameObject::LoadGeometryFromFile(ID3D12Device* pd3dDevice, ID3D12G
 	_stprintf_s(pstrDebug, 256, _T("Frame Hierarchy\n"));
 	OutputDebugString(pstrDebug);
 
-	CGameObject::PrintFrameInfo(pGameObject, NULL);
+	CPlayerObject::PrintFrameInfo(pGameObject, NULL);
 #endif
 
 	return(pGameObject);
-}
-
-void CGameObject::PrintFrameInfo(CGameObject* pGameObject, CGameObject* pParent)
-{
-
-}
-
-void CGameObject::UpdateTransform(XMFLOAT4X4* pxmf4x4Parent)
-{
-	m_xmf4x4World = (pxmf4x4Parent) ? Matrix4x4::Multiply(m_xmf4x4Transform, *pxmf4x4Parent) : m_xmf4x4Transform;
-
-	if (m_pSibling) m_pSibling->UpdateTransform(pxmf4x4Parent);
-	if (m_pChild) m_pChild->UpdateTransform(&m_xmf4x4World);
-}
-
-CGameObject* CGameObject::FindFrame(char* pstrFrameName)
-{
-	CGameObject* pFrameObject = NULL;
-	if (!strncmp(m_pstrFrameName, pstrFrameName, strlen(pstrFrameName))) return(this);
-
-	if (m_pSibling) if (pFrameObject = m_pSibling->FindFrame(pstrFrameName)) return(pFrameObject);
-	if (m_pChild) if (pFrameObject = m_pChild->FindFrame(pstrFrameName)) return(pFrameObject);
-
-	return(NULL);
-}
-
-CRotatingObject::CRotatingObject(int nMeshes)
-	: CGameObject(nMeshes)
-{
-	m_xmf3RotationAxis = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	m_fRotationSpeed = 15.0f;
-}
-
-CRotatingObject::~CRotatingObject()
-{
-}
-
-void CRotatingObject::Animate(float fTimeElapsed)
-{
-	CGameObject::Rotate(&m_xmf3RotationAxis, m_fRotationSpeed * fTimeElapsed);
-}
-
-CHeightMapTerrain::CHeightMapTerrain(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, 
-	LPCTSTR pFileName, 
-	int nWidth, int nLength, int nBlockWidth, int nBlockLength, XMFLOAT3 xmf3Scale, XMFLOAT4 xmf4Color)
-	: CGameObject(0)
-{
-	//지형에 사용할 높이 맵의 가로, 세로의 크기이다.
-	m_nWidth = nWidth;
-	m_nLength = nLength;
-	/*지형 객체는 격자 메쉬들의 배열로 만들 것이다. nBlockWidth, nBlockLength는 격자 메쉬 하나의 가로, 세로 크
-   기이다. cxQuadsPerBlock, czQuadsPerBlock은 격자 메쉬의 가로 방향과 세로 방향 사각형의 개수이다.*/
-	int cxQuadsPerBlock = nBlockWidth - 1;
-	int czQuadsPerBlock = nBlockLength - 1;
-	//xmf3Scale는 지형을 실제로 몇 배 확대할 것인가를 나타낸다.
-	m_xmf3Scale = xmf3Scale;
-	//지형에 사용할 높이 맵을 생성한다.
-	m_pHeightMapImage = new CHeightMapImage(pFileName, nWidth, nLength, xmf3Scale);
-	//지형에서 가로 방향, 세로 방향으로 격자 메쉬가 몇 개가 있는 가를 나타낸다.
-	long cxBlocks = (m_nWidth - 1) / cxQuadsPerBlock;
-	long czBlocks = (m_nLength - 1) / czQuadsPerBlock;
-	//지형 전체를 표현하기 위한 격자 메쉬의 개수이다.
-	m_nMeshes = cxBlocks * czBlocks;
-	//지형 전체를 표현하기 위한 격자 메쉬에 대한 포인터 배열을 생성한다.
-	m_ppMeshes = new CMesh * [m_nMeshes];
-	for (int i = 0; i < m_nMeshes; i++) 
-		m_ppMeshes[i] = NULL;
-	CHeightMapGridMesh* pHeightMapGridMesh = NULL;
-	for (int z = 0, zStart = 0; z < czBlocks; z++)
-	{
-		for (int x = 0, xStart = 0; x < cxBlocks; x++)
-		{
-			//지형의 일부분을 나타내는 격자 메쉬의 시작 위치(좌표)이다.
-			xStart = x * (nBlockWidth - 1);
-			zStart = z * (nBlockLength - 1);
-			//지형의 일부분을 나타내는 격자 메쉬를 생성하여 지형 메쉬에 저장한다.
-			pHeightMapGridMesh = new CHeightMapGridMesh(pd3dDevice, pd3dCommandList, xStart,
-				zStart, nBlockWidth, nBlockLength, xmf3Scale, xmf4Color, m_pHeightMapImage);
-			SetMesh(x + (z * cxBlocks), pHeightMapGridMesh);
-		}
-	}
-
-	//지형을 렌더링하기 위한 셰이더를 생성한다.
-	CTerrainShader* pShader = new CTerrainShader();
-	pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
-	SetShader(pShader);
-}
-
-CHeightMapTerrain::~CHeightMapTerrain(void)
-{
-	if (m_pHeightMapImage) delete m_pHeightMapImage;
-}
-
-void CTankObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
-{
-	if (m_pTurretFrame)
-	{
-		XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(30.0f) * fTimeElapsed);
-		m_pTurretFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTurretFrame->m_xmf4x4Transform);
-	}
-
-	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
-}
-
-void CM26Object::OnInitialize()
-{
-	m_pTurretFrame = FindFrame("TURRET");
-	m_pCannonFrame = FindFrame("cannon");
-	m_pGunFrame = FindFrame("gun");
 }

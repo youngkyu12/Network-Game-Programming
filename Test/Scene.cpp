@@ -66,6 +66,8 @@ ID3D12RootSignature* CScene::GetGraphicsRootSignature()
 	return(m_pd3dGraphicsRootSignature);
 }
 
+//#define _WITH_TERRAIN_PARTITION
+
 void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	m_pd3dGraphicsRootSignature = CreateGraphicsRootSignature(pd3dDevice);
@@ -78,14 +80,19 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 /*하나의 격자 메쉬의 크기는 가로x세로(17x17)이다. 지형 전체는 가로 방향으로 16개, 세로 방향으로 16의 격자 메
 쉬를 가진다. 지형을 구성하는 격자 메쉬의 개수는 총 256(16x16)개가 된다.*/
 	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList,
-		m_pd3dGraphicsRootSignature, _T("../Assets/Image/Terrain/HeightMap.raw"), 257, 257, 17,
-		17, xmf3Scale, xmf4Color);
+		m_pd3dGraphicsRootSignature, _T("Assets/Image/Terrain/HeightMap.raw"), 
+		257, 257, 17, 17, xmf3Scale, xmf4Color);
 #else
 //지형을 하나의 격자 메쉬(257x257)로 생성한다.  
-	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList,	m_pd3dGraphicsRootSignature, 
-		_T("Assets/Image/Terrain/terrain2.raw"), 
-		257, 257, 257,	257, xmf3Scale, xmf4Color);
+	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList,
+		m_pd3dGraphicsRootSignature, _T("Assets/Image/Terrain/terrain2.raw"), 
+		257, 257, 257, 257, xmf3Scale, xmf4Color);
 #endif
+
+	m_nShaders = 1;
+	m_pShaders = new CObjectsShader[m_nShaders];
+	m_pShaders[0].CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
+	m_pShaders[0].BuildObjects(pd3dDevice, pd3dCommandList, m_pTerrain);
 }
 
 void CScene::ReleaseObjects()
