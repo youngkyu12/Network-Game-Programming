@@ -14,11 +14,19 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름�
 
 CGameFramework gGameFramework;
 
+int RectLeftX;
+int RectRightX;
+int RectLeftY;
+int RectRightY;
+
+bool GameStart = false;
+
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+bool                ClickCheck(int, int);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
@@ -59,10 +67,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
-            gGameFramework.FrameAdvance();
+            if (GameStart == true) gGameFramework.FrameAdvance();
         }
     }
-    gGameFramework.OnDestroy();
+    if (GameStart == true) gGameFramework.OnDestroy();
 
     return (int)msg.wParam;
 }
@@ -126,6 +134,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     ShowWindow(hMainWnd, nCmdShow);
     UpdateWindow(hMainWnd);
 
+
 #ifdef _WITH_SWAPCHAIN_FULLSCREEN_STATE
     gGameFramework.ChangeSwapChainState();
 #endif
@@ -145,17 +154,53 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    RECT rc = { 0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT };
+
+    int x;
+    int y;
+
+    RectLeftX = rc.right / 3;
+    RectRightX = rc.right * 2 / 3;
+    RectLeftY = rc.bottom / 2;
+    RectRightY = rc.bottom * 2 / 3;
+
     switch (message)
     {
-    case WM_SIZE:
+    case WM_PAINT:
+        if (GameStart == false) {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+
+            // 사각형 그리기
+            // 네 개의 좌표: 왼쪽 위 x, 왼쪽 위 y, 오른쪽 아래 x, 오른쪽 아래 y
+            Rectangle(hdc, RectLeftX, RectLeftY, RectRightX, RectRightY);
+
+            // 문자열 출력하기
+            LPCWSTR text = L"게임 시작";
+            // 출력할 좌표: x, y
+            TextOut(hdc, rc.right / 2 - 40, rc.bottom / 5 * 3 - 20, text, lstrlen(text));
+
+            EndPaint(hWnd, &ps);
+        }
+        break;
     case WM_LBUTTONDOWN:
     case WM_LBUTTONUP:
+        x = LOWORD(lParam);
+        y = HIWORD(lParam);
+        if (ClickCheck(x, y)) {
+            GameStart = true;
+
+
+
+        }
+        break;
+    case WM_SIZE:
     case WM_RBUTTONDOWN:
     case WM_RBUTTONUP:
     case WM_MOUSEMOVE:
     case WM_KEYDOWN:
     case WM_KEYUP:
-        gGameFramework.OnProcessingWindowMessage(hWnd, message, wParam, lParam);
+        if (GameStart == true) gGameFramework.OnProcessingWindowMessage(hWnd, message, wParam, lParam);
         break;
     case WM_DESTROY:
         ::PostQuitMessage(0);
@@ -184,4 +229,14 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+bool ClickCheck(int x, int y)
+{
+    if (x > RectLeftX && x < RectRightX) {
+        if (y > RectLeftY && y < RectRightY) {
+            return true;
+        }
+    }
+    return false;
 }
