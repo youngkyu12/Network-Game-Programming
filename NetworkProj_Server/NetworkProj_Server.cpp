@@ -1,9 +1,14 @@
 ﻿#include "pch.h"
-using namespace std;
+#include "Player.h"
+#include "GameRoom.h"
+
 
 #define SERVERPORT 8922
 
+DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
+{
 
+}
 
 int main()
 {
@@ -50,8 +55,16 @@ int main()
 			return 1;
 		}
 
-	}
 
+		Player* player = new Player;
+		player->sock = clientSocket;
+
+		HANDLE PlayerThread = CreateThread(NULL, 0, WorkerThreadMain, player, 0, NULL);
+
+		
+	}
+	// 리슨소켓 종료
+	closesocket(listenSocket);
 	//윈속 종료
 	WSACleanup();
 }
