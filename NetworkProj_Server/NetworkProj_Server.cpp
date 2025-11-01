@@ -44,6 +44,7 @@ int main()
 		return 1;
 	}
 
+	int ID_NUM = 0;
 	while (true)
 	{
 		// 접속 시작
@@ -55,11 +56,13 @@ int main()
 			return 1;
 		}
 
-
+		// 힙영역에서 모든 플레이어 객체 관리
 		Player* player = new Player;
 		player->sock = clientSocket;
+		//Player_ID 부여
+		player->Player_ID = ID_NUM++;
 
-		HANDLE PlayerThread = CreateThread(NULL, 0, WorkerThreadMain, player, 0, NULL);
+		HANDLE WorkerThread = CreateThread(NULL, 0, WorkerThreadMain, player, 0, NULL);
 
 		
 	}
