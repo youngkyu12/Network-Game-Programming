@@ -5,6 +5,19 @@ using namespace std;
 
 #define SERVERPORT 8922
 
+class  GameRoom
+{
+public:
+
+private:
+};
+class Player
+{
+public:
+
+
+private:
+};
 
 int main()
 {
