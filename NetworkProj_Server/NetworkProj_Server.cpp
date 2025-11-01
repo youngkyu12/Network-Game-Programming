@@ -12,6 +12,9 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 	
 	while (true)
 	{
+		cout << "워커쓰레드 생성 후 루프도는중 ID : " << myPlayer->Player_ID << endl;
+		//GameRoom::Update_State();
+		
 		int recvBytes = recv(myPlayer->sock, buf, sizeof(buf), 0);
 		if (recvBytes == 0)
 		{
@@ -21,15 +24,19 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		}
 		else if (recvBytes == SOCKET_ERROR)
 		{
+			if (WSAGetLastError() == WSAETIMEDOUT)
+			{
+				//오류가 아닌 의도한 것
+				cout << "recv 500ms 타임아웃" << endl;
+				continue;
+			}
+
 			//비정상 종료
-			cout << "ID : " << myPlayer->Player_ID << " 접속 종료" << endl;
+			cout << "ID : " << myPlayer->Player_ID << " 비정상 종료" << endl;
 			break;
 		}
-		cout << "워커쓰레드 생성 후 루프도는중 ID : " << myPlayer->Player_ID << endl;
-		Sleep(1000);
-		//GameRoom::Update_State();
-		//recv();
 		//조건문으로 게임로직
+		
 	}
 	
 	closesocket(myPlayer->sock);
@@ -80,6 +87,15 @@ int main()
 		SOCKET clientSocket = accept(listenSocket, (SOCKADDR*)&clientAddr, &addrLen);
 		if (clientSocket == INVALID_SOCKET)
 		{
+			return 1;
+		}
+		
+		//recv 500ms 동안 안들어오면 타임아웃오류
+		int recvTimeout = 500; //500ms
+		if (setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recvTimeout, sizeof(recvTimeout)) == SOCKET_ERROR)
+		{
+			cout << "옵션 설정 실패" << endl;
+			closesocket(clientSocket);
 			return 1;
 		}
 		
