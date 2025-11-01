@@ -16,7 +16,14 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		//GameRoom::Update_State();
 		
 		int recvBytes = recv(myPlayer->sock, buf, sizeof(buf), 0);
-		if (recvBytes == 0)
+		if (recvBytes > 0)
+		{
+			cout << "ID " << myPlayer->Player_ID <<" :" << buf << endl;
+
+			//조건문으로 게임로직
+			//...
+		}
+		else if (recvBytes == 0)
 		{
 			//정상 종료
 			cout << "ID : " << myPlayer->Player_ID << " 접속 종료" << endl;
@@ -35,8 +42,6 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 			cout << "ID : " << myPlayer->Player_ID << " 비정상 종료" << endl;
 			break;
 		}
-		//조건문으로 게임로직
-		
 	}
 	
 	closesocket(myPlayer->sock);

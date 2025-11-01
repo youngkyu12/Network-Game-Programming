@@ -27,13 +27,18 @@ int main()
 		return 1;
 	}
 	cout << "연결 성공" << endl;
-	//char buf[1024];
+
+	char buf[1024];
+	const char* testMessage = "###$%##클라이언트로 부터 온 메세지 입니다.###$$%@%@";
+	int msgLen = strlen(testMessage) + 1;// 널문자포함
 	while (true)
 	{
-		/*if (send(sock, buf, 0, 0) == SOCKET_ERROR)
+		if (send(sock, testMessage, msgLen, 0) == SOCKET_ERROR)
 		{
 			break;
-		}*/
+		}
+		cout << "메세지 전송 성공" << endl;
+		Sleep(1000);
 	}
 
 	closesocket(sock);
