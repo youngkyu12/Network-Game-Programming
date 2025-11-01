@@ -64,7 +64,11 @@ int main()
 
 		HANDLE WorkerThread = CreateThread(NULL, 0, WorkerThreadMain, player, 0, NULL);
 
-		
+		// 핸들을 종료
+		if (WorkerThread)
+		{
+			CloseHandle(WorkerThread);
+		}
 	}
 	// 리슨소켓 종료
 	closesocket(listenSocket);
