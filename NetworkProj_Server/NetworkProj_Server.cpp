@@ -2,7 +2,6 @@
 #include "Player.h"
 #include "GameRoom.h"
 
-
 #define SERVERPORT 8922
 
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
@@ -11,7 +10,9 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 	
 	while (true)
 	{
-		GameRoom::Update_State();
+		cout << "워커쓰레드 생성 후 루프도는중 ID : " << myPlayer->Player_ID << endl;
+		Sleep(1000);
+		//GameRoom::Update_State();
 		//recv();
 		//조건문으로 게임로직
 	}
@@ -65,13 +66,14 @@ int main()
 		{
 			return 1;
 		}
-
+		
 		// 힙영역에서 모든 플레이어 객체 관리
 		Player* player = new Player;
 		player->sock = clientSocket;
 		//Player_ID 부여
 		player->Player_ID = ID_NUM++;
-
+		cout << "연결 성공" << endl;
+		cout << "Player ID : " << player->Player_ID << endl;
 		HANDLE WorkerThread = CreateThread(NULL, 0, WorkerThreadMain, player, 0, NULL);
 
 		// 핸들을 종료
