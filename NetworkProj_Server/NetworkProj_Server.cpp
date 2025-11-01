@@ -1,6 +1,4 @@
-﻿#include <iostream>
-#include <winsock2.h>
-#include <ws2tcpip.h>
+﻿#include "pch.h"
 using namespace std;
 
 #define SERVERPORT 8922

@@ -24,5 +24,8 @@
     <ClInclude Include="Player.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
