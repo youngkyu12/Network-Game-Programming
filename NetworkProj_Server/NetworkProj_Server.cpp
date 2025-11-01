@@ -4,12 +4,27 @@
 
 #define SERVERPORT 8922
 
+char buf[1024];
+
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 {
 	Player* myPlayer = (Player*)lpParam;
 	
 	while (true)
 	{
+		int recvBytes = recv(myPlayer->sock, buf, sizeof(buf), 0);
+		if (recvBytes == 0)
+		{
+			//정상 종료
+			cout << "ID : " << myPlayer->Player_ID << " 접속 종료" << endl;
+			break;
+		}
+		else if (recvBytes == SOCKET_ERROR)
+		{
+			//비정상 종료
+			cout << "ID : " << myPlayer->Player_ID << " 접속 종료" << endl;
+			break;
+		}
 		cout << "워커쓰레드 생성 후 루프도는중 ID : " << myPlayer->Player_ID << endl;
 		Sleep(1000);
 		//GameRoom::Update_State();
@@ -19,6 +34,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 	
 	closesocket(myPlayer->sock);
 	delete myPlayer;
+	return 0;
 }
 
 int main()

@@ -27,7 +27,7 @@ int main()
 		return 1;
 	}
 	cout << "연결 성공" << endl;
-	char buf[1024];
+	//char buf[1024];
 	while (true)
 	{
 		/*if (send(sock, buf, 0, 0) == SOCKET_ERROR)
