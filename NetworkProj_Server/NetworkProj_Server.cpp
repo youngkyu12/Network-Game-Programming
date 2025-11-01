@@ -7,7 +7,17 @@
 
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 {
-
+	Player* myPlayer = (Player*)lpParam;
+	
+	while (true)
+	{
+		GameRoom::Update_State();
+		//recv();
+		//조건문으로 게임로직
+	}
+	
+	closesocket(myPlayer->sock);
+	delete myPlayer;
 }
 
 int main()
