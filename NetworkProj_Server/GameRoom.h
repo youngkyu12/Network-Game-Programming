@@ -10,5 +10,6 @@ public:
 	void Update_State();
 
 private:
+	CRITICAL_SECTION _cs;
 };
 
