@@ -106,6 +106,8 @@ int main()
 		player->Player_ID = ID_NUM++;
 		cout << "연결 성공" << endl;
 		cout << "Player ID : " << player->Player_ID << endl;
+
+		// 쓰레드 생성
 		HANDLE WorkerThread = CreateThread(NULL, 0, WorkerThreadMain, player, 0, NULL);
 
 		// 핸들을 종료
