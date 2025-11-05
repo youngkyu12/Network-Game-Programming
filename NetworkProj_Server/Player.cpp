@@ -1,1 +1,85 @@
 #include "Player.h"
+
+Player::Player()
+{
+
+}
+Player::~Player()
+{
+
+}
+
+void Player::SetPosition(float x, float y, float z)
+{
+	Position = XMFLOAT3(x, y, z);
+}
+
+void Player::Move(DWORD dwDirection, float fDistance)
+{
+	if (dwDirection)
+	{
+		XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
+		if (dwDirection & DIR_FORWARD) xmf3Shift = Vector3::Add(xmf3Shift, Look, fDistance);
+		if (dwDirection & DIR_BACKWARD) xmf3Shift = Vector3::Add(xmf3Shift, Look, -fDistance);
+		if (dwDirection & DIR_RIGHT) xmf3Shift = Vector3::Add(xmf3Shift, Right, fDistance);
+		if (dwDirection & DIR_LEFT) xmf3Shift = Vector3::Add(xmf3Shift, Right, -fDistance);
+		if (dwDirection & DIR_UP) xmf3Shift = Vector3::Add(xmf3Shift, Up, fDistance);
+		if (dwDirection & DIR_DOWN) xmf3Shift = Vector3::Add(xmf3Shift, Up, -fDistance);
+
+		Move(xmf3Shift, true);
+	}
+}
+
+void Player::Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
+{
+	if (bUpdateVelocity)
+	{
+		Velocity = Vector3::Add(Velocity, xmf3Shift);
+	}
+	else
+	{
+		Position = Vector3::Add(xmf3Shift, Position);
+	}
+}
+
+void Player::Move(float x, float y, float z)
+{
+	Move(XMFLOAT3(x, y, z), false);
+}
+
+void Player::Rotate(float fPitch, float fYaw, float fRoll)
+{
+	if (fPitch != 0.0f)
+	{
+		XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&Right), XMConvertToRadians(fPitch));
+		Look = Vector3::TransformNormal(Look, mtxRotate);
+		Up = Vector3::TransformNormal(Up, mtxRotate);
+	}
+	if (fYaw != 0.0f)
+	{
+		XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&Up), XMConvertToRadians(fYaw));
+		Look = Vector3::TransformNormal(Look, mtxRotate);
+		Right = Vector3::TransformNormal(Right, mtxRotate);
+	}
+	if (fRoll != 0.0f)
+	{
+		XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&Look), XMConvertToRadians(fRoll));
+		Up = Vector3::TransformNormal(Up, mtxRotate);
+		Right = Vector3::TransformNormal(Right, mtxRotate);
+	}
+
+	Look = Vector3::Normalize(Look);
+	Right = Vector3::Normalize(Vector3::CrossProduct(Up, Look));
+	Up = Vector3::Normalize(Vector3::CrossProduct(Look, Right));
+}
+
+void Player::Update(float fTimeElapsed)
+{
+	Move(Velocity, false);
+
+	XMFLOAT3 xmf3Deceleration = Vector3::Normalize(Vector3::ScalarProduct(Velocity, -1.0f));
+	float fLength = Vector3::Length(Velocity);
+	float fDeceleration = Friction * fTimeElapsed;
+	if (fDeceleration > fLength) fDeceleration = fLength;
+	Velocity = Vector3::Add(Velocity, xmf3Deceleration, fDeceleration);
+}
