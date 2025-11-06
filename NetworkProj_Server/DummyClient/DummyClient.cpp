@@ -4,7 +4,7 @@
 using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
 
-#define SERVERADDR "192.168.66.134"
+#define SERVERADDR "127.0.0.1"
 #define SERVERPORT 8922
 
 int main()
@@ -42,7 +42,7 @@ int main()
 			break;
 		}
 		cout << "메세지 전송 성공" << endl;
-		Sleep(1000);
+		Sleep(5000);
 	}
 
 	closesocket(sock);
