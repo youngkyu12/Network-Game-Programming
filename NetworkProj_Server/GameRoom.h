@@ -8,6 +8,7 @@ public:
 	~GameRoom();
 
 	void Update_State();
+	void Add_Player();
 
 private:
 	CRITICAL_SECTION _cs;

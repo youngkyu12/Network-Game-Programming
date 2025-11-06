@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "Player.h"
 #include "GameRoom.h"
-
+#include <vector>
 #define SERVERPORT 8922
 
 char buf[1024];
@@ -103,7 +103,9 @@ int main()
 			closesocket(clientSocket);
 			return 1;
 		}
-		
+		// 플레이어 모아둘 벡터 컨테이너.
+		vector<Player> PlayerManager;
+
 		// 힙영역에서 모든 플레이어 객체 관리
 		Player* player = new Player;
 		player->sock = clientSocket;
@@ -111,6 +113,11 @@ int main()
 		player->Player_ID = ID_NUM++;
 		cout << "연결 성공" << endl;
 		cout << "Player ID : " << player->Player_ID << endl;
+
+		PlayerManager.push_back(*player);
+		// 매니저에 들어간 플레이어 정보 출력
+		cout << PlayerManager.front().Player_ID << endl;
+		cout << PlayerManager.front().sock << endl;
 
 		// 쓰레드 생성
 		HANDLE WorkerThread = CreateThread(NULL, 0, WorkerThreadMain, player, 0, NULL);
