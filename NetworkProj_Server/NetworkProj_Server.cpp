@@ -20,6 +20,9 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 
 			//조건문으로 게임로직
 			//...
+			
+			// Packet_ID == KEY_INPUT 이면
+			// GameRoom::Move(myPlayer->Player_ID, KeyInput);
 		}
 		else if (recvBytes == 0)
 		{
