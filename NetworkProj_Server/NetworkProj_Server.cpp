@@ -80,8 +80,10 @@ int main()
 	{
 		return 1;
 	}
+
 	GameRoom Room;
 	int ID_NUM = 0;
+
 	while (true)
 	{
 		// 접속 시작
@@ -111,7 +113,7 @@ int main()
 		cout << "Player ID : " << player->Player_ID << endl;
 
 		Room.Add_Player(player);
-		// 매니저에 들어간 플레이어 정보 출력
+		// 접속한 플레이어 인원 수
 		Room.Check_PLayer();
 
 
