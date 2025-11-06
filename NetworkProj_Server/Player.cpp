@@ -14,21 +14,6 @@ void Player::SetPosition(float x, float y, float z)
 	Position = XMFLOAT3(x, y, z);
 }
 
-void Player::Move(DWORD dwDirection, float fDistance)
-{
-	if (dwDirection)
-	{
-		XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
-		if (dwDirection & DIR_FORWARD) xmf3Shift = Vector3::Add(xmf3Shift, Look, fDistance);
-		if (dwDirection & DIR_BACKWARD) xmf3Shift = Vector3::Add(xmf3Shift, Look, -fDistance);
-		if (dwDirection & DIR_RIGHT) xmf3Shift = Vector3::Add(xmf3Shift, Right, fDistance);
-		if (dwDirection & DIR_LEFT) xmf3Shift = Vector3::Add(xmf3Shift, Right, -fDistance);
-		if (dwDirection & DIR_UP) xmf3Shift = Vector3::Add(xmf3Shift, Up, fDistance);
-		if (dwDirection & DIR_DOWN) xmf3Shift = Vector3::Add(xmf3Shift, Up, -fDistance);
-
-		Move(xmf3Shift, true);
-	}
-}
 
 void Player::Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
 {

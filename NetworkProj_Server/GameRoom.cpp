@@ -30,3 +30,21 @@ void GameRoom::Check_PLayer()
 	cout << PlayerManager.size()<< " 명 접속 완료" << endl;
 	LeaveCriticalSection(&_cs);
 }
+
+void GameRoom::Move(char id, char key)
+{
+	float Distance = 0.15f;
+	XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
+
+	switch (key & 0xF0)
+	{
+	case 'W':
+		xmf3Shift = Vector3::Add(xmf3Shift, PlayerManager[id]->Look, Distance);
+		break;
+	case 'S':
+		xmf3Shift = Vector3::Add(xmf3Shift, PlayerManager[id]->Look, -Distance);
+		break;
+	}
+
+	PlayerManager[id]->Move(xmf3Shift, true);
+}

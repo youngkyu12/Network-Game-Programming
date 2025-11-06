@@ -11,6 +11,7 @@ public:
 	void Update_State();
 	void Add_Player(Player* player);
 	void Check_PLayer(); /*µð¹ö±ë¿ë*/
+	void Move(char id, char key);
 
 private:
 	CRITICAL_SECTION _cs;
