@@ -3,6 +3,10 @@
 #include <ws2tcpip.h>
 using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
+
+#define SERVERADDR "192.168.66.134"
+#define SERVERPORT 8922
+
 int main()
 {
 	WSADATA wsaData;
@@ -19,8 +23,8 @@ int main()
 	SOCKADDR_IN serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
-	inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
-	serverAddr.sin_port = htons(8922);
+	inet_pton(AF_INET, SERVERADDR, &serverAddr.sin_addr);
+	serverAddr.sin_port = htons(SERVERPORT);
 
 	if (connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
 	{
