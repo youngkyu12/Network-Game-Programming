@@ -2,6 +2,7 @@
 #include "GameRoom.h"
 #define SERVERPORT 8922
 
+GameRoom Room;
 char buf[1024];
 
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
@@ -84,7 +85,7 @@ int main()
 		return 1;
 	}
 
-	GameRoom Room;
+	
 	int ID_NUM = 0;
 
 	while (true)
