@@ -42,6 +42,8 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 
 			//비정상 종료
 			cout << "ID : " << myPlayer->Player_ID << " 비정상 종료" << endl;
+			Room.Remove_Player(myPlayer);
+			Room.Check_PLayer();
 			break;
 		}
 	}

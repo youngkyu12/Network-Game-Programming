@@ -23,6 +23,27 @@ void GameRoom::Add_Player(Player* player)
 	LeaveCriticalSection(&_cs);
 }
 
+void GameRoom::Remove_Player(Player* player)
+{
+	EnterCriticalSection(&_cs);
+	Player* it;
+	for (Player* p : PlayerManager)
+	{
+		if (p->Player_ID == player->Player_ID)
+		{
+			//찾음
+			it = p;
+			break;
+			
+		}
+		
+	}
+	auto target = find(PlayerManager.begin(), PlayerManager.end(), it);
+	PlayerManager.erase(target);
+	LeaveCriticalSection(&_cs);
+
+}
+
 // 디버깅용
 void GameRoom::Check_PLayer()
 {
