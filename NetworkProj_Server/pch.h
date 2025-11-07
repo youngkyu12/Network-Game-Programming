@@ -16,13 +16,6 @@ using namespace std;
 
 #pragma comment(lib,"Ws2_32.lib")
 
-#define DIR_FORWARD				0x01
-#define DIR_BACKWARD			0x02
-#define DIR_LEFT				0x04
-#define DIR_RIGHT				0x08
-#define DIR_UP					0x10
-#define DIR_DOWN				0x20
-
 namespace Vector3
 {
 	inline XMFLOAT3 ScalarProduct(XMFLOAT3& xmf3Vector, float fScalar, bool bNormalize = true)
