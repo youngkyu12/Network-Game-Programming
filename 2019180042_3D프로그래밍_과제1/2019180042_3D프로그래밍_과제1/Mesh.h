@@ -158,11 +158,11 @@ public:
 	virtual ~CWallMesh() {}
 };
 
-class CAirplaneMesh : public CMesh
+class CTankMesh : public CMesh
 {
 public:
-	CAirplaneMesh(float fWidth = 20.0f, float fHeight = 20.0f, float fDepth = 4.0f);
-	virtual ~CAirplaneMesh() {}
+	CTankMesh(float fWidth = 20.0f, float fHeight = 20.0f, float fDepth = 4.0f);
+	virtual ~CTankMesh() {}
 };
 
 class CAxisMesh : public CMesh

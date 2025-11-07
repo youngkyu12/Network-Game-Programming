@@ -47,11 +47,11 @@ public:
 
 #define BULLETS					50
 
-class CAirplanePlayer : public CPlayer
+class CTankPlayer : public CPlayer
 {
 public:
-	CAirplanePlayer();
-	virtual ~CAirplanePlayer();
+	CTankPlayer();
+	virtual ~CTankPlayer();
 
 	float						m_fBulletEffectiveRange = 150.0f;
 	CBulletObject* m_ppBullets[BULLETS];

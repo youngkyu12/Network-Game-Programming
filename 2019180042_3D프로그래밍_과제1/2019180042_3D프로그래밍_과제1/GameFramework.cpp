@@ -70,10 +70,10 @@ void CGameFramework::BuildObjects()
 
 	pCamera->GenerateOrthographicProjectionMatrix(1.01f, 50.0f, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
 
-	CAirplaneMesh* pAirplaneMesh = new CAirplaneMesh(6.0f, 6.0f, 6.0f);
-	m_pPlayer = new CAirplanePlayer();
+	CTankMesh* pTankMesh = new CTankMesh(6.0f, 6.0f, 6.0f);
+	m_pPlayer = new CTankPlayer();
 	m_pPlayer->SetPosition(0.0f, 0.0f, 0.0f);
-	m_pPlayer->SetMesh(pAirplaneMesh);
+	m_pPlayer->SetMesh(pTankMesh);
 	m_pPlayer->SetColor(RGB(255, 0, 0));
 	m_pPlayer->SetCamera(pCamera);
 	m_pPlayer->SetCameraOffset(XMFLOAT3(0.0f, 5.0f, -15.0f));
@@ -96,20 +96,8 @@ void CGameFramework::ReleaseObjects()
 
 void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
-	if (m_pScene) m_pScene->OnProcessingMouseMessage(hWnd, nMessageID, wParam, lParam);
 	switch (nMessageID)
 	{
-	case WM_RBUTTONDOWN:
-	case WM_LBUTTONDOWN:
-		if (nMessageID == WM_LBUTTONDOWN) {
-		break;
-		};
-		if (nMessageID == WM_RBUTTONDOWN) m_pLockedObject = m_pScene->PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam), m_pPlayer->m_pCamera);
-		break;
-	case WM_LBUTTONUP:
-	case WM_RBUTTONUP:
-		::ReleaseCapture();
-		break;
 	case WM_MOUSEMOVE:
 		::SetCapture ( hWnd );
 		::GetCursorPos ( &m_ptOldCursorPos );
@@ -127,6 +115,12 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		switch (wParam)
 		{
 		case 'A':
+			if (stop) {
+				stop = false;
+			}
+			else {
+				stop = true;
+			}
 			break;
 		case 'D':
 			break;
@@ -150,12 +144,6 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 			m_GameTimer.Start();
 		break;
 	}
-	case WM_SIZE:
-		break;
-	case WM_LBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-	case WM_LBUTTONUP:
-	case WM_RBUTTONUP:
 	case WM_MOUSEMOVE:
 		OnProcessingMouseMessage(hWnd, nMessageID, wParam, lParam);
 		break;
@@ -177,20 +165,21 @@ void CGameFramework::ProcessInput()
 		if ( pKeyBuffer['S'] & 0xF0 ); // char s Àü¼Û
 	}
 
-	if (GetCapture() == m_hWnd)
-	{
-		SetCursor(NULL);
-		POINT ptCursorPos;
-		GetCursorPos(&ptCursorPos);
-		float cxMouseDelta = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
-		float cyMouseDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
-		SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
-		if (cxMouseDelta || cyMouseDelta)
+	if (!stop) {
+		if (GetCapture() == m_hWnd)
 		{
+			SetCursor(NULL);
+			POINT ptCursorPos;
+			GetCursorPos(&ptCursorPos);
+			float cxMouseDelta = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
+			float cyMouseDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
+			SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
+			if (cxMouseDelta || cyMouseDelta)
+			{
 				m_pPlayer->Rotate(0.0f, cxMouseDelta, 0.0f);
+			}
 		}
 	}
-
 
 	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 }

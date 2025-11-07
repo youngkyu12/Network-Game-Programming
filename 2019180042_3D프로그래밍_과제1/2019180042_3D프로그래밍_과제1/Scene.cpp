@@ -112,15 +112,6 @@ void CScene::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 	if (m_pPlayer) {
 		m_pPlayer->Render(hDCFrameBuffer, pCamera);
-		if (shield == true) {
-			shieldtime += 1.0f;
-			if (shieldtime == 120.0f) {
-				shield = false;
-				m_pPlayer->m_objectcode = 'p';
-				m_pPlayer->SetColor(RGB(255, 0, 0));
-			}
-		}
-
 	}
 	//UI
 #ifdef _WITH_DRAW_AXIS

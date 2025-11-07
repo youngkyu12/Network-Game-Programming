@@ -38,6 +38,8 @@ private:
 
 	_TCHAR						m_pszFrameRate[50];
 
+	bool stop = false;
+
 public:
 	void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
 	void OnDestroy();
