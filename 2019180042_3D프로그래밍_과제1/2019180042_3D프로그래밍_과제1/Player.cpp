@@ -26,40 +26,6 @@ void CPlayer::SetCameraOffset(XMFLOAT3& xmf3CameraOffset)
 	m_pCamera->GenerateViewMatrix();
 }
 
-void CPlayer::Move(DWORD dwDirection, float fDistance)
-{
-	if (dwDirection)
-	{
-		XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
-		if (dwDirection & DIR_FORWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Look, fDistance);
-		if (dwDirection & DIR_BACKWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Look, -fDistance);
-		if (dwDirection & DIR_RIGHT) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Right, fDistance);
-		if (dwDirection & DIR_LEFT) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Right, -fDistance);
-		if (dwDirection & DIR_UP) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Up, fDistance);
-		if (dwDirection & DIR_DOWN) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Up, -fDistance);
-
-		Move(xmf3Shift, true);
-	}
-}
-
-void CPlayer::Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
-{
-	if (bUpdateVelocity)
-	{
-		m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, xmf3Shift);
-	}
-	else
-	{
-		m_xmf3Position = Vector3::Add(xmf3Shift, m_xmf3Position);
-		m_pCamera->Move(xmf3Shift);
-	}
-}
-
-void CPlayer::Move(float x, float y, float z)
-{
-	Move(XMFLOAT3(x, y, z), false);
-}
-
 void CPlayer::Rotate(float fPitch, float fYaw, float fRoll)
 {
 	m_pCamera->Rotate(fPitch, fYaw, fRoll);
@@ -97,16 +63,12 @@ void CPlayer::LookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
 
 void CPlayer::Update(float fTimeElapsed)
 {
-	Move(m_xmf3Velocity, false);
+	// set position()
+	// rotate() 카메라 플레이어 포함
 
 	m_pCamera->Update(this, m_xmf3Position, fTimeElapsed);
 	m_pCamera->GenerateViewMatrix();
 
-	XMFLOAT3 xmf3Deceleration = Vector3::Normalize(Vector3::ScalarProduct(m_xmf3Velocity, -1.0f));
-	float fLength = Vector3::Length(m_xmf3Velocity);
-	float fDeceleration = m_fFriction * fTimeElapsed;
-	if (fDeceleration > fLength) fDeceleration = fLength;
-	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, xmf3Deceleration, fDeceleration);
 }
 
 void CPlayer::Animate(float fElapsedTime)

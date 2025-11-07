@@ -28,13 +28,8 @@ public:
 
 public:
 	void SetPosition(float x, float y, float z);
-	void SetRotation(float x, float y, float z);
 
 	void LookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up);
-
-	void Move(DWORD dwDirection, float fDistance);
-	void Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity);
-	void Move(float x, float y, float z);
 
 	void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
 

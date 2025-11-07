@@ -101,8 +101,6 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 	{
 	case WM_RBUTTONDOWN:
 	case WM_LBUTTONDOWN:
-		::SetCapture(hWnd);
-		::GetCursorPos(&m_ptOldCursorPos);
 		if (nMessageID == WM_LBUTTONDOWN) {
 		break;
 		};
@@ -113,6 +111,8 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 		::ReleaseCapture();
 		break;
 	case WM_MOUSEMOVE:
+		::SetCapture ( hWnd );
+		::GetCursorPos ( &m_ptOldCursorPos );
 		break;
 	default:
 		break;
@@ -121,20 +121,14 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 
 void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
-	if (m_pScene) m_pScene->OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam);
-
 	switch (nMessageID)
 	{
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
 		case 'A':
-			OutputDebugString(L"\nddd");
-			((CAirplanePlayer*)m_pPlayer)->FireBullet(m_pLockedObject);
-			m_pLockedObject = NULL;
 			break;
-		default:
-			m_pScene->OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam);
+		case 'D':
 			break;
 		}
 		break;
@@ -179,11 +173,8 @@ void CGameFramework::ProcessInput()
 	static UCHAR pKeyBuffer[256];
 	if (GetKeyboardState(pKeyBuffer))
 	{
-		DWORD dwDirection = 0;
-		if (pKeyBuffer['W'] & 0xF0) dwDirection |= DIR_FORWARD;
-		if (pKeyBuffer['S'] & 0xF0) dwDirection |= DIR_BACKWARD;
-
-		if (dwDirection) m_pPlayer->Move(dwDirection, 0.15f);
+		if ( pKeyBuffer['W'] & 0xF0 ); // char w 전송
+		if ( pKeyBuffer['S'] & 0xF0 ); // char s 전송
 	}
 
 	if (GetCapture() == m_hWnd)
@@ -196,7 +187,6 @@ void CGameFramework::ProcessInput()
 		SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
 		if (cxMouseDelta || cyMouseDelta)
 		{
-			if (pKeyBuffer[VK_LBUTTON] & 0xF0)
 				m_pPlayer->Rotate(0.0f, cxMouseDelta, 0.0f);
 		}
 	}

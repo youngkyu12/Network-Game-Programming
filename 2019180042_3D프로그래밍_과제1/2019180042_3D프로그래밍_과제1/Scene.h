@@ -34,12 +34,5 @@ public:
 	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	CGameObject* PickObjectPointedByCursor(int xClient, int yClient, CCamera* pCamera);
 
-	void CheckPlayerByWallCollision();
-	void CheckObjectByWallCollisions();
-	void CheckObjectByObjectCollisions();
-	void CheckObjectByBulletCollisions();
 
-	float shieldtime = 0.0f;
-	bool shield = false;
-	bool SceneWin = false;
 };
