@@ -13,7 +13,7 @@ public:
 	void Remove_Player(Player* player);
 	void Check_PLayer(); /*µð¹ö±ë¿ë*/
 	void Move(char id, char key);
-
+	void Rotate ( char id , POINT CursorPos );
 private:
 	CRITICAL_SECTION _cs;
 	vector<Player*> PlayerManager;

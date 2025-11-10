@@ -57,7 +57,7 @@ void GameRoom::Move(char id, char key)
 	float Distance = 0.15f;
 	XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
 
-	switch (key & 0xF0)
+	switch (key)
 	{
 	case 'W':
 		xmf3Shift = Vector3::Add(xmf3Shift, PlayerManager[id]->Look, Distance);
