@@ -22,7 +22,7 @@ public:
 	float Yaw = 0.0f;
 	float Roll = 0.0f;
 
-	float						Friction = 125.0f;
+	float Friction = 125.0f;
 
 	int HP;
 	bool Fire_Flag;

@@ -17,5 +17,7 @@ public:
 private:
 	CRITICAL_SECTION _cs;
 	vector<Player*> PlayerManager;
+
+	POINT OldCursorPos = { 500,500 }; // 게임 진행 중 고정되어 있는 마우스 위치 (변경하면 클라도 같이 변경해야함)
 };
 

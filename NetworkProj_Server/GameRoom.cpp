@@ -69,3 +69,14 @@ void GameRoom::Move(char id, char key)
 
 	PlayerManager[id]->Move(xmf3Shift, true);
 }
+
+void GameRoom::Rotate ( char id , POINT CursorPos )
+{
+	float cxMouseDelta = ( float )( CursorPos.x - OldCursorPos.x ) / 3.0f;
+	float cyMouseDelta = ( float )( CursorPos.y - OldCursorPos.y ) / 3.0f;
+
+	if ( cxMouseDelta || cyMouseDelta )
+	{
+		PlayerManager[id]->Rotate (0.0f , cxMouseDelta , 0.0f);
+	}
+}
