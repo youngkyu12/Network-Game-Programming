@@ -100,7 +100,6 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 	{
 	case WM_MOUSEMOVE:
 		::SetCapture ( hWnd );
-		::GetCursorPos ( &m_ptOldCursorPos );
 		break;
 	default:
 		break;
@@ -155,33 +154,26 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 	return(0);
 }
 
-void CGameFramework::ProcessInput()
+void CGameFramework::ProcessInput ()
 {
 
 	static UCHAR pKeyBuffer[256];
-	if (GetKeyboardState(pKeyBuffer))
+	if ( GetKeyboardState ( pKeyBuffer ) )
 	{
 		if ( pKeyBuffer['W'] & 0xF0 ); // char w 전송
 		if ( pKeyBuffer['S'] & 0xF0 ); // char s 전송
 	}
 
-	if (!stop) {
-		if (GetCapture() == m_hWnd)
+	if ( !stop ) {
+		if ( GetCapture () == m_hWnd )
 		{
-			SetCursor(NULL);
+			SetCursor ( NULL );
 			POINT ptCursorPos;
-			GetCursorPos(&ptCursorPos);
-			float cxMouseDelta = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
-			float cyMouseDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
-			SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
-			if (cxMouseDelta || cyMouseDelta)
-			{
-				m_pPlayer->Rotate(0.0f, cxMouseDelta, 0.0f);
-			}
+			GetCursorPos ( &ptCursorPos );
+			// 여기서 POINT cursorPos 송신
+			SetCursorPos ( m_ptOldCursorPos.x , m_ptOldCursorPos.y );
 		}
 	}
-
-	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 }
 
 void CGameFramework::AnimateObjects()
@@ -195,6 +187,10 @@ void CGameFramework::FrameAdvance()
 {
 	m_GameTimer.Tick(60.0f);
 	ProcessInput();
+
+	// 여기서 리시브?
+
+	m_pPlayer->Update ( m_GameTimer.GetTimeElapsed () );
 
 	AnimateObjects();
 

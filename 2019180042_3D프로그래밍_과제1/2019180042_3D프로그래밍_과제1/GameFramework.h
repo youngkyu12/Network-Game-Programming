@@ -34,7 +34,7 @@ private:
 
 	CGameTimer					m_GameTimer;
 
-	POINT						m_ptOldCursorPos;
+	POINT						m_ptOldCursorPos = { 500,500 }; // 게임 진행 중 고정되어 있는 마우스 위치
 
 	_TCHAR						m_pszFrameRate[50];
 
