@@ -57,7 +57,7 @@ void GameRoom::Move(char id, char key)
 	float Distance = 0.15f;
 	XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
 
-	switch (key & 0xF0)
+	switch (key)
 	{
 	case 'W':
 		xmf3Shift = Vector3::Add(xmf3Shift, PlayerManager[id]->Look, Distance);
@@ -68,4 +68,15 @@ void GameRoom::Move(char id, char key)
 	}
 
 	PlayerManager[id]->Move(xmf3Shift, true);
+}
+
+void GameRoom::Rotate ( char id , POINT CursorPos )
+{
+	float cxMouseDelta = ( float )( CursorPos.x - OldCursorPos.x ) / 3.0f;
+	float cyMouseDelta = ( float )( CursorPos.y - OldCursorPos.y ) / 3.0f;
+
+	if ( cxMouseDelta || cyMouseDelta )
+	{
+		PlayerManager[id]->Rotate (0.0f , cxMouseDelta , 0.0f);
+	}
 }
