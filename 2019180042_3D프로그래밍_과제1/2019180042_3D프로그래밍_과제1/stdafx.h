@@ -5,16 +5,24 @@
 
 #pragma once
 
+#define _CRT_SECURE_NO_WARNINGS // 구형 C 함수 사용 시 경고 끄기
+#define _WINSOCK_DEPRECATED_NO_WARNINGS // 구형 소켓 API 사용 시 경고 끄기
 #define WIN32_LEAN_AND_MEAN		// 거의 사용되지 않는 내용은 Windows 헤더에서 제외합니다.
+
 // Windows 헤더 파일:
 #include <windows.h>
+#include <winsock2.h> // 윈속2 메인 헤더
+#include <ws2tcpip.h> // 윈속2 확장 헤더
 
 // C의 런타임 헤더 파일입니다.
+#include <stdio.h> 
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
 #include <math.h>
+#include <queue>
+#include <mutex>
 
 #include <Mmsystem.h>
 #pragma comment(lib, "winmm.lib")
@@ -44,6 +52,10 @@ using namespace DirectX::PackedVector;
 #define DegreeToRadian(x)		float((x)*3.141592654f/180.0f)
 
 #define EPSILON					1.0e-6f
+
+#define SERVERPORT 9000
+#define BUFSIZE    50
+#define FILENAMELEN 256
 
 inline bool IsZero(float fValue) { return((fabsf(fValue) < EPSILON)); }
 inline bool IsEqual(float fA, float fB) { return(::IsZero(fA - fB)); }
@@ -282,4 +294,37 @@ namespace Plane
 		XMStoreFloat4(&xmf4Result, XMPlaneNormalize(XMLoadFloat4(&xmf4Plane)));
 		return(xmf4Result);
 	}
+}
+
+// 소켓 함수 오류 출력 후 종료
+void err_quit(const char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessageA(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL,
+		WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(char*)&lpMsgBuf,
+		0,
+		NULL);
+	MessageBoxA(NULL, (const char*)lpMsgBuf, msg, MB_ICONERROR);
+	LocalFree(lpMsgBuf);
+	exit(1);
+}
+
+// 소켓 함수 오류 출력
+void err_display(const char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessageA(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL,
+		WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(char*)&lpMsgBuf,
+		0,
+		NULL);
+	printf("[%s] %s\n", msg, (char*)lpMsgBuf);
+	LocalFree(lpMsgBuf);
 }

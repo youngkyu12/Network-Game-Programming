@@ -3,6 +3,9 @@
 #include "Player.h"
 #include "Scene.h"
 #include "Timer.h"
+#include "SocketQueue.h"
+
+
 
 class CGameFramework
 {
@@ -51,9 +54,9 @@ public:
 	void BuildObjects();
 	void ReleaseObjects();
 
-	void ProcessInput();
+	void ProcessInput(SendQueue& send_Queue);
 	void AnimateObjects();
-	void FrameAdvance();
+	void FrameAdvance(SendQueue& send_Queue);
 
 	void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);

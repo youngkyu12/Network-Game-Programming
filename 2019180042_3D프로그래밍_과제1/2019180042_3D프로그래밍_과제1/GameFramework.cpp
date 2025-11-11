@@ -154,14 +154,15 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 	return(0);
 }
 
-void CGameFramework::ProcessInput ()
+void CGameFramework::ProcessInput (SendQueue& send_Queue)
 {
+	InputPacket packet = { 0, 0, 0, 0 };
 
 	static UCHAR pKeyBuffer[256];
 	if ( GetKeyboardState ( pKeyBuffer ) )
 	{
-		if ( pKeyBuffer['W'] & 0xF0 ); // char w 전송
-		if ( pKeyBuffer['S'] & 0xF0 ); // char s 전송
+		packet.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
+		packet.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
 	}
 
 	if ( !stop ) {
@@ -170,10 +171,12 @@ void CGameFramework::ProcessInput ()
 			SetCursor ( NULL );
 			POINT ptCursorPos;
 			GetCursorPos ( &ptCursorPos );
-			// 여기서 POINT cursorPos 송신
+			packet.mouseX = ptCursorPos.x;
+			packet.mouseY = ptCursorPos.y;
 			SetCursorPos ( m_ptOldCursorPos.x , m_ptOldCursorPos.y );
 		}
 	}
+	send_Queue.push(packet);
 }
 
 void CGameFramework::AnimateObjects()
@@ -183,10 +186,10 @@ void CGameFramework::AnimateObjects()
 	if (m_pScene) m_pScene->Animate(fTimeElapsed);
 }
 
-void CGameFramework::FrameAdvance()
+void CGameFramework::FrameAdvance(SendQueue& send_Queue)
 {
 	m_GameTimer.Tick(60.0f);
-	ProcessInput();
+	ProcessInput(send_Queue);
 
 	// 여기서 리시브?
 
