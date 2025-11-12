@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 
+const int32_t BUF_SIZE = 1024;
 
 class Player
 {
@@ -10,6 +11,12 @@ public:
 public:
 	int Player_ID;
 	SOCKET sock = INVALID_SOCKET;
+
+	BYTE recvBuffer[BUF_SIZE] = {};
+	int32_t recvByte = 0;
+
+	BYTE sendBuffer[BUF_SIZE] = {};
+	int32_t sendByte = 0;
 
 	XMFLOAT3 Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	XMFLOAT3 Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);

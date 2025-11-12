@@ -52,6 +52,11 @@ void GameRoom::Check_PLayer()
 	LeaveCriticalSection(&_cs);
 }
 
+void GameRoom::HandlePacket()
+{
+
+}
+
 void GameRoom::Move(char id, char key)
 {
 	float Distance = 0.15f;

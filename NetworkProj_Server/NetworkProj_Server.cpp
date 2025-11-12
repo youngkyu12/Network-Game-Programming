@@ -18,6 +18,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		if (recvBytes > 0)
 		{
 			cout << "ID " << myPlayer->Player_ID <<" :" << buf << endl;
+			//GameRoom::HandlePacket();
 
 			//조건문으로 게임로직
 			//...
