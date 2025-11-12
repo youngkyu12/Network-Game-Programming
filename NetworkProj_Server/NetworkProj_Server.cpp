@@ -13,12 +13,27 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 	{
 		cout << "워커쓰레드 생성 후 루프도는중 ID : " << myPlayer->Player_ID << endl;
 		//GameRoom::Update_State();
+		// 시작주소 갱신.
+		char* recvData = (char*)myPlayer->recvBuffer + myPlayer->recvByte;// 포인터 연산으로 (타입)*크기 만큼 이동
+		//cout << "리시브 데이터 주소" << (void*)recvData << endl;
+
+		int32_t remainSize = BUF_SIZE - myPlayer->recvByte;
+		if (remainSize <= 0)
+		{
+			//남은 공간 없으면 비정상 종료 처리.
+			cout << myPlayer->Player_ID << " 수신버퍼 오버플로우" << endl;
+			Room.Remove_Player(myPlayer);
+			Room.Check_PLayer();
+			break;
+		}
 		
-		int recvBytes = recv(myPlayer->sock, buf, sizeof(buf), 0);
+		int recvBytes = recv(myPlayer->sock, recvData, remainSize, 0);//버퍼에 남은 공간만큼만 받기
 		if (recvBytes > 0)
 		{
-			cout << "ID " << myPlayer->Player_ID <<" :" << buf << endl;
-			//GameRoom::HandlePacket();
+			cout << "ID " << myPlayer->Player_ID <<" :" << recvData << endl;
+			myPlayer->recvByte += recvBytes; //버퍼에 쌓인 데이터 크기 갱신
+
+			//GameRoom::HandlePacket(myplayer);
 
 			//조건문으로 게임로직
 			//...
