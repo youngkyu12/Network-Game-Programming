@@ -3,7 +3,7 @@
 #define SERVERPORT 8922
 
 GameRoom Room;
-char buf[1024];
+//char buf[1024];
 
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 {
@@ -15,7 +15,8 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		//GameRoom::Update_State();
 		// 시작주소 갱신.
 		char* recvData = (char*)myPlayer->recvBuffer + myPlayer->recvByte;// 포인터 연산으로 (타입)*크기 만큼 이동
-		//cout << "리시브 데이터 주소" << (void*)recvData << endl;
+		cout << "리시브 데이터 크기" << myPlayer->recvByte << endl;
+		cout << "리시브 데이터 주소" << (void*)recvData << endl;
 
 		int32_t remainSize = BUF_SIZE - myPlayer->recvByte;
 		if (remainSize <= 0)

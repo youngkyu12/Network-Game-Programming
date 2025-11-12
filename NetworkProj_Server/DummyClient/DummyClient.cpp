@@ -41,6 +41,7 @@ int main()
 		{
 			break;
 		}
+		cout << "보낸 바이트 크기 " << msgLen << endl;
 		cout << "메세지 전송 성공" << endl;
 		Sleep(5000);
 	}
