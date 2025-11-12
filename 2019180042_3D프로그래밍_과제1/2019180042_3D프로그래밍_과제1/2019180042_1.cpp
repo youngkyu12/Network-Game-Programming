@@ -18,6 +18,9 @@ SOCKET sock; // 소켓
 char SERVERIP[16];
 char FILENAME[256]{ '\0' };
 SendQueue send_Queue;
+RecvQueue recv_Queue;
+// HWND hIPControl;
+// HWND hButton;
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -25,6 +28,8 @@ BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 DWORD WINAPI ClientMain(LPVOID arg);	// 소켓 통신 스레드 함수
+
+
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
@@ -42,7 +47,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_MY2019180042_1, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
-
+	
 	CreateThread(NULL, 0, ClientMain, NULL, 0, NULL);
 
 	// 응용 프로그램 초기화를 수행합니다.
@@ -68,7 +73,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		}
 		else
 		{
-			gGameFramework.FrameAdvance(send_Queue);
+			//if (true) {
+			//	DestroyWindow(hIPControl);     // IP 입력창 제거
+			//	DestroyWindow(hButton); // 버튼 제거
+			//}
+			//else 
+			gGameFramework.FrameAdvance(send_Queue, recv_Queue);
 		}
 	}
 	gGameFramework.OnDestroy();
@@ -158,6 +168,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
+	case WM_CREATE:
+		/*hIPControl = CreateWindowEx(0, WC_IPADDRESS, NULL,
+			WS_CHILD | WS_VISIBLE,
+			0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT,
+			hWnd, (HMENU)ID_IPADDRESS,
+			hInst, NULL);*/
+		// button
 	case WM_SIZE:
 	case WM_LBUTTONDOWN:
 	case WM_LBUTTONUP:
@@ -223,7 +240,6 @@ DWORD WINAPI ClientMain(LPVOID arg)
 {
 	int retval;
 	int num = 0;
-
 	
 	// 윈속 초기화
 	WSADATA wsa;
@@ -256,6 +272,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 
 		int len = sizeof(packet);
 
+		// 필요한가?
 		// 데이터 보내기(고정 길이)
 		retval = send(sock, (char*)&len, sizeof(int), 0);
 		if (retval == SOCKET_ERROR) {
@@ -270,6 +287,24 @@ DWORD WINAPI ClientMain(LPVOID arg)
 			break;
 		}
 
+		// 데이터 받기(고정 길이)
+		retval = recv(sock, (char*)&len, sizeof(int), MSG_WAITALL);
+		if (retval == SOCKET_ERROR) {
+			err_display("recv()");
+			break;
+		}
+		else if (retval == 0)
+			break;
+
+		// 데이터 받기(가변 길이)
+		retval = recv(sock, buf, len, MSG_WAITALL);
+		if (retval == SOCKET_ERROR) {
+			err_display("recv()");
+			break;
+		}
+		else if (retval == 0)
+			break;
+		recv_Queue.push(buf);
 	}
 
 	// 소켓 닫기

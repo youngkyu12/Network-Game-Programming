@@ -61,10 +61,13 @@ void CPlayer::LookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
 	m_xmf3Look = Vector3::Normalize(XMFLOAT3(xmf4x4View._13, xmf4x4View._23, xmf4x4View._33));
 }
 
-void CPlayer::Update(float fTimeElapsed)
+void CPlayer::Update(RecvQueue& recv_Queue, float fTimeElapsed)
 {
 	// set position()
 	// rotate() 카메라 플레이어 포함
+	// Player packet을 어떻게 받아오는지 잘 모르겠어요
+
+
 
 	m_pCamera->Update(this, m_xmf3Position, fTimeElapsed);
 	m_pCamera->GenerateViewMatrix();

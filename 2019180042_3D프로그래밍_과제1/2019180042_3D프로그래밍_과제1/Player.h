@@ -2,6 +2,8 @@
 
 #include "GameObject.h"
 #include "Camera.h"
+#include "SocketQueue.h"
+
 
 class CPlayer : public CGameObject
 {
@@ -35,7 +37,7 @@ public:
 
 	void SetCameraOffset(XMFLOAT3& xmf3CameraOffset);
 
-	void Update(float fTimeElapsed = 0.016f);
+	void Update(RecvQueue& recv_Queue, float fTimeElapsed = 0.016f);
 
 	virtual void OnUpdateTransform();
 	virtual void Animate(float fElapsedTime);

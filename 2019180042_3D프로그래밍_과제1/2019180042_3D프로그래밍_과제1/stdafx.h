@@ -23,9 +23,11 @@
 #include <math.h>
 #include <queue>
 #include <mutex>
+#include <commctrl.h>
 
 #include <Mmsystem.h>
 #pragma comment(lib, "winmm.lib")
+#pragma comment(lib, "ws2_32") // ws2_32.lib 링크
 
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
@@ -56,6 +58,10 @@ using namespace DirectX::PackedVector;
 #define SERVERPORT 9000
 #define BUFSIZE    50
 #define FILENAMELEN 256
+
+void err_quit(const char* msg);
+void err_display(const char* msg);
+void err_display(int errcode);
 
 inline bool IsZero(float fValue) { return((fabsf(fValue) < EPSILON)); }
 inline bool IsEqual(float fA, float fB) { return(::IsZero(fA - fB)); }
@@ -296,35 +302,3 @@ namespace Plane
 	}
 }
 
-// 소켓 함수 오류 출력 후 종료
-void err_quit(const char* msg)
-{
-	LPVOID lpMsgBuf;
-	FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL,
-		WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(char*)&lpMsgBuf,
-		0,
-		NULL);
-	MessageBoxA(NULL, (const char*)lpMsgBuf, msg, MB_ICONERROR);
-	LocalFree(lpMsgBuf);
-	exit(1);
-}
-
-// 소켓 함수 오류 출력
-void err_display(const char* msg)
-{
-	LPVOID lpMsgBuf;
-	FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL,
-		WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(char*)&lpMsgBuf,
-		0,
-		NULL);
-	printf("[%s] %s\n", msg, (char*)lpMsgBuf);
-	LocalFree(lpMsgBuf);
-}

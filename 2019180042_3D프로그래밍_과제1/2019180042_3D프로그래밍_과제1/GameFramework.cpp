@@ -186,14 +186,14 @@ void CGameFramework::AnimateObjects()
 	if (m_pScene) m_pScene->Animate(fTimeElapsed);
 }
 
-void CGameFramework::FrameAdvance(SendQueue& send_Queue)
+void CGameFramework::FrameAdvance(SendQueue& send_Queue, RecvQueue& recv_Queue)
 {
 	m_GameTimer.Tick(60.0f);
 	ProcessInput(send_Queue);
 
 	// 여기서 리시브?
 
-	m_pPlayer->Update ( m_GameTimer.GetTimeElapsed () );
+	m_pPlayer->Update(recv_Queue, m_GameTimer.GetTimeElapsed());
 
 	AnimateObjects();
 
@@ -209,6 +209,11 @@ void CGameFramework::FrameAdvance(SendQueue& send_Queue)
 
 	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
 	::SetWindowText(m_hWnd, m_pszFrameRate);
+}
+
+void CGameFramework::HandlePacket(RecvQueue& recv_Queue)
+{
+	
 }
 
 

@@ -56,7 +56,8 @@ public:
 
 	void ProcessInput(SendQueue& send_Queue);
 	void AnimateObjects();
-	void FrameAdvance(SendQueue& send_Queue);
+	void FrameAdvance(SendQueue& send_Queue, RecvQueue& recv_Queue);
+	void HandlePacket(RecvQueue& recv_Queue);
 
 	void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
