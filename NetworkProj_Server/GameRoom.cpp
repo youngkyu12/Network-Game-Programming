@@ -1,5 +1,7 @@
 #include "GameRoom.h"
 
+
+
 GameRoom::GameRoom()
 {
 	// 생성할때 초기화
@@ -12,8 +14,14 @@ GameRoom::~GameRoom()
 	DeleteCriticalSection(&_cs);
 }
 
-void GameRoom::Update_State()
+void GameRoom::Update_State( PlayerData* data )
 {
+	for ( int i = 0; i < PlayerManager.size (); ++i ) {
+		data->x = PlayerManager[i]->Position.x;
+		data->y = PlayerManager[i]->Position.y;
+		data->z = PlayerManager[i]->Position.z;
+		data->yaw = PlayerManager[i]->Yaw;
+	}
 }
 
 void GameRoom::Add_Player(Player* player)
@@ -77,6 +85,9 @@ void GameRoom::Rotate ( char id , POINT CursorPos )
 
 	if ( cxMouseDelta || cyMouseDelta )
 	{
+		PlayerManager[id]->Yaw = cxMouseDelta;
+
+		// 밑에 rotate는 클라와 서버의 방향벡터가 같은 지 확인하기 위함
 		PlayerManager[id]->Rotate (0.0f , cxMouseDelta , 0.0f);
 	}
 }

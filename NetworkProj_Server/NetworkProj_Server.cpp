@@ -5,6 +5,10 @@
 GameRoom Room;
 char buf[1024];
 
+PlayerData playerdata;
+RecvData rd;
+POINT cursor;
+
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 {
 	Player* myPlayer = (Player*)lpParam;
@@ -12,12 +16,18 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 	while (true)
 	{
 		cout << "워커쓰레드 생성 후 루프도는중 ID : " << myPlayer->Player_ID << endl;
-		//GameRoom::Update_State();
-		
-		int recvBytes = recv(myPlayer->sock, buf, sizeof(buf), 0);
+		Room.Update_State(&playerdata);
+		int retval = send ( myPlayer->sock , (char*)&playerdata , sizeof (PlayerData) , 0);
+
+		int recvBytes = recv(myPlayer->sock, (char*)&rd , sizeof (rd) , 0);
+
 		if (recvBytes > 0)
 		{
-			cout << "ID " << myPlayer->Player_ID <<" :" << buf << endl;
+			if ( rd.w == 1 ) Room.Move ( myPlayer->Player_ID , 'w' );
+			if ( rd.s == 1 ) Room.Move ( myPlayer->Player_ID , 's' );
+			cursor.x = rd.cursorx;
+			cursor.y = rd.cursory;
+			Room.Rotate ( myPlayer->Player_ID , cursor );
 
 			//조건문으로 게임로직
 			//...
