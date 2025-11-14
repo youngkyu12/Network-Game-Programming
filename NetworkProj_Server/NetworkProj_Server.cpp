@@ -3,8 +3,11 @@
 #define SERVERPORT 8922
 
 GameRoom Room;
-//char buf[1024];
 
+/*
+recvData는 데이터를 받을 위치를 계산한 포인터 변수 입니다.
+가독성을 위한 일종의 책갈피 역할이라고 생각해주시면 됩니다.
+*/
 PlayerData playerdata;
 RecvData rd;
 POINT cursor;
@@ -25,7 +28,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		// 시작주소 갱신.
 		char* recvData = (char*)myPlayer->recvBuffer + myPlayer->recvByte;// 포인터 연산으로 (타입)*크기 만큼 이동
 		cout << "리시브 데이터 크기" << myPlayer->recvByte << endl;;
-		cout << "리시브 데이터 주소" << (void*)recvData << endl;
+		//cout << "리시브 데이터 주소" << (void*)recvData << endl;
 
 		int32_t remainSize = BUF_SIZE - myPlayer->recvByte;
 		if (remainSize <= 0)
@@ -42,6 +45,39 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		{
 			myPlayer->recvByte += recvBytes; //버퍼에 쌓인 데이터 크기 갱신
 			cout << "ID " << myPlayer->Player_ID << " :" << recvBytes << endl;
+			cout << "ID " << myPlayer->Player_ID << " :" << myPlayer->recvBuffer << endl;
+
+			BYTE* Tempbuffer = myPlayer->recvBuffer;
+			while (1)
+			{
+				if (myPlayer->recvByte < sizeof(Packetheader))
+				{
+					// 패킷헤더만큼도 도착안했으면
+					cout << "헤더보다 작음" << endl;
+					break;
+				}
+				// 여기서 헤더를 저장할 변수가 필요..
+				Packetheader* header = (Packetheader*)Tempbuffer;
+
+				if (myPlayer->recvByte < header->size)
+				{
+					//패킷이 아직 다 안옴.
+					cout << "패킷 아직 다 도착X" << endl;
+					break;
+				}
+				// 완벽히 도착한 패킷은 HandlePacket에서 처리.
+				Room.HandlePacket(myPlayer, Tempbuffer);
+
+				// 처리한 패킷만큼 버퍼에서 정리.
+				if ((myPlayer->recvByte) - (header->size) > 0)
+				{
+					// 남은 데이터를 버퍼 맨 앞으로 당기기.
+					memmove(Tempbuffer, Tempbuffer + header->size, (myPlayer->recvByte) - (header->size));
+				}
+				myPlayer->recvByte = (myPlayer->recvByte) - (header->size);// 실제 버퍼 총 크기 갱신.
+			}
+			
+
 			/*
 			if (rd.w == 1) Room.Move(myPlayer->Player_ID, 'w');
 			if (rd.s == 1) Room.Move(myPlayer->Player_ID, 's');
@@ -49,7 +85,6 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 			cursor.y = rd.cursory;
 			Room.Rotate(myPlayer->Player_ID, cursor);
 			*/
-			//Room.HandlePacket(myPlayer);
 		}
 
 		else if (recvBytes == 0)

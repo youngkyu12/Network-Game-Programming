@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "Protocol.h"
+
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <DirectXCollision.h>
