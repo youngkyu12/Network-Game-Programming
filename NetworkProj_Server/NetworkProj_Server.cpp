@@ -31,10 +31,12 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		int recvBytes = recv(myPlayer->sock, recvData, remainSize, 0);//버퍼에 남은 공간만큼만 받기
 		if (recvBytes > 0)
 		{
-			cout << "ID " << myPlayer->Player_ID <<" :" << recvData << endl;
 			myPlayer->recvByte += recvBytes; //버퍼에 쌓인 데이터 크기 갱신
+			cout << "ID " << myPlayer->Player_ID << " :" << recvBytes << endl;
 
-			//GameRoom::HandlePacket(myplayer);
+			Room.HandlePacket(myPlayer);
+
+
 
 			//조건문으로 게임로직
 			//...
