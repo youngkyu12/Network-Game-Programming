@@ -15,68 +15,60 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 	
 	while (true)
 	{
-		cout << "ì›Œì»¤ì“°ë ˆë“œ ìƒì„± í›„ ë£¨í”„ë„ëŠ”ì¤‘ ID : " << myPlayer->Player_ID << endl;
+
+		//Room.Update_State(&playerdata);
+		//int retval = send ( myPlayer->sock , (char*)&playerdata , sizeof (PlayerData) , 0);
+		//int recvBytes = recv(myPlayer->sock, (char*)&rd , sizeof (rd) , 0);
+
+		cout << "¿öÄ¿¾²·¹µå »ı¼º ÈÄ ·çÇÁµµ´ÂÁß ID : " << myPlayer->Player_ID << endl;
 		//GameRoom::Update_State();
-		// ì‹œì‘ì£¼ì†Œ ê°±ì‹ .
-		char* recvData = (char*)myPlayer->recvBuffer + myPlayer->recvByte;// í¬ì¸í„° ì—°ì‚°ìœ¼ë¡œ (íƒ€ì…)*í¬ê¸° ë§Œí¼ ì´ë™
-		cout << "ë¦¬ì‹œë¸Œ ë°ì´í„° í¬ê¸°" << myPlayer->recvByte << endl;
-		cout << "ë¦¬ì‹œë¸Œ ë°ì´í„° ì£¼ì†Œ" << (void*)recvData << endl;
+		// ½ÃÀÛÁÖ¼Ò °»½Å.
+		char* recvData = (char*)myPlayer->recvBuffer + myPlayer->recvByte;// Æ÷ÀÎÅÍ ¿¬»êÀ¸·Î (Å¸ÀÔ)*Å©±â ¸¸Å­ ÀÌµ¿
+		cout << "¸®½Ãºê µ¥ÀÌÅÍ Å©±â" << myPlayer->recvByte << endl;;
+		cout << "¸®½Ãºê µ¥ÀÌÅÍ ÁÖ¼Ò" << (void*)recvData << endl;
 
 		int32_t remainSize = BUF_SIZE - myPlayer->recvByte;
 		if (remainSize <= 0)
 		{
-			//ë‚¨ì€ ê³µê°„ ì—†ìœ¼ë©´ ë¹„ì •ìƒ ì¢…ë£Œ ì²˜ë¦¬.
-			cout << myPlayer->Player_ID << " ìˆ˜ì‹ ë²„í¼ ì˜¤ë²„í”Œë¡œìš°" << endl;
+			//³²Àº °ø°£ ¾øÀ¸¸é ºñÁ¤»ó Á¾·á Ã³¸®.
+			cout << myPlayer->Player_ID << " ¼ö½Å¹öÆÛ ¿À¹öÇÃ·Î¿ì" << endl;
 			Room.Remove_Player(myPlayer);
 			Room.Check_PLayer();
 			break;
 		}
 		
-		int recvBytes = recv(myPlayer->sock, recvData, remainSize, 0);//ë²„í¼ì— ë‚¨ì€ ê³µê°„ë§Œí¼ë§Œ ë°›ê¸°
+		int recvBytes = recv(myPlayer->sock, recvData, remainSize, 0);//¹öÆÛ¿¡ ³²Àº °ø°£¸¸Å­¸¸ ¹Ş±â
 		if (recvBytes > 0)
 		{
-			myPlayer->recvByte += recvBytes; //ë²„í¼ì— ìŒ“ì¸ ë°ì´í„° í¬ê¸° ê°±ì‹ 
+			myPlayer->recvByte += recvBytes; //¹öÆÛ¿¡ ½×ÀÎ µ¥ÀÌÅÍ Å©±â °»½Å
 			cout << "ID " << myPlayer->Player_ID << " :" << recvBytes << endl;
-
-			Room.HandlePacket(myPlayer);
-
-
-		Room.Update_State(&playerdata);
-		int retval = send ( myPlayer->sock , (char*)&playerdata , sizeof (PlayerData) , 0);
-
-		int recvBytes = recv(myPlayer->sock, (char*)&rd , sizeof (rd) , 0);
-
-		if (recvBytes > 0)
-		{
-			if ( rd.w == 1 ) Room.Move ( myPlayer->Player_ID , 'w' );
-			if ( rd.s == 1 ) Room.Move ( myPlayer->Player_ID , 's' );
+			/*
+			if (rd.w == 1) Room.Move(myPlayer->Player_ID, 'w');
+			if (rd.s == 1) Room.Move(myPlayer->Player_ID, 's');
 			cursor.x = rd.cursorx;
 			cursor.y = rd.cursory;
-			Room.Rotate ( myPlayer->Player_ID , cursor );
-
-			//ì¡°ê±´ë¬¸ìœ¼ë¡œ ê²Œì„ë¡œì§
-			//...
-			
-			// Packet_ID == KEY_INPUT ì´ë©´
-			// GameRoom::Move(myPlayer->Player_ID, KeyInput);
+			Room.Rotate(myPlayer->Player_ID, cursor);
+			*/
+			//Room.HandlePacket(myPlayer);
 		}
+
 		else if (recvBytes == 0)
 		{
-			//ì •ìƒ ì¢…ë£Œ
-			cout << "ID : " << myPlayer->Player_ID << " ì ‘ì† ì¢…ë£Œ" << endl;
+			//Á¤»ó Á¾·á
+			cout << "ID : " << myPlayer->Player_ID << " Á¢¼Ó Á¾·á" << endl;
 			break;
 		}
 		else if (recvBytes == SOCKET_ERROR)
 		{
 			if (WSAGetLastError() == WSAETIMEDOUT)
 			{
-				//ì˜¤ë¥˜ê°€ ì•„ë‹Œ ì˜ë„í•œ ê²ƒ
-				cout << "recv 500ms íƒ€ì„ì•„ì›ƒ" << endl;
+				//¿À·ù°¡ ¾Æ´Ñ ÀÇµµÇÑ °Í
+				cout << "recv 500ms Å¸ÀÓ¾Æ¿ô" << endl;
 				continue;
 			}
-
-			//ë¹„ì •ìƒ ì¢…ë£Œ
-			cout << "ID : " << myPlayer->Player_ID << " ë¹„ì •ìƒ ì¢…ë£Œ" << endl;
+			
+			//ºñÁ¤»ó Á¾·á
+			cout << "ID : " << myPlayer->Player_ID << " ºñÁ¤»ó Á¾·á" << endl;
 			Room.Remove_Player(myPlayer);
 			Room.Check_PLayer();
 			break;
@@ -90,20 +82,20 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 
 int main()
 {
-	// ìœˆì† ì´ˆê¸°í™”
+	// À©¼Ó ÃÊ±âÈ­
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
 		return 1;
 	}
-	// ì†Œì¼“ ìƒì„±
+	// ¼ÒÄÏ »ı¼º
 	SOCKET listenSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenSocket == INVALID_SOCKET)
 	{
 		return 1;
 	}
 
-	// ì£¼ì†Œ, í¬íŠ¸ ì…ë ¥
+	// ÁÖ¼Ò, Æ÷Æ® ÀÔ·Â
 	SOCKADDR_IN serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
@@ -122,12 +114,11 @@ int main()
 		return 1;
 	}
 
-	
 	int ID_NUM = 0;
 
 	while (true)
 	{
-		// ì ‘ì† ì‹œì‘
+		// Á¢¼Ó ½ÃÀÛ
 		SOCKADDR_IN clientAddr;
 		int addrLen = sizeof(clientAddr);
 		SOCKET clientSocket = accept(listenSocket, (SOCKADDR*)&clientAddr, &addrLen);
@@ -136,40 +127,40 @@ int main()
 			return 1;
 		}
 		
-		//recv 500ms ë™ì•ˆ ì•ˆë“¤ì–´ì˜¤ë©´ íƒ€ì„ì•„ì›ƒì˜¤ë¥˜
+		//recv 500ms µ¿¾È ¾Èµé¾î¿À¸é Å¸ÀÓ¾Æ¿ô¿À·ù
 		int recvTimeout = 500; //500ms
 		if (setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recvTimeout, sizeof(recvTimeout)) == SOCKET_ERROR)
 		{
-			cout << "ì˜µì…˜ ì„¤ì • ì‹¤íŒ¨" << endl;
+			cout << "¿É¼Ç ¼³Á¤ ½ÇÆĞ" << endl;
 			closesocket(clientSocket);
 			return 1;
 		}
 
-		// í™ì˜ì—­ì—ì„œ ëª¨ë“  í”Œë ˆì´ì–´ ê°ì²´ ê´€ë¦¬
+		// Èü¿µ¿ª¿¡¼­ ¸ğµç ÇÃ·¹ÀÌ¾î °´Ã¼ °ü¸®
 		Player* player = new Player;
 		player->sock = clientSocket;
-		//Player_ID ë¶€ì—¬
+		//Player_ID ºÎ¿©
 		player->Player_ID = ID_NUM++;
-		cout << "ì—°ê²° ì„±ê³µ" << endl;
+		cout << "¿¬°á ¼º°ø" << endl;
 		cout << "Player ID : " << player->Player_ID << endl;
 
 		Room.Add_Player(player);
-		// ì ‘ì†í•œ í”Œë ˆì´ì–´ ì¸ì› ìˆ˜
+		// Á¢¼ÓÇÑ ÇÃ·¹ÀÌ¾î ÀÎ¿ø ¼ö
 		Room.Check_PLayer();
 
 
-		// ì“°ë ˆë“œ ìƒì„±
+		// ¾²·¹µå »ı¼º
 		HANDLE WorkerThread = CreateThread(NULL, 0, WorkerThreadMain, player, 0, NULL);
 
-		// í•¸ë“¤ì„ ì¢…ë£Œ
+		// ÇÚµéÀ» Á¾·á
 		if (WorkerThread)
 		{
 			CloseHandle(WorkerThread);
 		}
 	}
-	// ë¦¬ìŠ¨ì†Œì¼“ ì¢…ë£Œ
+	// ¸®½¼¼ÒÄÏ Á¾·á
 	closesocket(listenSocket);
-	//ìœˆì† ì¢…ë£Œ
+	//À©¼Ó Á¾·á
 	WSACleanup();
 }
 

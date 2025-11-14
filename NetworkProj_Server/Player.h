@@ -10,7 +10,7 @@ public:
 	~Player();
 public:
 	//-----------------------------------
-	int Player_ID;
+	int Player_ID = 0;
 	SOCKET sock = INVALID_SOCKET;
 
 	BYTE recvBuffer[BUF_SIZE] = {};
