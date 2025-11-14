@@ -169,6 +169,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_CREATE:
+		// StartScene
 		/*hIPControl = CreateWindowEx(0, WC_IPADDRESS, NULL,
 			WS_CHILD | WS_VISIBLE,
 			0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT,
@@ -288,23 +289,25 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		}
 
 		// 데이터 받기(고정 길이)
-		retval = recv(sock, (char*)&len, sizeof(int), MSG_WAITALL);
+		/*retval = recv(sock, (char*)&len, sizeof(int), MSG_WAITALL);
 		if (retval == SOCKET_ERROR) {
 			err_display("recv()");
 			break;
 		}
 		else if (retval == 0)
-			break;
+			break;*/
 
 		// 데이터 받기(가변 길이)
-		retval = recv(sock, buf, len, MSG_WAITALL);
+		retval = recv(sock, buf, sizeof(PlayerState), MSG_WAITALL);
 		if (retval == SOCKET_ERROR) {
 			err_display("recv()");
 			break;
 		}
 		else if (retval == 0)
 			break;
-		recv_Queue.push(buf);
+		PlayerState Playerpacket;
+		memcpy(&Playerpacket, buf, sizeof(PlayerState));
+		recv_Queue.push(Playerpacket);
 	}
 
 	// 소켓 닫기

@@ -23,22 +23,21 @@ enum Packet_ID
 struct PacketHeader
 {
     uint16_t size;
-    char id; // Packet_ID
+    uint16_t id; // Packet_ID
 };
 #pragma pack()
 
 #pragma pack(1)
 struct PlayerState
 {
-    char Player_ID;
-    char hp;
+    //char Player_ID;
+   // char hp;
     float pos_x;
     float pos_y;
     float pos_z;
     float yaw;
-    char Shield;
-    bool fire;
-
+    //char Shield;
+    //bool fire;
 };
 #pragma pack()
 
@@ -92,7 +91,7 @@ public:
         DeleteCriticalSection(&cs);
     }
 
-    void push(char* data) {
+    void push(PlayerState data) {
         EnterCriticalSection(&cs);
         recvqueue.push(data);
         LeaveCriticalSection(&cs);
@@ -113,10 +112,10 @@ public:
         return result;
     }
 
-    char* front() {
+    PlayerState front() {
         EnterCriticalSection(&cs);
         if (!recvqueue.empty()) {
-            char* result = recvqueue.front();
+            PlayerState result = recvqueue.front();
             LeaveCriticalSection(&cs);
             return result;
         }
@@ -125,6 +124,6 @@ public:
     }
 
 private:
-    std::queue<char*> recvqueue;
+    std::queue<PlayerState> recvqueue;
     CRITICAL_SECTION cs;
 };

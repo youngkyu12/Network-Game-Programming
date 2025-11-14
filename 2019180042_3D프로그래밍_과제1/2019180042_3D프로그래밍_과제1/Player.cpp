@@ -65,9 +65,10 @@ void CPlayer::Update(RecvQueue& recv_Queue, float fTimeElapsed)
 {
 	// set position()
 	// rotate() 카메라 플레이어 포함
-	// Player packet을 어떻게 받아오는지 잘 모르겠어요
 
-
+	PlayerState Playerpacket = recv_Queue.front();
+	recv_Queue.pop();
+	SetPosition(Playerpacket.pos_x, Playerpacket.pos_y, Playerpacket.pos_z);
 
 	m_pCamera->Update(this, m_xmf3Position, fTimeElapsed);
 	m_pCamera->GenerateViewMatrix();
