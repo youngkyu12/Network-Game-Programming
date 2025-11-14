@@ -7,6 +7,33 @@ using namespace std;
 #define SERVERADDR "127.0.0.1"
 #define SERVERPORT 8922
 
+
+//--------------------------
+
+#pragma pack(push, 1)
+enum
+{
+	MOVE = 1,
+
+
+};
+struct Packetheader
+{
+	uint16_t size;
+	uint16_t ID; // 프로토콜 ID
+
+};
+struct MovePacket
+{
+	Packetheader header;
+	float x;
+	float y;
+	float z;
+};
+#pragma pack(pop)
+
+//---------------------------
+
 int main()
 {
 	WSADATA wsaData;
@@ -32,20 +59,29 @@ int main()
 	}
 	cout << "연결 성공" << endl;
 
-	char buf[1024];
-	const char* testMessage = "###$%##클라이언트로 부터 온 메세지 입니다.###$$%@%@";
-	int msgLen = strlen(testMessage) + 1;// 널문자포함
 	while (true)
 	{
-		if (send(sock, testMessage, msgLen, 0) == SOCKET_ERROR)
+		MovePacket testPkt;
+
+		testPkt.header.ID = MOVE;
+		testPkt.header.size = sizeof(MovePacket); // 16바이트
+
+		
+		testPkt.x = 10.5f;
+		testPkt.y = 0.0f;
+		testPkt.z = -20.1f;
+
+
+		if (send(sock, (char*)&testPkt, testPkt.header.size, 0) == SOCKET_ERROR)
 		{
+			cout << "전송 실패" << endl;
 			break;
 		}
-		cout << "보낸 바이트 크기 " << msgLen << endl;
-		cout << "메세지 전송 성공" << endl;
+
+		cout << "보낸 바이트 크기 " << testPkt.header.size << endl;
+		cout << "MOVE 패킷 전송 성공 x=" << testPkt.x << " y=" << testPkt.y << " z=" << testPkt.z << endl;
 		Sleep(5000);
 	}
-
 	closesocket(sock);
 	WSACleanup();
 	return 0;

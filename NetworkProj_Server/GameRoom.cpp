@@ -70,12 +70,21 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	*/
 
 	Packetheader* header = (Packetheader*)buffer;
-	//cout << player->Player_ID << " : " << buffer << endl;
 
 	switch (header->ID)
 	{
 	case MOVE: //이동패킷
 	{
+		cout << "MOVE 스위치문 정상 작동" << endl;
+		MovePacket* testpkt = (MovePacket*)buffer;
+		cout << "x = " << testpkt->x << endl;
+		cout << "y = " << testpkt->y << endl;
+		cout << "z = " << testpkt->z << endl;
+		break;
+	}
+	case TEMP:
+	{
+		cout << "TEMP 스위치문 작동" << endl;
 		break;
 	}
 	default:

@@ -23,11 +23,10 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		//int retval = send ( myPlayer->sock , (char*)&playerdata , sizeof (PlayerData) , 0);
 		//int recvBytes = recv(myPlayer->sock, (char*)&rd , sizeof (rd) , 0);
 
-		cout << "워커쓰레드 생성 후 루프도는중 ID : " << myPlayer->Player_ID << endl;
 		//GameRoom::Update_State();
 		// 시작주소 갱신.
 		char* recvData = (char*)myPlayer->recvBuffer + myPlayer->recvByte;// 포인터 연산으로 (타입)*크기 만큼 이동
-		cout << "리시브 데이터 크기" << myPlayer->recvByte << endl;;
+		cout << "ID : " << myPlayer->Player_ID << "리시브 데이터 크기" << myPlayer->recvByte << endl;
 
 		int32_t remainSize = BUF_SIZE - myPlayer->recvByte;
 		if (remainSize <= 0)
