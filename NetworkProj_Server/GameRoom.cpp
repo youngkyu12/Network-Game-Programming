@@ -62,6 +62,13 @@ void GameRoom::Check_PLayer()
 
 void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 {
+	/*
+	---------------------------------------
+	 여기 내부에서 GameRoom::Move와 같은
+	 기존에 설계해 두었던 함수들로 처리하면 됩니다.
+	---------------------------------------
+	*/
+
 	Packetheader* header = (Packetheader*)buffer;
 	//cout << player->Player_ID << " : " << buffer << endl;
 

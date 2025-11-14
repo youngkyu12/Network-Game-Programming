@@ -28,7 +28,6 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		// 시작주소 갱신.
 		char* recvData = (char*)myPlayer->recvBuffer + myPlayer->recvByte;// 포인터 연산으로 (타입)*크기 만큼 이동
 		cout << "리시브 데이터 크기" << myPlayer->recvByte << endl;;
-		//cout << "리시브 데이터 주소" << (void*)recvData << endl;
 
 		int32_t remainSize = BUF_SIZE - myPlayer->recvByte;
 		if (remainSize <= 0)
@@ -45,7 +44,6 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		{
 			myPlayer->recvByte += recvBytes; //버퍼에 쌓인 데이터 크기 갱신
 			cout << "ID " << myPlayer->Player_ID << " :" << recvBytes << endl;
-			cout << "ID " << myPlayer->Player_ID << " :" << myPlayer->recvBuffer << endl;
 
 			BYTE* Tempbuffer = myPlayer->recvBuffer;
 			while (1)
@@ -56,7 +54,6 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 					cout << "헤더보다 작음" << endl;
 					break;
 				}
-				// 여기서 헤더를 저장할 변수가 필요..
 				Packetheader* header = (Packetheader*)Tempbuffer;
 
 				if (myPlayer->recvByte < header->size)
