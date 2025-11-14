@@ -60,48 +60,24 @@ void GameRoom::Check_PLayer()
 	LeaveCriticalSection(&_cs);
 }
 
-void GameRoom::HandlePacket(Player* player)
+void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 {
-	
-	//BYTE* buffer = player->recvBuffer;
-	//int32_t& bufferSize = player->recvByte; // 원본 참조
+	Packetheader* header = (Packetheader*)buffer;
+	//cout << player->Player_ID << " : " << buffer << endl;
 
-	//while (1)
-	//{
-	//	if (bufferSize < sizeof(/*Packetheader*/))
-	//	{
-	//		break;
+	switch (header->ID)
+	{
+	case MOVE: //이동패킷
+	{
+		break;
+	}
+	default:
+	{
+		cout << player->Player_ID << " : " << header->ID << endl;
+		break;
+	}
+	}
 
-	//	}
-	//	//Pakcetheader* header = (Packetheader*)buffer;
-	//	//packetSize = header->size;
-	//	if (bufferSize < /*packetSize*/)
-	//	{
-	//		break;
-	//	}
-
-	//	switch (/*header->type*/)
-	//	{
-	//	case 1:
-	//	{
-
-	//	}
-	//	case 2:
-	//	{
-
-	//	}
-	//	default:
-	//		break;
-
-	//	}
-	//}
-
-	//int32_t remainingBytes = bufferSize - /*packetSize*/;
-	//if (remainingBytes > 0)
-	//{
-	//	memmove(buffer, buffer + /*packetSize*/, remainingBytes);
-	//}
-	//bufferSize = remainingBytes;
 	
 }
 

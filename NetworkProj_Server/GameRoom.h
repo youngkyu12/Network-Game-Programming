@@ -12,7 +12,7 @@ public:
 	void Remove_Player(Player* player);
 	void Update_State(PlayerData *data);
 	void Check_PLayer();
-	void HandlePacket(Player* player);
+	void HandlePacket(Player* player, BYTE* buffer);
 
 	void Move(char id, char key);
 	void Rotate ( char id , POINT CursorPos );
