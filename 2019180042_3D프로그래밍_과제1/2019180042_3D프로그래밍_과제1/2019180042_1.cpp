@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "2019180042_1.h"
 #include "GameFramework.h"
+#include "SocketQueue.h"
 
 #define MAX_LOADSTRING 100
 
@@ -13,12 +14,22 @@ TCHAR szTitle[MAX_LOADSTRING];					// 제목 표시줄 텍스트입니다.
 TCHAR szWindowClass[MAX_LOADSTRING];			// 기본 창 클래스 이름입니다.
 
 CGameFramework		gGameFramework;
+SOCKET sock; // 소켓
+char SERVERIP[16];
+char FILENAME[256]{ '\0' };
+SendQueue send_Queue;
+RecvQueue recv_Queue;
+// HWND hIPControl;
+// HWND hButton;
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+DWORD WINAPI ClientMain(LPVOID arg);	// 소켓 통신 스레드 함수
+
+
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
@@ -36,6 +47,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_MY2019180042_1, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
+	
+	CreateThread(NULL, 0, ClientMain, NULL, 0, NULL);
 
 	// 응용 프로그램 초기화를 수행합니다.
 	if (!InitInstance(hInstance, nCmdShow))
@@ -44,6 +57,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	}
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MY2019180042_1));
+
 
 	// 기본 메시지 루프입니다.
 	while (1)
@@ -59,7 +73,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		}
 		else
 		{
-			gGameFramework.FrameAdvance();
+			//if (true) {
+			//	DestroyWindow(hIPControl);     // IP 입력창 제거
+			//	DestroyWindow(hButton); // 버튼 제거
+			//}
+			//else 
+			gGameFramework.FrameAdvance(send_Queue, recv_Queue);
 		}
 	}
 	gGameFramework.OnDestroy();
@@ -149,6 +168,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
+	case WM_CREATE:
+		// StartScene
+		/*hIPControl = CreateWindowEx(0, WC_IPADDRESS, NULL,
+			WS_CHILD | WS_VISIBLE,
+			0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT,
+			hWnd, (HMENU)ID_IPADDRESS,
+			hInst, NULL);*/
+		// button
 	case WM_SIZE:
 	case WM_LBUTTONDOWN:
 	case WM_LBUTTONUP:
@@ -208,3 +235,86 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return (INT_PTR)FALSE;
 }
+
+// TCP 클라이언트 시작 부분
+DWORD WINAPI ClientMain(LPVOID arg)
+{
+	int retval;
+	int num = 0;
+	
+	// 윈속 초기화
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		return 1;
+
+	// 소켓 생성
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock == INVALID_SOCKET) err_quit("socket()");
+
+	// connect()
+	struct sockaddr_in serveraddr;
+	memset(&serveraddr, 0, sizeof(serveraddr));
+	serveraddr.sin_family = AF_INET;
+	serveraddr.sin_addr.s_addr = inet_addr(SERVERIP);
+	serveraddr.sin_port = htons(SERVERPORT);
+	retval = connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+	if (retval == SOCKET_ERROR) err_quit("connect()");
+
+	// 데이터 통신에 사용할 변수
+	char buf[BUFSIZE];
+	int len = 0;
+
+
+	// 서버와 데이터 통신
+	while (1) {
+		InputPacket packet = send_Queue.front();
+		send_Queue.pop();
+		memcpy(buf, &packet, sizeof(packet));
+
+		int len = sizeof(packet);
+
+		// 필요한가?
+		// 데이터 보내기(고정 길이)
+		retval = send(sock, (char*)&len, sizeof(int), 0);
+		if (retval == SOCKET_ERROR) {
+			err_display("send()");
+			break;
+		}
+
+		// 데이터 보내기(가변 길이)
+		retval = send(sock, buf, len, 0);
+		if (retval == SOCKET_ERROR) {
+			err_display("send()");
+			break;
+		}
+
+		// 데이터 받기(고정 길이)
+		/*retval = recv(sock, (char*)&len, sizeof(int), MSG_WAITALL);
+		if (retval == SOCKET_ERROR) {
+			err_display("recv()");
+			break;
+		}
+		else if (retval == 0)
+			break;*/
+
+		// 데이터 받기(가변 길이)
+		retval = recv(sock, buf, sizeof(PlayerState), MSG_WAITALL);
+		if (retval == SOCKET_ERROR) {
+			err_display("recv()");
+			break;
+		}
+		else if (retval == 0)
+			break;
+		PlayerState Playerpacket;
+		memcpy(&Playerpacket, buf, sizeof(PlayerState));
+		recv_Queue.push(Playerpacket);
+	}
+
+	// 소켓 닫기
+	closesocket(sock);
+
+	// 윈속 종료
+	WSACleanup();
+	return 0;
+}
+

@@ -70,10 +70,10 @@ void CGameFramework::BuildObjects()
 
 	pCamera->GenerateOrthographicProjectionMatrix(1.01f, 50.0f, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
 
-	CAirplaneMesh* pAirplaneMesh = new CAirplaneMesh(6.0f, 6.0f, 6.0f);
-	m_pPlayer = new CAirplanePlayer();
+	CTankMesh* pTankMesh = new CTankMesh(6.0f, 6.0f, 6.0f);
+	m_pPlayer = new CTankPlayer();
 	m_pPlayer->SetPosition(0.0f, 0.0f, 0.0f);
-	m_pPlayer->SetMesh(pAirplaneMesh);
+	m_pPlayer->SetMesh(pTankMesh);
 	m_pPlayer->SetColor(RGB(255, 0, 0));
 	m_pPlayer->SetCamera(pCamera);
 	m_pPlayer->SetCameraOffset(XMFLOAT3(0.0f, 5.0f, -15.0f));
@@ -96,23 +96,10 @@ void CGameFramework::ReleaseObjects()
 
 void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
-	if (m_pScene) m_pScene->OnProcessingMouseMessage(hWnd, nMessageID, wParam, lParam);
 	switch (nMessageID)
 	{
-	case WM_RBUTTONDOWN:
-	case WM_LBUTTONDOWN:
-		::SetCapture(hWnd);
-		::GetCursorPos(&m_ptOldCursorPos);
-		if (nMessageID == WM_LBUTTONDOWN) {
-		break;
-		};
-		if (nMessageID == WM_RBUTTONDOWN) m_pLockedObject = m_pScene->PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam), m_pPlayer->m_pCamera);
-		break;
-	case WM_LBUTTONUP:
-	case WM_RBUTTONUP:
-		::ReleaseCapture();
-		break;
 	case WM_MOUSEMOVE:
+		::SetCapture ( hWnd );
 		break;
 	default:
 		break;
@@ -121,20 +108,20 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 
 void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
-	if (m_pScene) m_pScene->OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam);
-
 	switch (nMessageID)
 	{
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
 		case 'A':
-			OutputDebugString(L"\nddd");
-			((CAirplanePlayer*)m_pPlayer)->FireBullet(m_pLockedObject);
-			m_pLockedObject = NULL;
+			if (stop) {
+				stop = false;
+			}
+			else {
+				stop = true;
+			}
 			break;
-		default:
-			m_pScene->OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam);
+		case 'D':
 			break;
 		}
 		break;
@@ -156,12 +143,6 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 			m_GameTimer.Start();
 		break;
 	}
-	case WM_SIZE:
-		break;
-	case WM_LBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-	case WM_LBUTTONUP:
-	case WM_RBUTTONUP:
 	case WM_MOUSEMOVE:
 		OnProcessingMouseMessage(hWnd, nMessageID, wParam, lParam);
 		break;
@@ -173,36 +154,29 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 	return(0);
 }
 
-void CGameFramework::ProcessInput()
+void CGameFramework::ProcessInput (SendQueue& send_Queue)
 {
+	InputPacket packet = { 0, 0, 0, 0 };
 
 	static UCHAR pKeyBuffer[256];
-	if (GetKeyboardState(pKeyBuffer))
+	if ( GetKeyboardState ( pKeyBuffer ) )
 	{
-		DWORD dwDirection = 0;
-		if (pKeyBuffer['W'] & 0xF0) dwDirection |= DIR_FORWARD;
-		if (pKeyBuffer['S'] & 0xF0) dwDirection |= DIR_BACKWARD;
-
-		if (dwDirection) m_pPlayer->Move(dwDirection, 0.15f);
+		packet.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
+		packet.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
 	}
 
-	if (GetCapture() == m_hWnd)
-	{
-		SetCursor(NULL);
-		POINT ptCursorPos;
-		GetCursorPos(&ptCursorPos);
-		float cxMouseDelta = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
-		float cyMouseDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
-		SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
-		if (cxMouseDelta || cyMouseDelta)
+	if ( !stop ) {
+		if ( GetCapture () == m_hWnd )
 		{
-			if (pKeyBuffer[VK_LBUTTON] & 0xF0)
-				m_pPlayer->Rotate(0.0f, cxMouseDelta, 0.0f);
+			SetCursor ( NULL );
+			POINT ptCursorPos;
+			GetCursorPos ( &ptCursorPos );
+			packet.mouseX = ptCursorPos.x;
+			packet.mouseY = ptCursorPos.y;
+			SetCursorPos ( m_ptOldCursorPos.x , m_ptOldCursorPos.y );
 		}
 	}
-
-
-	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
+	send_Queue.push(packet);
 }
 
 void CGameFramework::AnimateObjects()
@@ -212,10 +186,17 @@ void CGameFramework::AnimateObjects()
 	if (m_pScene) m_pScene->Animate(fTimeElapsed);
 }
 
-void CGameFramework::FrameAdvance()
+void CGameFramework::FrameAdvance(SendQueue& send_Queue, RecvQueue& recv_Queue)
 {
 	m_GameTimer.Tick(60.0f);
-	ProcessInput();
+	ProcessInput(send_Queue);
+
+	// 여기서 리시브?
+	//HandlePacket(recv_Queue);
+
+
+
+	m_pPlayer->Update(recv_Queue, m_GameTimer.GetTimeElapsed());
 
 	AnimateObjects();
 
@@ -228,9 +209,13 @@ void CGameFramework::FrameAdvance()
 
 	m_fExplosionElapsedTime += fDeltaTime;
 
-
 	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
 	::SetWindowText(m_hWnd, m_pszFrameRate);
+}
+
+void CGameFramework::HandlePacket(RecvQueue& recv_Queue)
+{
+	// player update
 }
 
 

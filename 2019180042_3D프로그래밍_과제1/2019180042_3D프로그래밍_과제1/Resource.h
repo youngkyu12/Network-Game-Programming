@@ -3,7 +3,6 @@
 // 다음에서 사용 LabProject02-01.rc
 
 #define IDS_APP_TITLE			103
-
 #define IDR_MAINFRAME			128
 #define IDD_LABPROJECT0201_DIALOG	102
 #define IDD_ABOUTBOX			103
@@ -15,6 +14,7 @@
 #define IDC_MYICON				2
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
+#define ID_IPADDRESS			110
 #endif	
 // 다음은 새 개체에 사용할 기본값입니다.
 //

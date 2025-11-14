@@ -2,6 +2,8 @@
 
 #include "GameObject.h"
 #include "Camera.h"
+#include "SocketQueue.h"
+
 
 class CPlayer : public CGameObject
 {
@@ -28,19 +30,14 @@ public:
 
 public:
 	void SetPosition(float x, float y, float z);
-	void SetRotation(float x, float y, float z);
 
 	void LookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up);
-
-	void Move(DWORD dwDirection, float fDistance);
-	void Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity);
-	void Move(float x, float y, float z);
 
 	void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
 
 	void SetCameraOffset(XMFLOAT3& xmf3CameraOffset);
 
-	void Update(float fTimeElapsed = 0.016f);
+	void Update(RecvQueue& recv_Queue, float fTimeElapsed = 0.016f);
 
 	virtual void OnUpdateTransform();
 	virtual void Animate(float fElapsedTime);
@@ -52,11 +49,11 @@ public:
 
 #define BULLETS					50
 
-class CAirplanePlayer : public CPlayer
+class CTankPlayer : public CPlayer
 {
 public:
-	CAirplanePlayer();
-	virtual ~CAirplanePlayer();
+	CTankPlayer();
+	virtual ~CTankPlayer();
 
 	float						m_fBulletEffectiveRange = 150.0f;
 	CBulletObject* m_ppBullets[BULLETS];

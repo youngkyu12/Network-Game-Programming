@@ -3,6 +3,9 @@
 #include "Player.h"
 #include "Scene.h"
 #include "Timer.h"
+#include "SocketQueue.h"
+
+
 
 class CGameFramework
 {
@@ -34,9 +37,11 @@ private:
 
 	CGameTimer					m_GameTimer;
 
-	POINT						m_ptOldCursorPos;
+	POINT						m_ptOldCursorPos = { 500,500 }; // 게임 진행 중 고정되어 있는 마우스 위치
 
 	_TCHAR						m_pszFrameRate[50];
+
+	bool stop = false;
 
 public:
 	void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
@@ -49,9 +54,10 @@ public:
 	void BuildObjects();
 	void ReleaseObjects();
 
-	void ProcessInput();
+	void ProcessInput(SendQueue& send_Queue);
 	void AnimateObjects();
-	void FrameAdvance();
+	void FrameAdvance(SendQueue& send_Queue, RecvQueue& recv_Queue);
+	void HandlePacket(RecvQueue& recv_Queue);
 
 	void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);

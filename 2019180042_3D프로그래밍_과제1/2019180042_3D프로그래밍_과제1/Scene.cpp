@@ -65,35 +65,6 @@ void CScene::ReleaseObjects()
 #endif
 }
 
-void CScene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
-{
-
-}
-
-void CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
-{
-	switch (nMessageID)
-	{
-	case WM_KEYDOWN:
-		switch (wParam)
-		{
-		case VK_ESCAPE:
-		case 'D':
-			OutputDebugString(L"\nddd");
-			shield = true;
-			shieldtime = 0.0f;
-			m_pPlayer->m_objectcode = 's';
-			m_pPlayer->SetColor(RGB(0, 0, 255));
-			break;
-		default:
-			break;
-		}
-		break;
-	default:
-		break;
-	}
-}
-
 
 
 CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient, CCamera* pCamera)
@@ -124,146 +95,13 @@ CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient, CCamera
 	return(pNearestObject);
 }
 
-void CScene::CheckObjectByObjectCollisions()
-{
-	for (int i = 0; i < m_nObjects; i++) m_ppObjects[i]->m_pObjectCollided = NULL;
-	for (int i = 0; i < m_nObjects; i++)
-	{
-		for (int j = (i + 1); j < m_nObjects; j++)
-		{
-			if (m_ppObjects[i]->m_xmOOBB.Intersects(m_ppObjects[j]->m_xmOOBB))
-			{
-				m_ppObjects[i]->m_pObjectCollided = m_ppObjects[j];
-				m_ppObjects[j]->m_pObjectCollided = m_ppObjects[i];
-			}
-		}
-	}
-	for (int i = 0; i < m_nObjects; i++)
-	{
-		float fMovingSpeed;
-		if (m_ppObjects[i]->m_pObjectCollided)
-		{
-			if (m_ppObjects[i]->m_pObjectCollided->m_objectcode == 'b') {
-				m_ppObjects[i]->m_xmf3MovingDirection = Vector3::ScalarProduct(m_ppObjects[i]->m_xmf3MovingDirection, -1.0f);
-			}
-			else if	(m_ppObjects[i]->m_objectcode == 'b') {
-				m_ppObjects[i]->m_pObjectCollided->m_xmf3MovingDirection = Vector3::ScalarProduct(m_ppObjects[i]->m_xmf3MovingDirection, -1.0f);
-			}
-			else {
-				XMFLOAT3 xmf3MovingDirection = m_ppObjects[i]->m_xmf3MovingDirection;
-				fMovingSpeed = m_ppObjects[i]->m_fMovingSpeed;
-				m_ppObjects[i]->m_xmf3MovingDirection = m_ppObjects[i]->m_pObjectCollided->m_xmf3MovingDirection;
-				m_ppObjects[i]->m_fMovingSpeed = m_ppObjects[i]->m_pObjectCollided->m_fMovingSpeed;
-				m_ppObjects[i]->m_pObjectCollided->m_xmf3MovingDirection = xmf3MovingDirection;
-				m_ppObjects[i]->m_pObjectCollided->m_fMovingSpeed = fMovingSpeed;
-				m_ppObjects[i]->m_pObjectCollided->m_pObjectCollided = NULL;
-				m_ppObjects[i]->m_pObjectCollided = NULL;
-			}
-		}
-	}
-}
-
-void CScene::CheckObjectByWallCollisions()
-{
-	for (int i = 0; i < m_nObjects; i++)
-	{
-		ContainmentType containType = m_pWallsObject->m_xmOOBB.Contains(m_ppObjects[i]->m_xmOOBB);
-		switch (containType)
-		{
-		case DISJOINT:
-		{
-			int nPlaneIndex = -1;
-			for (int j = 0; j < 6; j++)
-			{
-				PlaneIntersectionType intersectType = m_ppObjects[i]->m_xmOOBB.Intersects(XMLoadFloat4(&m_pWallsObject->m_pxmf4WallPlanes[j]));
-				if (intersectType == BACK)
-				{
-					nPlaneIndex = j;
-					break;
-				}
-			}
-			if (nPlaneIndex != -1)
-			{
-				XMVECTOR xmvNormal = XMVectorSet(m_pWallsObject->m_pxmf4WallPlanes[nPlaneIndex].x, m_pWallsObject->m_pxmf4WallPlanes[nPlaneIndex].y, m_pWallsObject->m_pxmf4WallPlanes[nPlaneIndex].z, 0.0f);
-				XMVECTOR xmvReflect = XMVector3Reflect(XMLoadFloat3(&m_ppObjects[i]->m_xmf3MovingDirection), xmvNormal);
-				XMStoreFloat3(&m_ppObjects[i]->m_xmf3MovingDirection, xmvReflect);
-			}
-			break;
-		}
-		case INTERSECTS:
-		{
-			int nPlaneIndex = -1;
-			for (int j = 0; j < 6; j++)
-			{
-				PlaneIntersectionType intersectType = m_ppObjects[i]->m_xmOOBB.Intersects(XMLoadFloat4(&m_pWallsObject->m_pxmf4WallPlanes[j]));
-				if (intersectType == INTERSECTING)
-				{
-					nPlaneIndex = j;
-					break;
-				}
-			}
-			if (nPlaneIndex != -1)
-			{
-				XMVECTOR xmvNormal = XMVectorSet(m_pWallsObject->m_pxmf4WallPlanes[nPlaneIndex].x, m_pWallsObject->m_pxmf4WallPlanes[nPlaneIndex].y, m_pWallsObject->m_pxmf4WallPlanes[nPlaneIndex].z, 0.0f);
-				XMVECTOR xmvReflect = XMVector3Reflect(XMLoadFloat3(&m_ppObjects[i]->m_xmf3MovingDirection), xmvNormal);
-				XMStoreFloat3(&m_ppObjects[i]->m_xmf3MovingDirection, xmvReflect);
-			}
-			break;
-		}
-		case CONTAINS:
-			break;
-		}
-	}
-}
-
-void CScene::CheckPlayerByWallCollision()
-{
-
-	if (m_pPlayer->m_objectcode != 's') {
-		for (int j = 0; j < m_nObjects; j++)
-		{
-			if (m_ppObjects[j]->m_objectcode == 'b') {
-				if (m_pPlayer->m_xmOOBB.Intersects(m_ppObjects[j]->m_xmOOBB)) {
-					XMFLOAT3 preposition = Vector3::Subtract(m_pPlayer->m_xmf3Position, (Vector3::Subtract(m_ppObjects[j]->GetPosition(), m_pPlayer->m_xmf3Position)));
-					m_pPlayer->SetPosition(preposition.x, preposition.y, preposition.z);
-				}
-			}
-		}
-	}
-
-
-}
-
-void CScene::CheckObjectByBulletCollisions()
-{
-	CBulletObject** ppBullets = ((CAirplanePlayer*)m_pPlayer)->m_ppBullets;
-	for (int i = 0; i < m_nObjects; i++)
-	{
-		for (int j = 0; j < BULLETS; j++)
-		{
-			if (ppBullets[j]->m_bActive && m_ppObjects[i]->m_xmOOBB.Intersects(ppBullets[j]->m_xmOOBB))
-			{
-				CExplosiveObject* pExplosiveObject = (CExplosiveObject*)m_ppObjects[i];
-				pExplosiveObject->m_bBlowingUp = true;
-				ppBullets[j]->Reset();
-			}
-		}
-	}
-}
 
 
 void CScene::Animate(float fElapsedTime)
 {
 	m_pWallsObject->Animate(fElapsedTime);
 	for (int i = 0; i < m_nObjects; i++) m_ppObjects[i]->Animate(fElapsedTime);
-	CheckPlayerByWallCollision();
-
-	CheckObjectByWallCollisions();
-
-	CheckObjectByObjectCollisions();
-
-	CheckObjectByBulletCollisions();
-
+	// 바운딩 박스 업데이트
 }
 
 void CScene::Render(HDC hDCFrameBuffer, CCamera* pCamera)
@@ -274,15 +112,6 @@ void CScene::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 	if (m_pPlayer) {
 		m_pPlayer->Render(hDCFrameBuffer, pCamera);
-		if (shield == true) {
-			shieldtime += 1.0f;
-			if (shieldtime == 120.0f) {
-				shield = false;
-				m_pPlayer->m_objectcode = 'p';
-				m_pPlayer->SetColor(RGB(255, 0, 0));
-			}
-		}
-
 	}
 	//UI
 #ifdef _WITH_DRAW_AXIS
