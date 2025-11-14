@@ -1,9 +1,13 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "GameRoom.h"
 #define SERVERPORT 8922
 
 GameRoom Room;
 //char buf[1024];
+
+PlayerData playerdata;
+RecvData rd;
+POINT cursor;
 
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 {
@@ -37,6 +41,18 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 			Room.HandlePacket(myPlayer);
 
 
+		Room.Update_State(&playerdata);
+		int retval = send ( myPlayer->sock , (char*)&playerdata , sizeof (PlayerData) , 0);
+
+		int recvBytes = recv(myPlayer->sock, (char*)&rd , sizeof (rd) , 0);
+
+		if (recvBytes > 0)
+		{
+			if ( rd.w == 1 ) Room.Move ( myPlayer->Player_ID , 'w' );
+			if ( rd.s == 1 ) Room.Move ( myPlayer->Player_ID , 's' );
+			cursor.x = rd.cursorx;
+			cursor.y = rd.cursory;
+			Room.Rotate ( myPlayer->Player_ID , cursor );
 
 			//조건문으로 게임로직
 			//...

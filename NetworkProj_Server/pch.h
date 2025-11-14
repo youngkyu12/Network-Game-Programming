@@ -16,6 +16,26 @@ using namespace std;
 
 #pragma comment(lib,"Ws2_32.lib")
 
+#pragma pack(1)
+struct PlayerData	// 16byte
+{
+	float x;
+	float y;
+	float z;
+	float yaw;
+};
+#pragma pack()
+
+#pragma pack(1)
+struct RecvData	// 16byte
+{
+	BYTE w;
+	BYTE s;
+	LONG cursorx;
+	LONG cursory;
+};
+#pragma pack()
+
 namespace Vector3
 {
 	inline XMFLOAT3 ScalarProduct(XMFLOAT3& xmf3Vector, float fScalar, bool bNormalize = true)

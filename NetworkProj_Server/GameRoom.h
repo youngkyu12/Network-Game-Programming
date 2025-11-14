@@ -9,17 +9,23 @@ public:
 	~GameRoom();
 
 	void Update_State();
-	void Add_Player(Player* player); // playermanger¿¡ player »ðÀÔ
-	void Remove_Player(Player* player); // playermanager¿¡¼­ player »èÁ¦
-	void Check_PLayer(); /*µð¹ö±ë¿ë*/
+	void Add_Player(Player* player); // playermangerï¿½ï¿½ player ï¿½ï¿½ï¿½ï¿½
+	void Remove_Player(Player* player); // playermanagerï¿½ï¿½ï¿½ï¿½ player ï¿½ï¿½ï¿½ï¿½
+	void Update_State(PlayerData *data);
+	void Add_Player(Player* player);
+	void Remove_Player(Player* player);
+	void Check_PLayer(); /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 	void HandlePacket(Player* player);
 
 	void Move(char id, char key);
 	void Rotate ( char id , POINT CursorPos );
+
+
+
 private:
 	CRITICAL_SECTION _cs;
 	vector<Player*> PlayerManager;
 
-	POINT OldCursorPos = { 500,500 }; // °ÔÀÓ ÁøÇà Áß °íÁ¤µÇ¾î ÀÖ´Â ¸¶¿ì½º À§Ä¡ (º¯°æÇÏ¸é Å¬¶óµµ °°ÀÌ º¯°æÇØ¾ßÇÔ)
+	POINT OldCursorPos = { 500,500 }; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ì½º ï¿½ï¿½Ä¡ (ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ Å¬ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ï¿½ï¿½)
 };
 
