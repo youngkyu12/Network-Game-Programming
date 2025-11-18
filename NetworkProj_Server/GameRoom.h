@@ -10,7 +10,7 @@ public:
 
 	void Add_Player(Player* player);
 	void Remove_Player(Player* player);
-	void Update_State(PlayerData *data);
+	void Update_State(Player* player);
 	void Check_PLayer();
 	void HandlePacket(Player* player, BYTE* buffer);
 

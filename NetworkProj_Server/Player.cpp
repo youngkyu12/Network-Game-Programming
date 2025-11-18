@@ -14,6 +14,11 @@ void Player::SetPosition(float x, float y, float z)
 	Position = XMFLOAT3(x, y, z);
 }
 
+XMFLOAT3 Player::GetPosition()
+{
+	return Position;
+}
+
 
 void Player::Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
 {

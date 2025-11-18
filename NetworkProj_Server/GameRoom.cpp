@@ -14,13 +14,10 @@ GameRoom::~GameRoom()
 	DeleteCriticalSection(&_cs);
 }
 
-void GameRoom::Update_State( PlayerData* data )
+void GameRoom::Update_State( Player* player )
 {
-	for ( int i = 0; i < PlayerManager.size (); ++i ) {
-		data->x = PlayerManager[i]->Position.x;
-		data->y = PlayerManager[i]->Position.y;
-		data->z = PlayerManager[i]->Position.z;
-		data->yaw = PlayerManager[i]->Yaw;
+	for ( int i = 0; i < PlayerManager.size (); ++i ) 
+	{
 	}
 }
 
@@ -77,9 +74,15 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	{
 		cout << "MOVE 스위치문 정상 작동" << endl;
 		MovePacket* testpkt = (MovePacket*)buffer;
+
+		player->SetPosition(testpkt->x, testpkt->y, testpkt->z);
+
 		cout << "x = " << testpkt->x << endl;
 		cout << "y = " << testpkt->y << endl;
 		cout << "z = " << testpkt->z << endl;
+
+		XMFLOAT3 currentPos = player->GetPosition();//테스트용 임시 저장
+		cout << currentPos.x << currentPos.y << currentPos.z << endl;
 		break;
 	}
 	case TEMP:
@@ -98,6 +101,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 
 void GameRoom::Move(char id, char key)
 {
+	/*
 	float Distance = 0.15f;
 	XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
 
@@ -112,6 +116,7 @@ void GameRoom::Move(char id, char key)
 	}
 
 	PlayerManager[id]->Move(xmf3Shift, true);
+	*/
 }
 
 void GameRoom::Rotate ( char id , POINT CursorPos )

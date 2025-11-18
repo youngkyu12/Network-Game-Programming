@@ -3,6 +3,9 @@
 
 const int32_t BUF_SIZE = 1024;
 
+/*
+데이터는 private 영역에서 관리하는게 좋을꺼 같습니다.
+*/
 class Player
 {
 public:
@@ -20,12 +23,7 @@ public:
 	int32_t sendByte = 0;
 	//-----------------------------------
 
-	XMFLOAT3 Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	XMFLOAT3 Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
-
-	XMFLOAT3 Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
-	XMFLOAT3 Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	XMFLOAT3 Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	
 
 	float Pitch = 0.0f;
 	float Yaw = 0.0f;
@@ -38,6 +36,7 @@ public:
 
 public:
 	void SetPosition(float x, float y, float z);
+	XMFLOAT3 GetPosition();
 
 	void Move(DWORD dwDirection, float fDistance);
 	void Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity);
@@ -45,5 +44,15 @@ public:
 
 	void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
 	void Update(float fTimeElapsed = 0.016f);
+
+private:
+	float x;
+	float y;
+	float z;
+	XMFLOAT3 Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	XMFLOAT3 Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	XMFLOAT3 Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	XMFLOAT3 Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	XMFLOAT3 Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
 };
 
