@@ -58,20 +58,16 @@ void GameRoom::Add_Player(Player* player)
 void GameRoom::Remove_Player(Player* player)
 {
 	EnterCriticalSection(&_cs);
-	Player* it;
-	for (Player* p : PlayerManager)
+
+	for (vector<Player*>::iterator p = PlayerManager.begin(); p !=PlayerManager.end(); ++p)
 	{
-		if (p->Player_ID == player->Player_ID)
+		if ((*p)->Player_ID == player->Player_ID)
 		{
-			//찾음
-			it = p;
+			//찾았으면 삭제
+			PlayerManager.erase(p);
 			break;
-			
 		}
-		
 	}
-	auto target = find(PlayerManager.begin(), PlayerManager.end(), it);
-	PlayerManager.erase(target);
 	LeaveCriticalSection(&_cs);
 
 }
