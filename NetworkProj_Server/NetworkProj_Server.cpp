@@ -8,9 +8,6 @@ GameRoom Room;
 recvData는 데이터를 받을 위치를 계산한 포인터 변수 입니다.
 가독성을 위한 일종의 책갈피 역할이라고 생각해주시면 됩니다.
 */
-//PlayerData playerdata;
-//RecvData rd;
-POINT cursor;
 
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 {
@@ -165,7 +162,6 @@ int main()
 		Room.Add_Player(player);
 		// 접속한 플레이어 인원 수
 		Room.Check_PLayer();
-
 
 		// 쓰레드 생성
 		HANDLE WorkerThread = CreateThread(NULL, 0, WorkerThreadMain, player, 0, NULL);

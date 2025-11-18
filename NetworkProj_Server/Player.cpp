@@ -19,6 +19,26 @@ XMFLOAT3 Player::GetPosition()
 	return Position;
 }
 
+XMFLOAT3 Player::GetVelocity()
+{
+	return Velocity;
+}
+
+XMFLOAT3 Player::GetLook()
+{
+	return Look;
+}
+
+XMFLOAT3 Player::GetUp()
+{
+	return Up;
+}
+
+XMFLOAT3 Player::GetRight()
+{
+	return Right;
+}
+
 uint16_t Player::GetHP()
 {
 	return HP;

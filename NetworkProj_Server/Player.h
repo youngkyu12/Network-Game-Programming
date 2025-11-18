@@ -26,7 +26,12 @@ public:
 public:
 	void SetPosition(float x, float y, float z);
 	XMFLOAT3 GetPosition(); // 포지션 데이터 가져오기
+	XMFLOAT3 GetVelocity();
+	XMFLOAT3 GetLook();
+	XMFLOAT3 GetUp();
+	XMFLOAT3 GetRight();
 	uint16_t GetHP(); // HP데이터 가져오기
+
 
 	void Move(DWORD dwDirection, float fDistance);
 	void Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity);

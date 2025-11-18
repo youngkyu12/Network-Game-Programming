@@ -42,7 +42,7 @@ void GameRoom::Update_State(Player* player)
 	}
 	LeaveCriticalSection(&_cs);
 
-	uint16_t packetSize = sizeof(Packetheader) + sizeof(int32_t) + (playerCount * sizeof(PlayerStateData));
+	uint16_t packetSize = sizeof(Packetheader) + sizeof(int32_t) + (playerCount * sizeof(PlayerState));
 	updatePkt.header.size = packetSize;
 
 	send(player->sock, (char*)&updatePkt, packetSize, 0);

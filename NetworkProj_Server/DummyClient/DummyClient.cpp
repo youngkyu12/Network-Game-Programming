@@ -32,7 +32,7 @@ struct MovePacket
 	float z;
 };
 
-struct PlayerStateData // 한명분 데이터
+struct PlayerState // 한명분 데이터
 {
 	int32_t playerID;
 	float x;
@@ -45,7 +45,7 @@ struct UpdateState
 {
 	Packetheader header;
 	int32_t numPlayers;
-	PlayerStateData players[3];
+	PlayerState players[3];
 };
 #pragma pack(pop)
 

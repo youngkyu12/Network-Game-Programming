@@ -9,7 +9,6 @@ enum
 	TEMP = 2,
 	UPDATE = 3,
 
-
 };
 
 
@@ -28,7 +27,7 @@ struct MovePacket
 	float z;
 };
 
-struct PlayerStateData // 한명분 데이터
+struct PlayerState // 한명분 데이터
 {
 	int32_t playerID;
 	float x;
@@ -41,7 +40,7 @@ struct UpdateState
 {
 	Packetheader header;
 	int32_t numPlayers;
-	PlayerStateData players[MAX_PLAYERS];
+	PlayerState players[MAX_PLAYERS];
 };
 
 #pragma pack(pop)
