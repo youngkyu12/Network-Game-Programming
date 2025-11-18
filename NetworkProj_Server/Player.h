@@ -11,7 +11,7 @@ class Player
 public:
 	Player();
 	~Player();
-public:
+
 	//-----------------------------------
 	int Player_ID = 0;
 	SOCKET sock = INVALID_SOCKET;
@@ -23,18 +23,10 @@ public:
 	int32_t sendByte = 0;
 	//-----------------------------------
 
-	
-
-	float Pitch = 0.0f;
-	float Yaw = 0.0f;
-	float Roll = 0.0f;
-	float Friction = 125.0f;
-	bool Fire_Flag;
-
 public:
 	void SetPosition(float x, float y, float z);
-	XMFLOAT3 GetPosition();
-	uint16_t GetHP();
+	XMFLOAT3 GetPosition(); // 포지션 데이터 가져오기
+	uint16_t GetHP(); // HP데이터 가져오기
 
 	void Move(DWORD dwDirection, float fDistance);
 	void Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity);
@@ -51,5 +43,12 @@ private:
 	XMFLOAT3 Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	XMFLOAT3 Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	XMFLOAT3 Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
+
+	float Pitch = 0.0f;
+	float Yaw = 0.0f;
+	float Roll = 0.0f;
+	float Friction = 125.0f;
+	bool Fire_Flag;
+
 };
 

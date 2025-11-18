@@ -92,10 +92,6 @@ DWORD WINAPI RecvThreadMain(LPVOID lpParam)
 	return 0;
 }
 
-
-
-
-
 int main()
 {
 	WSADATA wsaData;
@@ -128,12 +124,9 @@ int main()
 
 		testPkt.header.ID = MOVE;
 		testPkt.header.size = sizeof(MovePacket); // 16바이트
-
-
 		testPkt.x = 10.5f;
 		testPkt.y = 0.0f;
 		testPkt.z = -20.1f;
-
 
 		if (send(sock, (char*)&testPkt, testPkt.header.size, 0) == SOCKET_ERROR)
 		{

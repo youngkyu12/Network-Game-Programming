@@ -20,7 +20,7 @@ void GameRoom::Update_State(Player* player)
 	updatePkt.header.ID = UPDATE; // 3
 
 	EnterCriticalSection(&_cs);
-	int32_t playerCount = (int32_t)PlayerManager.size();
+	int32_t playerCount = PlayerManager.size();
 	if (playerCount > MAX_PLAYERS)
 	{
 		playerCount = MAX_PLAYERS;
@@ -42,8 +42,8 @@ void GameRoom::Update_State(Player* player)
 	}
 	LeaveCriticalSection(&_cs);
 
-	int32_t packetSize = sizeof(Packetheader) + sizeof(int32_t) + (playerCount * sizeof(PlayerStateData));
-	updatePkt.header.size = (uint16_t)packetSize;
+	uint16_t packetSize = sizeof(Packetheader) + sizeof(int32_t) + (playerCount * sizeof(PlayerStateData));
+	updatePkt.header.size = packetSize;
 
 	send(player->sock, (char*)&updatePkt, packetSize, 0);
 }
@@ -148,6 +148,7 @@ void GameRoom::Move(char id, char key)
 
 void GameRoom::Rotate ( char id , POINT CursorPos )
 {
+	/*
 	float cxMouseDelta = ( float )( CursorPos.x - OldCursorPos.x ) / 3.0f;
 	float cyMouseDelta = ( float )( CursorPos.y - OldCursorPos.y ) / 3.0f;
 
@@ -158,4 +159,5 @@ void GameRoom::Rotate ( char id , POINT CursorPos )
 		// 밑에 rotate는 클라와 서버의 방향벡터가 같은 지 확인하기 위함
 		PlayerManager[id]->Rotate (0.0f , cxMouseDelta , 0.0f);
 	}
+	*/
 }
