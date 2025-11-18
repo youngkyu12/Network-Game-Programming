@@ -18,7 +18,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 	
 	while (true)
 	{
-		//Room.Update_State();
+		Room.Update_State(myPlayer);
 
 		// 시작주소 갱신.
 		char* recvData = (char*)myPlayer->recvBuffer + myPlayer->recvByte;// 포인터 연산으로 (타입)*크기 만큼 이동

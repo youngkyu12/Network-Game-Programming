@@ -14,11 +14,38 @@ GameRoom::~GameRoom()
 	DeleteCriticalSection(&_cs);
 }
 
-void GameRoom::Update_State( Player* player )
+void GameRoom::Update_State(Player* player)
 {
-	for ( int i = 0; i < PlayerManager.size (); ++i ) 
+	UpdateState updatePkt;
+	updatePkt.header.ID = UPDATE; // 3
+
+	EnterCriticalSection(&_cs);
+	int32_t playerCount = (int32_t)PlayerManager.size();
+	if (playerCount > MAX_PLAYERS)
 	{
+		playerCount = MAX_PLAYERS;
 	}
+
+	updatePkt.numPlayers = playerCount;
+
+	for (int i = 0; i < playerCount; ++i)
+	{
+		Player* p = PlayerManager[i];
+		XMFLOAT3 pos = p->GetPosition();
+		uint16_t hp = p->GetHP();
+
+		updatePkt.players[i].playerID = p->Player_ID;
+		updatePkt.players[i].x = pos.x;
+		updatePkt.players[i].y = pos.y;
+		updatePkt.players[i].z = pos.z;
+		updatePkt.players[i].hp = hp;
+	}
+	LeaveCriticalSection(&_cs);
+
+	int32_t packetSize = sizeof(Packetheader) + sizeof(int32_t) + (playerCount * sizeof(PlayerStateData));
+	updatePkt.header.size = (uint16_t)packetSize;
+
+	send(player->sock, (char*)&updatePkt, packetSize, 0);
 }
 
 void GameRoom::Add_Player(Player* player)

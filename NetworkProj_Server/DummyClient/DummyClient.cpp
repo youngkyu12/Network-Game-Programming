@@ -14,6 +14,7 @@ using namespace std;
 enum
 {
 	MOVE = 1,
+	UPDATE = 3,
 
 
 };
@@ -30,9 +31,70 @@ struct MovePacket
 	float y;
 	float z;
 };
+
+struct PlayerStateData // 한명분 데이터
+{
+	int32_t playerID;
+	float x;
+	float y;
+	float z;
+	uint16_t hp;
+};
+
+struct UpdateState
+{
+	Packetheader header;
+	int32_t numPlayers;
+	PlayerStateData players[3];
+};
 #pragma pack(pop)
 
 //---------------------------
+
+DWORD WINAPI RecvThreadMain(LPVOID lpParam)
+{
+	SOCKET sock = (SOCKET)lpParam;
+	char recvBuffer[2048];
+	while (1)
+	{
+		int recvBytes = recv(sock, recvBuffer, sizeof(recvBuffer), 0);
+		if (recvBytes > 0)
+		{
+			Packetheader* header = (Packetheader*)recvBuffer;
+
+			if (header->ID == UPDATE)
+			{
+				UpdateState* updatePkt = (UpdateState*)recvBuffer;
+
+				cout << "[서버 수신]" << updatePkt->numPlayers << "명" << endl;
+
+				// 받은 모든 플레이어 정보 출력
+				for (int i = 0; i < updatePkt->numPlayers; ++i)
+				{
+					cout << " ID " << updatePkt->players[i].playerID << " HP:" << updatePkt->players[i].hp << " X:" << updatePkt->players[i].x << " Y:" << updatePkt->players[i].y << ", Z : " << updatePkt->players[i].z << endl;
+				}
+			}
+			else
+			{
+				cout << "알 수 없는 패킷" << endl;
+			}
+		}
+		else if (recvBytes == 0)
+		{
+			cout << "서버 접속 종료" << endl;
+			break;
+		}
+		else
+		{
+			break;
+		}
+	}
+	return 0;
+}
+
+
+
+
 
 int main()
 {
@@ -59,6 +121,7 @@ int main()
 	}
 	cout << "연결 성공" << endl;
 
+	CreateThread(NULL, 0, RecvThreadMain, (LPVOID)sock, 0, NULL);
 	while (true)
 	{
 		MovePacket testPkt;
@@ -66,7 +129,7 @@ int main()
 		testPkt.header.ID = MOVE;
 		testPkt.header.size = sizeof(MovePacket); // 16바이트
 
-		
+
 		testPkt.x = 10.5f;
 		testPkt.y = 0.0f;
 		testPkt.z = -20.1f;
@@ -78,9 +141,10 @@ int main()
 			break;
 		}
 
-		cout << "보낸 바이트 크기 " << testPkt.header.size << endl;
+		//cout << "보낸 바이트 크기 " << testPkt.header.size << endl;
 		cout << "MOVE 패킷 전송 성공 x=" << testPkt.x << " y=" << testPkt.y << " z=" << testPkt.z << endl;
 		Sleep(5000);
+
 	}
 	closesocket(sock);
 	WSACleanup();
