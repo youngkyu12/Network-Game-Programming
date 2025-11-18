@@ -19,6 +19,11 @@ XMFLOAT3 Player::GetPosition()
 	return Position;
 }
 
+uint16_t Player::GetHP()
+{
+	return HP;
+}
+
 
 void Player::Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
 {

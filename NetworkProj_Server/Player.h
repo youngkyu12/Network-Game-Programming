@@ -28,15 +28,13 @@ public:
 	float Pitch = 0.0f;
 	float Yaw = 0.0f;
 	float Roll = 0.0f;
-
 	float Friction = 125.0f;
-
-	int HP;
 	bool Fire_Flag;
 
 public:
 	void SetPosition(float x, float y, float z);
 	XMFLOAT3 GetPosition();
+	uint16_t GetHP();
 
 	void Move(DWORD dwDirection, float fDistance);
 	void Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity);
@@ -46,9 +44,8 @@ public:
 	void Update(float fTimeElapsed = 0.016f);
 
 private:
-	float x;
-	float y;
-	float z;
+	uint16_t HP;
+
 	XMFLOAT3 Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	XMFLOAT3 Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	XMFLOAT3 Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
