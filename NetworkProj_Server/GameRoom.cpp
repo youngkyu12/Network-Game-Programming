@@ -93,7 +93,6 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 		break;
 	}
 	}
-
 	
 }
 

@@ -8,8 +8,8 @@ GameRoom Room;
 recvData는 데이터를 받을 위치를 계산한 포인터 변수 입니다.
 가독성을 위한 일종의 책갈피 역할이라고 생각해주시면 됩니다.
 */
-PlayerData playerdata;
-RecvData rd;
+//PlayerData playerdata;
+//RecvData rd;
 POINT cursor;
 
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
@@ -18,12 +18,8 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 	
 	while (true)
 	{
+		//Room.Update_State();
 
-		//Room.Update_State(&playerdata);
-		//int retval = send ( myPlayer->sock , (char*)&playerdata , sizeof (PlayerData) , 0);
-		//int recvBytes = recv(myPlayer->sock, (char*)&rd , sizeof (rd) , 0);
-
-		//GameRoom::Update_State();
 		// 시작주소 갱신.
 		char* recvData = (char*)myPlayer->recvBuffer + myPlayer->recvByte;// 포인터 연산으로 (타입)*크기 만큼 이동
 		cout << "ID : " << myPlayer->Player_ID << "리시브 데이터 크기" << myPlayer->recvByte << endl;
@@ -72,15 +68,6 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 				}
 				myPlayer->recvByte = (myPlayer->recvByte) - (header->size);// 실제 버퍼 총 크기 갱신.
 			}
-			
-
-			/*
-			if (rd.w == 1) Room.Move(myPlayer->Player_ID, 'w');
-			if (rd.s == 1) Room.Move(myPlayer->Player_ID, 's');
-			cursor.x = rd.cursorx;
-			cursor.y = rd.cursory;
-			Room.Rotate(myPlayer->Player_ID, cursor);
-			*/
 		}
 
 		else if (recvBytes == 0)
