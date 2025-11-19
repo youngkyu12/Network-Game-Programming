@@ -124,6 +124,9 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
+		case VK_ESCAPE:
+			::PostQuitMessage(0);
+			break;
 		case 'A':
 			FirePacket firePkt;
 			firePkt.header.ID = FIRE;
@@ -170,17 +173,20 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 	return(0);
 }
 
-void CGameFramework::ProcessInput (SOCKET sock)
+void CGameFramework::ProcessInput()
 {
-	InputKeyPacket keyPKT;
+	MovePacket keyPKT;
 	keyPKT.header.ID = MOVE;
-	keyPKT.header.size = sizeof(InputKeyPacket);
+	keyPKT.header.size = sizeof(MovePacket);
 
 	static UCHAR pKeyBuffer[256];
 	if ( GetKeyboardState ( pKeyBuffer ) )
 	{
 		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
 		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
+		// 키 입력이 없어도 매 프레임마다 패킷을 보내고 있어서 조건문 처리해놨습니다. - 홍성호
+		
+		
 	}
 
 	if ( !stop ) {
@@ -193,7 +199,10 @@ void CGameFramework::ProcessInput (SOCKET sock)
 			SetCursorPos ( m_ptOldCursorPos.x , m_ptOldCursorPos.y );
 		}
 	}
-	send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
+	// 네트워크 스레드가 있는데 렌더하는 주 스레드에서 Send가 발생하면 프레임이 많이 떨어져서 끊기는 현상이 자주 발생합니다.
+	// 그래서 이렇게 안 하고 Send_Queue에 push해서 사용하도록 변경하겠습니다.
+	//send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
+	send_Queue.push(keyPKT);
 }
 
 void CGameFramework::AnimateObjects()
@@ -207,13 +216,12 @@ void CGameFramework::AnimateObjects()
 	}
 }
 
-void CGameFramework::FrameAdvance(SOCKET sock, RecvQueue& recv_Queue)
+void CGameFramework::FrameAdvance()
 {
 	m_GameTimer.Tick(60.0f);
-	ProcessInput(sock);
+	ProcessInput();
 
-	// 여기서 리시브?
-	HandlePacket(recv_Queue);
+	HandlePacket();
 	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 
 	AnimateObjects();
@@ -233,7 +241,7 @@ void CGameFramework::FrameAdvance(SOCKET sock, RecvQueue& recv_Queue)
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }
 
-void CGameFramework::HandlePacket(RecvQueue& recv_Queue)
+void CGameFramework::HandlePacket()
 {
 	// player update
 	PlayerState player;
@@ -265,6 +273,7 @@ void CGameFramework::HandlePacket(RecvQueue& recv_Queue)
 	}
 }
 
+<<<<<<< HEAD
 void CGameFramework::FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4World)
 {
 
@@ -294,3 +303,5 @@ void CGameFramework::FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4Wo
 }
 
 
+=======
+>>>>>>> 5a7196acfbf1e76e4273dc9af61edeab602b6c28

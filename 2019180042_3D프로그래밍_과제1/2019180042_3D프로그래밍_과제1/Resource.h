@@ -11,10 +11,13 @@
 #define IDI_MY2019180042_1			107
 #define IDI_SMALL				108
 #define IDC_MY2019180042_1			109
+#define ID_IPADDRESS			110
+#define ID_CONNECT_BUTTON		111
+#define IDC_EDIT				112
 #define IDC_MYICON				2
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
-#define ID_IPADDRESS			110
+
 #endif	
 // 다음은 새 개체에 사용할 기본값입니다.
 //
