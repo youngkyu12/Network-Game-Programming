@@ -115,12 +115,9 @@ void CGameObject::Rotate(XMFLOAT3& xmf3RotationAxis, float fAngle)
 	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
 }
 
-void CGameObject::Move(XMFLOAT3& vDirection, float fSpeed)
+void CGameObject::Move(float x, float y, float z)
 {
-	m_positionX = vDirection.x * fSpeed;
-	m_positionY = vDirection.y * fSpeed;
-	m_positionZ = vDirection.z * fSpeed;
-	SetPosition(m_xmf4x4World._41 + m_positionX, m_xmf4x4World._42 + m_positionY, m_xmf4x4World._43 + m_positionZ);
+	SetPosition(m_xmf4x4World._41 + x, m_xmf4x4World._42 + y, m_xmf4x4World._43 + z);
 }
 
 void CGameObject::LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
@@ -139,6 +136,7 @@ void CGameObject::LookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
 	m_xmf4x4World._31 = xmf4x4View._13; m_xmf4x4World._32 = xmf4x4View._23; m_xmf4x4World._33 = xmf4x4View._33;
 }
 
+
 void CGameObject::UpdateBoundingBox()
 {
 	if (m_pMesh)
@@ -152,7 +150,7 @@ void CGameObject::Animate(float fElapsedTime)
 {
 	if (m_fRotationSpeed != 0.0f) Rotate(m_xmf3RotationAxis, m_fRotationSpeed * fElapsedTime);
 	if (m_fMovingSpeed != 0.0f) {
-		Move(m_xmf3MovingDirection, m_fMovingSpeed * fElapsedTime);
+		//Move(m_xmf3MovingDirection, m_fMovingSpeed * fElapsedTime);
 	}
 
 	UpdateBoundingBox();

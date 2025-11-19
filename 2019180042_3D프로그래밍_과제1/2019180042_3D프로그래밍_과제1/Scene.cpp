@@ -29,21 +29,22 @@ void CScene::BuildObjects()
 	m_pWallsObject->m_pxmf4WallPlanes[5] = XMFLOAT4(0.0f, 0.0f, -1.0f, fHalfDepth);
 	m_pWallsObject->m_xmOOBBPlayerMoveCheck = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(fHalfWidth, fHalfHeight, fHalfDepth * 0.05f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 
-	//CCubeMesh* pCubeMesh = new CCubeMesh(7.0f, 7.0f, 2.0f);
+	CTankMesh* pTankMesh = new CTankMesh(6.0f, 6.0f, 6.0f);
 
-	//m_nObjects = 15;
-	//m_ppObjects = new CGameObject * [m_nObjects];
+	m_nObjects = 1;
+	m_ppObjects = new CGameObject * [m_nObjects];
 
 
-	//for (int i = 0; i < 15; ++i) {
-	//	m_ppObjects[i] = new CGameObject();
-	//	m_ppObjects[i]->SetMesh(pCubeMesh);
-	//	m_ppObjects[i]->SetColor(RGB(255, 64, 64));
-	//	m_ppObjects[i]->SetPosition(-((i - 10) & 1) * 20.0f, 0.0f, 50.0f * (i - 9) - 100.0f);
-	//	m_ppObjects[i]->Rotate(0.0f, 0.0f, 0.0f);
-	//	m_ppObjects[i]->m_objectcode = 'b';
-	//}
-
+	for (int i = 0; i < m_nObjects; ++i) {
+		m_ppObjects[i] = new CGameObject();
+		m_ppObjects[i]->SetMesh(pTankMesh);
+		m_ppObjects[i]->SetColor(RGB(255, 64, 64));
+		m_ppObjects[i]->SetPosition(0.0f, 50.0f, 0.0f);
+		//XMFLOAT3 Look = { 0,0,-1 };
+		//XMFLOAT3 Up = { 0,1,0 };
+		//m_ppObjects[i]->LookAt(Look, Up);
+		//m_ppObjects[i]->Rotate(90.0f, 0.0f, 0.0f);
+	}
 
 #ifdef _WITH_DRAW_AXIS
 	m_pWorldAxis = new CGameObject();
@@ -112,6 +113,10 @@ void CScene::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 	if (m_pPlayer) {
 		m_pPlayer->Render(hDCFrameBuffer, pCamera);
+	}
+
+	for (int i = 0; i < m_nObjects; i++) {
+		m_ppObjects[i]->Render(hDCFrameBuffer, pCamera);
 	}
 	//UI
 #ifdef _WITH_DRAW_AXIS

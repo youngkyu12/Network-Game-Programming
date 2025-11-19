@@ -61,18 +61,37 @@ void CPlayer::LookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
 	m_xmf3Look = Vector3::Normalize(XMFLOAT3(xmf4x4View._13, xmf4x4View._23, xmf4x4View._33));
 }
 
-void CPlayer::Update(RecvQueue& recv_Queue, float fTimeElapsed)
+void CPlayer::SetLook(XMFLOAT3& xmf3Look)
+{
+	m_xmf3Look = xmf3Look;
+	m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Up, m_xmf3Look));
+	m_xmf3Up = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Look, m_xmf3Right));
+}
+
+void CPlayer::Move(XMFLOAT3& xmf3Shift)
+{
+	m_xmf3Position = Vector3::Add(xmf3Shift, m_xmf3Position);
+}
+
+
+void CPlayer::Update(float fTimeElapsed)
 {
 	// set position()
 	// rotate() 카메라 플레이어 포함
-
-	PlayerState Playerpacket = recv_Queue.front();
-	recv_Queue.pop();
-	SetPosition(Playerpacket.pos_x, Playerpacket.pos_y, Playerpacket.pos_z);
-
 	m_pCamera->Update(this, m_xmf3Position, fTimeElapsed);
 	m_pCamera->GenerateViewMatrix();
+}
 
+void CPlayer::MoveUpdate(PlayerState player, float fTimeElapsed)
+{
+	// set position()
+	// rotate() 카메라 플레이어 포함
+	XMFLOAT3 xmf3shift;
+	xmf3shift.x = player.pos_x;
+	xmf3shift.y = player.pos_y;
+	xmf3shift.z = player.pos_z;
+	Move(xmf3shift);
+	m_pCamera->Move(xmf3shift);
 }
 
 void CPlayer::Animate(float fElapsedTime)

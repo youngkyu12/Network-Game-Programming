@@ -81,6 +81,7 @@ void CGameFramework::BuildObjects()
 	m_pScene = new CScene(m_pPlayer);
 	m_pScene->BuildObjects();
 
+
 }
 
 void CGameFramework::ReleaseObjects()
@@ -113,6 +114,9 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
+		case VK_ESCAPE:
+			::PostQuitMessage(0);
+			break;
 		case 'A':
 			if (stop) {
 				stop = false;
@@ -154,15 +158,20 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 	return(0);
 }
 
-void CGameFramework::ProcessInput (SendQueue& send_Queue)
+void CGameFramework::ProcessInput()
 {
-	InputPacket packet = { 0, 0, 0, 0 };
+	MovePacket keyPKT;
+	keyPKT.header.ID = MOVE;
+	keyPKT.header.size = sizeof(MovePacket);
 
 	static UCHAR pKeyBuffer[256];
 	if ( GetKeyboardState ( pKeyBuffer ) )
 	{
-		packet.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
-		packet.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
+		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
+		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
+		// 키 입력이 없어도 매 프레임마다 패킷을 보내고 있어서 조건문 처리해놨습니다. - 홍성호
+		
+		
 	}
 
 	if ( !stop ) {
@@ -171,12 +180,14 @@ void CGameFramework::ProcessInput (SendQueue& send_Queue)
 			SetCursor ( NULL );
 			POINT ptCursorPos;
 			GetCursorPos ( &ptCursorPos );
-			packet.mouseX = ptCursorPos.x;
-			packet.mouseY = ptCursorPos.y;
+			keyPKT.yaw = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
 			SetCursorPos ( m_ptOldCursorPos.x , m_ptOldCursorPos.y );
 		}
 	}
-	send_Queue.push(packet);
+	// 네트워크 스레드가 있는데 렌더하는 주 스레드에서 Send가 발생하면 프레임이 많이 떨어져서 끊기는 현상이 자주 발생합니다.
+	// 그래서 이렇게 안 하고 Send_Queue에 push해서 사용하도록 변경하겠습니다.
+	//send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
+	send_Queue.push(keyPKT);
 }
 
 void CGameFramework::AnimateObjects()
@@ -186,17 +197,13 @@ void CGameFramework::AnimateObjects()
 	if (m_pScene) m_pScene->Animate(fTimeElapsed);
 }
 
-void CGameFramework::FrameAdvance(SendQueue& send_Queue, RecvQueue& recv_Queue)
+void CGameFramework::FrameAdvance()
 {
 	m_GameTimer.Tick(60.0f);
-	ProcessInput(send_Queue);
+	ProcessInput();
 
-	// 여기서 리시브?
-	//HandlePacket(recv_Queue);
-
-
-
-	m_pPlayer->Update(recv_Queue, m_GameTimer.GetTimeElapsed());
+	HandlePacket();
+	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 
 	AnimateObjects();
 
@@ -213,9 +220,29 @@ void CGameFramework::FrameAdvance(SendQueue& send_Queue, RecvQueue& recv_Queue)
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }
 
-void CGameFramework::HandlePacket(RecvQueue& recv_Queue)
+void CGameFramework::HandlePacket()
 {
 	// player update
+	PlayerState player;
+	while (!recv_Queue.empty()) {
+		player = recv_Queue.front();
+		recv_Queue.pop();
+		//-----------------
+		XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz};
+		if (player.Player_ID == 0)
+		{
+			m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
+			m_pPlayer->SetLook(Look);
+		}
+		else if (player.Player_ID == 1)
+		{
+			if (m_pScene && m_pScene->m_ppObjects[0])
+			{
+				m_pScene->m_ppObjects[0]->SetPosition(player.pos_x, player.pos_y, player.pos_z);
+				m_pScene->m_ppObjects[0]->LookTo(Look, Up);
+				m_pScene->m_ppObjects[0]->Rotate(90.0f, 0.0f, 0.0f);
+			}
+		}
+	}
 }
-
 

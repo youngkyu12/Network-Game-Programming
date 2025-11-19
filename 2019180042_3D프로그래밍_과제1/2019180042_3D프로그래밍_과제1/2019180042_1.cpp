@@ -14,13 +14,14 @@ TCHAR szTitle[MAX_LOADSTRING];					// 제목 표시줄 텍스트입니다.
 TCHAR szWindowClass[MAX_LOADSTRING];			// 기본 창 클래스 이름입니다.
 
 CGameFramework		gGameFramework;
-SOCKET sock; // 소켓
-char SERVERIP[16];
-char FILENAME[256]{ '\0' };
-SendQueue send_Queue;
-RecvQueue recv_Queue;
-// HWND hIPControl;
-// HWND hButton;
+ char SeverIP[16];
+
+ HANDLE hIpEvent; // connect 대기 이벤트
+ HWND hEdit = nullptr;
+
+ void DisplayText(const char* fmt, ...);
+ void DisplayError(const char* msg);
+ void DisplayError_Quit(const char* msg);
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -42,6 +43,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// TODO: 여기에 코드를 입력합니다.
 	MSG msg;
 	HACCEL hAccelTable;
+
+	hIpEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	// 전역 문자열을 초기화합니다.
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -73,15 +76,16 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		}
 		else
 		{
-			//if (true) {
-			//	DestroyWindow(hIPControl);     // IP 입력창 제거
-			//	DestroyWindow(hButton); // 버튼 제거
-			//}
-			//else 
-			gGameFramework.FrameAdvance(send_Queue, recv_Queue);
+			if (gGameFramework.IsRunning())
+			{
+				gGameFramework.FrameAdvance();
+			}
 		}
 	}
 	gGameFramework.OnDestroy();
+
+	// 이벤트 제거
+	CloseHandle(hIpEvent);
 
 	return (int)msg.wParam;
 }
@@ -150,6 +154,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	return TRUE;
 }
 
+
+
+
 //
 //  함수: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -166,16 +173,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 
+	static HWND hIPControl = nullptr;
+	static HWND hButton = nullptr;
+	
+
 	switch (message)
 	{
 	case WM_CREATE:
 		// StartScene
-		/*hIPControl = CreateWindowEx(0, WC_IPADDRESS, NULL,
+		hIPControl = CreateWindow(WC_IPADDRESS, NULL,
 			WS_CHILD | WS_VISIBLE,
-			0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT,
+			20, 220, 200, 25,
 			hWnd, (HMENU)ID_IPADDRESS,
-			hInst, NULL);*/
+			hInst, NULL);
+		SendMessage(hIPControl, IPM_SETADDRESS, 0, MAKEIPADDRESS(127, 0, 0, 1));
 		// button
+		hButton = CreateWindow(_T("button"), _T("접속"),
+			WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+			240, 220, 80, 25,
+			hWnd, (HMENU)ID_CONNECT_BUTTON,
+			hInst, NULL);
 	case WM_SIZE:
 	case WM_LBUTTONDOWN:
 	case WM_LBUTTONUP:
@@ -184,7 +201,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEMOVE:
 	case WM_KEYDOWN:
 	case WM_KEYUP:
-		gGameFramework.OnProcessingWindowMessage(hWnd, message, wParam, lParam);
+		if (gGameFramework.IsRunning())
+		{
+			gGameFramework.OnProcessingWindowMessage(hWnd, message, wParam, lParam);
+		}
 		break;
 	case WM_COMMAND:
 		wmId = LOWORD(wParam);
@@ -198,6 +218,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
+		case ID_CONNECT_BUTTON:
+		{
+			DWORD ip;
+			SendMessage(hIPControl, IPM_GETADDRESS, 0, (LPARAM)&ip);
+
+			BYTE b1 = FIRST_IPADDRESS(ip);
+			BYTE b2 = SECOND_IPADDRESS(ip);
+			BYTE b3 = THIRD_IPADDRESS(ip);
+			BYTE b4 = FOURTH_IPADDRESS(ip);
+
+			char ipStr[16];
+			sprintf(ipStr, "%d.%d.%d.%d", b1, b2, b3, b4);
+
+			// 예시: 출력 확인
+			MessageBoxA(hWnd, ipStr, "입력한 IP", MB_OK);
+			strcpy(SeverIP, ipStr);
+			SetEvent(hIpEvent);
+			gGameFramework.SetRunning(true);
+			break;
+		}
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
@@ -223,8 +263,8 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_INITDIALOG:
+		hEdit = GetDlgItem(hDlg, IDC_EDIT);
 		return (INT_PTR)TRUE;
-
 	case WM_COMMAND:
 		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
 		{
@@ -242,72 +282,104 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	int retval;
 	int num = 0;
 	
-	// 윈속 초기화
-	WSADATA wsa;
-	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+	WaitForSingleObject(hIpEvent, INFINITE); // Server IP 작성 완료 대기
+	WSADATA wsaData;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	{
 		return 1;
+	}
 
-	// 소켓 생성
-	sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (sock == INVALID_SOCKET) err_quit("socket()");
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock == INVALID_SOCKET)
+	{
+		DisplayError_Quit("socket()");
+	}
 
-	// connect()
-	struct sockaddr_in serveraddr;
-	memset(&serveraddr, 0, sizeof(serveraddr));
-	serveraddr.sin_family = AF_INET;
-	serveraddr.sin_addr.s_addr = inet_addr(SERVERIP);
-	serveraddr.sin_port = htons(SERVERPORT);
-	retval = connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
-	if (retval == SOCKET_ERROR) err_quit("connect()");
+	SOCKADDR_IN serverAddr;
+	memset(&serverAddr, 0, sizeof(serverAddr));
+	serverAddr.sin_family = AF_INET;
+	inet_pton(AF_INET, SeverIP, &serverAddr.sin_addr);
+	serverAddr.sin_port = htons(SERVERPORT);
+
+	if (connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
+	{
+		DisplayError_Quit("connect()");
+	}
 
 	// 데이터 통신에 사용할 변수
 	char buf[BUFSIZE];
 	int len = 0;
-
+	int32_t recvByte = 0;
 
 	// 서버와 데이터 통신
 	while (1) {
-		InputPacket packet = send_Queue.front();
-		send_Queue.pop();
-		memcpy(buf, &packet, sizeof(packet));
+		MovePacket packet = gGameFramework.send_Queue.front();
+		gGameFramework.send_Queue.pop();
+		// memcpy(buf, &packet, sizeof(packet));
 
-		int len = sizeof(packet);
-
-		// 필요한가?
-		// 데이터 보내기(고정 길이)
-		retval = send(sock, (char*)&len, sizeof(int), 0);
+		retval = send(sock, (char*)&packet, sizeof(packet), 0);
 		if (retval == SOCKET_ERROR) {
 			err_display("send()");
 			break;
 		}
 
-		// 데이터 보내기(가변 길이)
-		retval = send(sock, buf, len, 0);
-		if (retval == SOCKET_ERROR) {
-			err_display("send()");
-			break;
-		}
-
-		// 데이터 받기(고정 길이)
-		/*retval = recv(sock, (char*)&len, sizeof(int), MSG_WAITALL);
-		if (retval == SOCKET_ERROR) {
-			err_display("recv()");
-			break;
-		}
-		else if (retval == 0)
-			break;*/
-
-		// 데이터 받기(가변 길이)
-		retval = recv(sock, buf, sizeof(PlayerState), MSG_WAITALL);
+		retval = recv(sock, buf, sizeof(buf), 0);
+		// 송신 프레임워크에서 진행 테스트
 		if (retval == SOCKET_ERROR) {
 			err_display("recv()");
 			break;
 		}
 		else if (retval == 0)
 			break;
-		PlayerState Playerpacket;
-		memcpy(&Playerpacket, buf, sizeof(PlayerState));
-		recv_Queue.push(Playerpacket);
+		if (retval > 0)
+		{
+			recvByte += retval; // 
+			while (1)
+			{
+				if (recvByte < sizeof(Packetheader))
+				{
+					// 패킷헤더만큼도 도착안함
+					break;
+				}
+
+				Packetheader* header = (Packetheader*)buf;
+
+				if (recvByte < header->size)
+				{
+					// 패킷이 아직 다 안옴.
+					break;
+				}
+
+				//패킷 도착 후 처리
+			/*	switch (header->ID) {
+				case MOVE:
+				{
+					
+					UpdateState* updatePkt = (UpdateState*)buf;
+					for (int i = 0; i < updatePkt->numPlayers; ++i)
+					{
+						PlayerState pState;
+
+						pState.Player_ID = updatePkt->players[i].Player_ID;
+						pState.pos_x = updatePkt->players[i].pos_x;
+						pState.pos_y = updatePkt->players[i].pos_y;
+						pState.pos_z = updatePkt->players[i].pos_z;
+						pState.Lookx = updatePkt->players[i].Lookx;
+						pState.Looky = updatePkt->players[i].Looky;
+						pState.Lookz = updatePkt->players[i].Lookz;
+						recv_Queue.push(pState);
+					}
+					break;
+				}
+				}
+
+				if (recvByte - header->size > 0)
+				{
+					memmove(buf, buf + header->size, recvByte - (header->size));
+				}
+				recvByte = recvByte - header->size;*/
+			}
+		}
 	}
 
 	// 소켓 닫기
@@ -318,3 +390,44 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	return 0;
 }
 
+
+// 에디트 컨트롤 출력 함수
+void DisplayText(const char* fmt, ...)
+{
+	va_list arg;
+	va_start(arg, fmt);
+	char cbuf[BUFSIZE * 2];
+	vsprintf(cbuf, fmt, arg);
+	va_end(arg);
+
+	int nLength = GetWindowTextLength(hEdit);
+	SendMessage(hEdit, EM_SETSEL, nLength, nLength);
+	SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM)cbuf);
+}
+
+// 소켓 함수 오류 출력
+void DisplayError(const char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessageA(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(char*)&lpMsgBuf, 0, NULL);
+	DisplayText("[%s] %s\r\n", msg, (char*)lpMsgBuf);
+	LocalFree(lpMsgBuf);
+}
+
+// 소켓 함수 오류 출력
+void DisplayError_Quit(const char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessageA(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(char*)&lpMsgBuf, 0, NULL);
+	DisplayText("[%s] %s\r\n", msg, (char*)lpMsgBuf);
+	LocalFree(lpMsgBuf);
+	exit(1);
+}
