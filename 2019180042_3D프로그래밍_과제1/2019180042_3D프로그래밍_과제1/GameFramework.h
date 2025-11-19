@@ -78,5 +78,7 @@ public:
 public:
 	SendQueue send_Queue;
 	RecvQueue recv_Queue;
+
+	SOCKET sock;
 };
 

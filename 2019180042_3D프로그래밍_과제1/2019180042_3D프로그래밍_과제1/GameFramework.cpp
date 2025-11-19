@@ -132,6 +132,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			firePkt.header.ID = FIRE;
 			firePkt.header.size = sizeof(FirePacket);
 			firePkt.FireFlag = true;
+			send(sock, (char*)&firePkt, firePkt.header.size, 0);
 			break;
 		case 'D':
 			if (stop) {
@@ -183,9 +184,6 @@ void CGameFramework::ProcessInput()
 	{
 		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
 		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
-		// 키 입력이 없어도 매 프레임마다 패킷을 보내고 있어서 조건문 처리해놨습니다. - 홍성호
-		
-		
 	}
 
 	if ( !stop ) {
@@ -198,10 +196,15 @@ void CGameFramework::ProcessInput()
 			SetCursorPos ( m_ptOldCursorPos.x , m_ptOldCursorPos.y );
 		}
 	}
+
+	/* [11/20]
 	// 네트워크 스레드가 있는데 렌더하는 주 스레드에서 Send가 발생하면 프레임이 많이 떨어져서 끊기는 현상이 자주 발생합니다.
 	// 그래서 이렇게 안 하고 Send_Queue에 push해서 사용하도록 변경하겠습니다.
-	//send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
 	send_Queue.push(keyPKT);
+	*/
+
+	send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
+	
 }
 
 void CGameFramework::AnimateObjects()

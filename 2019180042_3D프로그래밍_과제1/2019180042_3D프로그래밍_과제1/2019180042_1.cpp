@@ -20,6 +20,8 @@ CGameFramework		gGameFramework;
  HANDLE hIpEvent; // connect 대기 이벤트
  HWND hEdit = nullptr;
 
+
+
  void DisplayText(const char* fmt, ...);
  void DisplayError(const char* msg);
  void DisplayError_Quit(const char* msg);
@@ -308,6 +310,8 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		DisplayError_Quit("connect()");
 	}
 
+	gGameFramework.sock = sock;
+
 	// 데이터 통신에 사용할 변수
 	char buf[BUFSIZE];
 	int len = 0;
@@ -315,15 +319,18 @@ DWORD WINAPI ClientMain(LPVOID arg)
 
 	// 서버와 데이터 통신
 	while (1) {
-		MovePacket packet = gGameFramework.send_Queue.front();
-		gGameFramework.send_Queue.pop();
+		// MovePacket packet = gGameFramework.send_Queue.front();
+		// gGameFramework.send_Queue.pop();
 		// memcpy(buf, &packet, sizeof(packet));
 
+		
+		/*[11/20]
 		retval = send(sock, (char*)&packet, sizeof(packet), 0);
 		if (retval == SOCKET_ERROR) {
 			err_display("send()");
 			break;
 		}
+		*/
 
 		retval = recv(sock, buf, sizeof(buf), 0);
 		// 송신 프레임워크에서 진행 테스트
@@ -353,7 +360,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				}
 
 				//패킷 도착 후 처리
-			/*	switch (header->ID) {
+				switch (header->ID) {
 				case MOVE:
 				{
 					
@@ -370,7 +377,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 						pState.Looky = updatePkt->players[i].Looky;
 						pState.Lookz = updatePkt->players[i].Lookz;
 						pState.fire = updatePkt->players[i].fire;
-						recv_Queue.push(pState);
+						gGameFramework.recv_Queue.push(pState);
 					}
 					break;
 				}
@@ -380,7 +387,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				{
 					memmove(buf, buf + header->size, recvByte - (header->size));
 				}
-				recvByte = recvByte - header->size;*/
+				recvByte = recvByte - header->size;
 			}
 		}
 	}
