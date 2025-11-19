@@ -18,7 +18,7 @@ struct Packetheader
 #pragma pack()
 
 #pragma pack(1)
-struct InputKeyPacket
+struct MovePacket
 {
     Packetheader header;
     uint16_t keyW = 0;
@@ -56,46 +56,45 @@ struct UpdateState
 };
 #pragma pack()
 
+class SendQueue {
+public:
+    SendQueue() { InitializeCriticalSection(&cs); }
+    ~SendQueue() { DeleteCriticalSection(&cs); }
 
-//class SendQueue {
-//public:
-//    SendQueue() { InitializeCriticalSection(&cs); }
-//    ~SendQueue() { DeleteCriticalSection(&cs); }
-//
-//    void push(InputPacket data) {
-//        EnterCriticalSection(&cs);
-//        sendqueue.push(data);
-//        LeaveCriticalSection(&cs);
-//    }
-//
-//    void pop() {
-//        EnterCriticalSection(&cs);
-//        if (!sendqueue.empty()) sendqueue.pop();
-//        LeaveCriticalSection(&cs);
-//    }
-//
-//    bool empty() {
-//        EnterCriticalSection(&cs);
-//        bool result = sendqueue.empty();
-//        LeaveCriticalSection(&cs);
-//        return result;
-//    }
-//
-//    InputPacket front() {
-//        EnterCriticalSection(&cs);
-//        if (!sendqueue.empty()) {
-//            InputPacket result = sendqueue.front();
-//            LeaveCriticalSection(&cs);
-//            return result;
-//        }
-//        LeaveCriticalSection(&cs);
-//        //throw std::runtime_error("Queue is empty");
-//    }
-//
-//private:
-//    std::queue<InputPacket> sendqueue;
-//    CRITICAL_SECTION cs;
-//};
+    void push(MovePacket data) {
+        EnterCriticalSection(&cs);
+        sendqueue.push(data);
+        LeaveCriticalSection(&cs);
+    }
+
+    void pop() {
+        EnterCriticalSection(&cs);
+        if (!sendqueue.empty()) sendqueue.pop();
+        LeaveCriticalSection(&cs);
+    }
+
+    bool empty() {
+        EnterCriticalSection(&cs);
+        bool result = sendqueue.empty();
+        LeaveCriticalSection(&cs);
+        return result;
+    }
+
+    MovePacket front() {
+        EnterCriticalSection(&cs);
+        if (!sendqueue.empty()) {
+            MovePacket result = sendqueue.front();
+            LeaveCriticalSection(&cs);
+            return result;
+        }
+        LeaveCriticalSection(&cs);
+        //throw std::runtime_error("Queue is empty");
+    }
+
+private:
+    std::queue<MovePacket> sendqueue;
+    CRITICAL_SECTION cs;
+};
 
 class RecvQueue {
 public:

@@ -42,6 +42,7 @@ private:
 	_TCHAR						m_pszFrameRate[50];
 
 	bool stop = true;
+	bool m_isRunning = false;
 
 	XMFLOAT3 Up = { 0,1,0 };
 
@@ -56,15 +57,21 @@ public:
 	void BuildObjects();
 	void ReleaseObjects();
 
-	void ProcessInput(SOCKET sock);
+	void ProcessInput();
 	void AnimateObjects();
-	void FrameAdvance(SOCKET sock, RecvQueue& recv_Queue);
-	void HandlePacket(RecvQueue& recv_Queue);
+	void FrameAdvance();
+	void HandlePacket();
 
 	void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 
 	void SetActive(bool bActive) { m_bActive = bActive; }
+	void SetRunning(bool running) { m_isRunning = running; }
+	bool IsRunning() const { return m_isRunning; }
+
+public:
+	SendQueue send_Queue;
+	RecvQueue recv_Queue;
 };
 
