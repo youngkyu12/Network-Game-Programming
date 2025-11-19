@@ -47,12 +47,14 @@ void GameRoom::Update_State(Player* player)
 		updatePkt.players[i].Look_x = Look.x;
 		updatePkt.players[i].Look_y = Look.y;
 		updatePkt.players[i].Look_z = Look.z;
-		updatePkt.players[i].FireFlag = FireFlag;
-
-		p->SetFireFlag(false); // 송신 후 false로 변경
-
-		cout << " 전송완료" << endl;
-		cout << "Lookx = " << Look.x << ", Looky = " << Look.y << ", Lookz = " << Look.z;
+		if (FireFlag == true) {
+			updatePkt.players[i].FireFlag = true;
+			p->check += 1;
+			if (p->check == 2) {
+				p->SetFireFlag(false);
+				p->check = 0;
+		}
+		
 		//updatePkt.players[i].hp = hp;
 	}
 	LeaveCriticalSection(&_cs);

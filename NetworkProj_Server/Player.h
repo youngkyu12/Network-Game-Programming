@@ -43,6 +43,8 @@ public:
 
 	void LookAt(XMFLOAT3& Look, XMFLOAT3& Up);
 
+	int check = 0;
+
 private:
 	uint16_t HP;
 
