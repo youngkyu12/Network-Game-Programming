@@ -117,7 +117,7 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 	}
 }
 
-void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, SOCKET sock)
+void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
 	switch (nMessageID)
 	{
@@ -132,7 +132,6 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			firePkt.header.ID = FIRE;
 			firePkt.header.size = sizeof(FirePacket);
 			firePkt.FireFlag = true;
-			send(sock, (char*)&firePkt, firePkt.header.size, 0);
 			break;
 		case 'D':
 			if (stop) {
@@ -150,7 +149,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 }
 
 // 키보드 메시지 처리
-LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, SOCKET sock)
+LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
 	switch (nMessageID)
 	{
@@ -167,7 +166,7 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 		break;
 	case WM_KEYDOWN:
 	case WM_KEYUP:
-		OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam, sock);
+		OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam);
 		break;
 	}
 	return(0);
@@ -273,7 +272,7 @@ void CGameFramework::HandlePacket()
 	}
 }
 
-<<<<<<< HEAD
+
 void CGameFramework::FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4World)
 {
 
@@ -301,7 +300,3 @@ void CGameFramework::FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4Wo
 		pBulletObject->SetActive(true);
 	}
 }
-
-
-=======
->>>>>>> 5a7196acfbf1e76e4273dc9af61edeab602b6c28

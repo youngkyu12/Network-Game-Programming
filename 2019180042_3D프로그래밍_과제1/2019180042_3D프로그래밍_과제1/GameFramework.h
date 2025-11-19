@@ -66,20 +66,17 @@ public:
 	void HandlePacket();
 
 	void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
-	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, SOCKET sock);
-	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, SOCKET sock);
+	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
+	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 
 	void SetActive(bool bActive) { m_bActive = bActive; }
-<<<<<<< HEAD
 
 	void FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4World);
-=======
 	void SetRunning(bool running) { m_isRunning = running; }
 	bool IsRunning() const { return m_isRunning; }
 
 public:
 	SendQueue send_Queue;
 	RecvQueue recv_Queue;
->>>>>>> 5a7196acfbf1e76e4273dc9af61edeab602b6c28
 };
 

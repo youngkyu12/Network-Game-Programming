@@ -14,15 +14,7 @@ TCHAR szTitle[MAX_LOADSTRING];					// 제목 표시줄 텍스트입니다.
 TCHAR szWindowClass[MAX_LOADSTRING];			// 기본 창 클래스 이름입니다.
 
 CGameFramework		gGameFramework;
-<<<<<<< HEAD
-SOCKET sock; // 소켓
-SOCKET s;
-//char SERVERIP[16];
-char FILENAME[256]{ '\0' };
-RecvQueue recv_Queue;
-// HWND hIPControl;
-// HWND hButton;
-=======
+
  char SeverIP[16];
 
  HANDLE hIpEvent; // connect 대기 이벤트
@@ -31,7 +23,6 @@ RecvQueue recv_Queue;
  void DisplayText(const char* fmt, ...);
  void DisplayError(const char* msg);
  void DisplayError_Quit(const char* msg);
->>>>>>> 5a7196acfbf1e76e4273dc9af61edeab602b6c28
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -63,7 +54,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	
 	CreateThread(NULL, 0, ClientMain, NULL, 0, NULL);
 
-	s = sock;
 
 	// 응용 프로그램 초기화를 수행합니다.
 	if (!InitInstance(hInstance, nCmdShow))
@@ -213,14 +203,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEMOVE:
 	case WM_KEYDOWN:
 	case WM_KEYUP:
-<<<<<<< HEAD
-		gGameFramework.OnProcessingWindowMessage(hWnd, message, wParam, lParam, s);
-=======
 		if (gGameFramework.IsRunning())
 		{
 			gGameFramework.OnProcessingWindowMessage(hWnd, message, wParam, lParam);
 		}
->>>>>>> 5a7196acfbf1e76e4273dc9af61edeab602b6c28
 		break;
 	case WM_COMMAND:
 		wmId = LOWORD(wParam);
