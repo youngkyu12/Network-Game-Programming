@@ -24,8 +24,7 @@ struct MovePacket
 	Packetheader header;
 	uint16_t keyW;
 	uint16_t keyS;
-	uint32_t mouseX;
-	uint32_t mouseY;
+	float yaw;	// rotate에 마우스 커서 말고 yaw 값 받아옴
 };
 
 struct PlayerState // 한명분 데이터
@@ -34,6 +33,9 @@ struct PlayerState // 한명분 데이터
 	float x;
 	float y;
 	float z;
+	float Look_x;
+	float Look_y;
+	float Look_z;
 	//uint16_t hp;
 };
 
@@ -43,40 +45,6 @@ struct UpdateState
 	Packetheader header;
 	int32_t numPlayers;
 	PlayerState players[MAX_PLAYERS];
-};
-
-
-// 테스트
-
-struct PlayerMoveState	// 움직임만을 위한 정보
-{
-	int32_t playerID;
-	float x;
-	float y;
-	float z;
-};
-
-struct UpdateMoveState	// 움직임만을 위한 패킷
-{
-	Packetheader header;
-	PlayerMoveState player;
-};
-
-struct StartPlayerState	// 플레이어 접속 했을 때 보내는 정보 (시작위치, 방향)
-{
-	int32_t playerID;
-	float x;
-	float y;
-	float z;
-	float LookX;
-	float LookY;
-	float LookZ;
-};
-
-struct UpdatePlayerState
-{
-	Packetheader header;
-	StartPlayerState player;
 };
 
 #pragma pack(pop)

@@ -17,7 +17,6 @@ CGameFramework		gGameFramework;
 SOCKET sock; // 소켓
 //char SERVERIP[16];
 char FILENAME[256]{ '\0' };
-//SendQueue send_Queue;
 RecvQueue recv_Queue;
 // HWND hIPControl;
 // HWND hButton;
@@ -274,42 +273,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 
 	// 서버와 데이터 통신
 	while (1) {
-		
-		// 송신 프레임워크에서 진행 테스트
-		/* 
-		InputPacket packet = send_Queue.front();
-		send_Queue.pop();
-		memcpy(buf, &packet, sizeof(packet));
 
-		int len = sizeof(packet);
-
-		// 필요한가?
-		// 데이터 보내기(고정 길이)
-		retval = send(mysock, (char*)&len, sizeof(int), 0);
-		if (retval == SOCKET_ERROR) {
-			err_display("send()");
-			break;
-		}
-
-		// 데이터 보내기(가변 길이)
-		retval = send(mysock, buf, len, 0);
-		if (retval == SOCKET_ERROR) {
-			err_display("send()");
-			break;
-		}
-		*/
-
-		// 데이터 받기(고정 길이)
-		/*retval = recv(sock, (char*)&len, sizeof(int), MSG_WAITALL);
-		if (retval == SOCKET_ERROR) {
-			err_display("recv()");
-			break;
-		}
-		else if (retval == 0)
-			break;*/
-
-		// 데이터 받기(가변 길이)
-		// DummyClient처럼 프레임워크에서 송신하고 여기서는 받기만 하는 걸로 일단 해봤어요
 		retval = recv(mysock, buf, sizeof(buf), 0);
 		if (retval == SOCKET_ERROR) {
 			err_display("recv()");
@@ -339,21 +303,6 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				//패킷 도착 후 처리
 				switch (header->ID) {
 
-				case START:
-				{
-					/*UpdatePlayerState* updatePPKT = (UpdatePlayerState*)buf;
-					PlayerState playerSPKT;
-					playerSPKT.UpdateID = updatePPKT->header.ID;
-					playerSPKT.Player_ID = updatePPKT->player.playerID;
-					playerSPKT.pos_x = updatePPKT->player.x;
-					playerSPKT.pos_y = updatePPKT->player.y;
-					playerSPKT.pos_z = updatePPKT->player.z;
-					playerSPKT.Lookx = updatePPKT->player.LookX;
-					playerSPKT.Looky = updatePPKT->player.LookY;
-					playerSPKT.Lookz = updatePPKT->player.LookZ;
-					recv_Queue.push(playerSPKT);*/
-					break;
-				}
 				case MOVE:
 				{
 					
@@ -378,37 +327,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				}
 				recvByte = recvByte - header->size; // 
 			}
-			
-			/*if (header->ID == UPDATE)
-			{
-				UpdateState* updatePkt = (UpdateState*)buf;
-
-				// 받은 모든 플레이어 정보 출력
-				for (int i = 0; i < updatePkt->numPlayers; ++i)
-				{
-					PlayerState Playerpacket;
-					Playerpacket = updatePkt->players[i];
-					recv_Queue.push(Playerpacket);
-				}
-			}
-			else
-			{
-			}
-			*/
 		}
-
-		/*
-		retval = recv(mysock, buf, sizeof(PlayerState), MSG_WAITALL);
-		if (retval == SOCKET_ERROR) {
-			err_display("recv()");
-			break;
-		}
-		else if (retval == 0)
-			break;
-		PlayerState Playerpacket;
-		memcpy(&Playerpacket, buf, sizeof(PlayerState));
-		recv_Queue.push(Playerpacket);
-		*/
 	}
 
 	// 소켓 닫기

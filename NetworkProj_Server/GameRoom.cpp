@@ -34,14 +34,18 @@ void GameRoom::Update_State(Player* player)
 	{
 		Player* p = PlayerManager[i];
 		XMFLOAT3 pos = p->GetPosition();
-		uint16_t hp = p->GetHP();
+		//uint16_t hp = p->GetHP();
+		XMFLOAT3 Look = p->GetLook();
 
-		updatePkt.players[i].playerID = p->Player_ID;
-		//if (p->Player_ID == myID) updatePkt.players[i].playerID = 0;	// 나 = 0
-		//else if (p->Player_ID != myID) updatePkt.players[i].playerID = 1;	// 나X = 1 2인 기준, 3인 되면 변경
+		if (p->Player_ID == myID) updatePkt.players[i].playerID = 0;	// 나 = 0
+		else if (p->Player_ID != myID) updatePkt.players[i].playerID = 1;	// 나X = 1 2인 기준, 3인 되면 변경
+		
 		updatePkt.players[i].x = pos.x;
 		updatePkt.players[i].y = pos.y;
 		updatePkt.players[i].z = pos.z;
+		updatePkt.players[i].Look_x = Look.x;
+		updatePkt.players[i].Look_y = Look.y;
+		updatePkt.players[i].Look_z = Look.z;
 		//updatePkt.players[i].hp = hp;
 	}
 	LeaveCriticalSection(&_cs);
@@ -104,6 +108,8 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 
 		if (testpkt->keyW == 1) Move(player, 'W');
 		else if (testpkt->keyS == 1) Move(player, 'S');
+
+		if (testpkt->yaw > 0) Rotate(player->Player_ID, testpkt->yaw);
 		//player->SetPosition(testpkt->x, testpkt->y, testpkt->z);
 
 		//cout << "x = " << testpkt->x << endl;
@@ -128,11 +134,6 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	
 }
 
-/*
-HandlePacket 내부에서만 실행될 함수이고
-HandlePacket은 이미 Player* player를 알고 있습니다.
-플레이어 매니저를 통해서 찾을 필요 없어요.
-*/
 void GameRoom::Move(Player* player, char key)
 {
 	float Distance = 0.15f;
@@ -149,88 +150,9 @@ void GameRoom::Move(Player* player, char key)
 	}
 
 	player->Move(xmf3Shift);
-	//UpdateMove(id, xmf3Shift);
-	
 }
 
-void GameRoom::Rotate ( char id , POINT CursorPos )
+void GameRoom::Rotate ( char id , float yaw )
 {
-	/*
-	float cxMouseDelta = ( float )( CursorPos.x - OldCursorPos.x ) / 3.0f;
-	float cyMouseDelta = ( float )( CursorPos.y - OldCursorPos.y ) / 3.0f;
-
-	if ( cxMouseDelta || cyMouseDelta )
-	{
-		PlayerManager[id]->Yaw = cxMouseDelta;
-
-		// 밑에 rotate는 클라와 서버의 방향벡터가 같은 지 확인하기 위함
-		PlayerManager[id]->Rotate (0.0f , cxMouseDelta , 0.0f);
-	}
-	*/
-}
-
-
-
-// 테스트
-void GameRoom::UpdateMove(char id, XMFLOAT3 xmf3shift)
-{
-	UpdateMoveState updateMPKT;
-	updateMPKT.header.ID = MOVE;
-	updateMPKT.header.size = sizeof(UpdateMoveState);
-	updateMPKT.player.x = xmf3shift.x;
-	updateMPKT.player.y = xmf3shift.y;
-	updateMPKT.player.z = xmf3shift.z;
-	EnterCriticalSection(&_cs);
-	int32_t playerCount = PlayerManager.size();
-	if (playerCount > MAX_PLAYERS)
-	{
-		playerCount = MAX_PLAYERS;
-	}
-
-	for (int i = 0; i < playerCount; ++i) {
-		if (PlayerManager[i]->Player_ID == id) {
-			updateMPKT.player.playerID = 0; // 자기자신 이동
-		}
-		else if (PlayerManager[i]->Player_ID != id) {
-			updateMPKT.player.playerID = 1; // 상대 이동
-		}
-		cout << "무브전송" << endl;
-		send(PlayerManager[i]->sock, (char*)&updateMPKT, updateMPKT.header.size, 0);
-	}
-	LeaveCriticalSection(&_cs);
-}
-
-void GameRoom::UpdatePlayer(char id)
-{
-	PlayerManager[id]->SetPosition(0, 0, -50 + (id * 100));
-	PlayerManager[id]->SetLook(0, 0, 1 - (id * 2));
-	UpdatePlayerState updatePPKT;
-	updatePPKT.header.ID = START;
-	updatePPKT.header.size = sizeof(UpdatePlayerState);
-	for (int i = 0; i < PlayerManager.size(); ++i) {
-		for (int j = 0; j < PlayerManager.size(); ++j) {
-			XMFLOAT3 pos = PlayerManager[j]->GetPosition();
-			XMFLOAT3 Look = PlayerManager[j]->GetLook();
-			if (PlayerManager[i]->Player_ID == PlayerManager[j]->Player_ID) {
-				updatePPKT.player.playerID = 0; // 자기자신
-				updatePPKT.player.x = pos.x;
-				updatePPKT.player.y = pos.y;
-				updatePPKT.player.z = pos.z;
-				updatePPKT.player.LookX = Look.x;
-				updatePPKT.player.LookY = Look.y;
-				updatePPKT.player.LookZ = Look.z;
-			}
-			else if (PlayerManager[i]->Player_ID != PlayerManager[j]->Player_ID) {
-				updatePPKT.player.playerID = 1;
-				updatePPKT.player.x = pos.x;
-				updatePPKT.player.y = pos.y;
-				updatePPKT.player.z = pos.z;
-				updatePPKT.player.LookX = Look.x;
-				updatePPKT.player.LookY = Look.y;
-				updatePPKT.player.LookZ = Look.z;
-			}
-			cout << "시작위치 전송" << endl;
-			send(PlayerManager[i]->sock, (char*)&updatePPKT, updatePPKT.header.size, 0);
-		}
-	}
+	PlayerManager[id]->Rotate (0.0f , yaw , 0.0f);
 }

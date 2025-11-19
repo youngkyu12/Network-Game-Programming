@@ -24,8 +24,8 @@ struct InputKeyPacket
     uint16_t keyW = 0;
     uint16_t keyS = 0;
     //-----서버와 크기 맞추기 용 입니다.
-    uint32_t mouseX = 0;
-    uint32_t mouseY = 0;
+    float yaw = 0;
+    //uint32_t mouseY = 0;
 };
 #pragma pack()
 
@@ -38,9 +38,9 @@ struct PlayerState
     float pos_x;
     float pos_y;
     float pos_z;
-    //float Lookx;
-    //float Looky;
-    //float Lookz;
+    float Lookx;
+    float Looky;
+    float Lookz;
     //float yaw;
     //char Shield;
     //bool fire;
@@ -56,41 +56,6 @@ struct UpdateState
 };
 #pragma pack()
 
-// 테스트
-#pragma pack(1)
-struct PlayerMoveState
-{
-    int32_t playerID;
-    float x;
-    float y;
-    float z;
-};
-#pragma pack()
-
-#pragma pack(1)
-struct UpdateMoveState
-{
-    Packetheader header;
-    PlayerMoveState player;
-};
-#pragma pack()
-
-struct StartPlayerState	// 플레이어 접속 했을 때 보내는 정보 (시작위치, 방향)
-{
-    int32_t playerID;
-    float x;
-    float y;
-    float z;
-    float LookX;
-    float LookY;
-    float LookZ;
-};
-
-struct UpdatePlayerState
-{
-    Packetheader header;
-    StartPlayerState player;
-};
 
 //class SendQueue {
 //public:

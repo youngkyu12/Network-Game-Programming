@@ -35,8 +35,10 @@ public:
 
 
 	void Move(XMFLOAT3& xmf3Shift);
-
+	
 	void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
+
+	void LookAt(XMFLOAT3& Look, XMFLOAT3& Up);
 
 private:
 	uint16_t HP;

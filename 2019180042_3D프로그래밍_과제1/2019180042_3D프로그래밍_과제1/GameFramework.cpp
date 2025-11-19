@@ -166,11 +166,6 @@ void CGameFramework::ProcessInput (SOCKET sock)
 	{
 		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
 		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
-		// 키 입력이 없어도 매 프레임마다 패킷을 보내고 있어서 조건문 처리해놨습니다. - 홍성호
-		if (keyPKT.keyW != 0 || keyPKT.keyS != 0)
-		{
-			send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
-		}
 	}
 
 	if ( !stop ) {
@@ -179,10 +174,11 @@ void CGameFramework::ProcessInput (SOCKET sock)
 			SetCursor ( NULL );
 			POINT ptCursorPos;
 			GetCursorPos ( &ptCursorPos );
+			keyPKT.yaw = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
 			SetCursorPos ( m_ptOldCursorPos.x , m_ptOldCursorPos.y );
 		}
 	}
-
+	send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
 }
 
 void CGameFramework::AnimateObjects()
@@ -224,54 +220,21 @@ void CGameFramework::HandlePacket(RecvQueue& recv_Queue)
 		player = recv_Queue.front();
 		recv_Queue.pop();
 		//-----------------
+		XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz };
 		if (player.Player_ID == 0)
 		{
 			m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-			//m_pPlayer->MoveUpdate(player, m_GameTimer.GetTimeElapsed());
+			m_pPlayer->LookAt(Look, Up);
 		}
 		else if (player.Player_ID == 1)
 		{
 			if (m_pScene && m_pScene->m_ppObjects[0])
 			{
 				m_pScene->m_ppObjects[0]->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-			}
-			//m_pScene->m_ppObjects[0]->Move(player.pos_x, player.pos_y, player.pos_z);
-		}
-		//--------------------
-		/*
-		switch (player.UpdateID) {
-		case START:
-			if (player.Player_ID == 0)
-			{
-				m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-				XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz };
-				XMFLOAT3 Up = { 0,1,0 };
-				m_pPlayer->LookAt(Look, Up);
-			}
-			else if (player.Player_ID == 1)
-			{
-				m_pScene->m_ppObjects[0]->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-				XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz };
-				XMFLOAT3 Up = { 0,1,0 };
 				m_pScene->m_ppObjects[0]->LookAt(Look, Up);
 				m_pScene->m_ppObjects[0]->Rotate(90.0f, 0.0f, 0.0f);
 			}
-			break;
-		case MOVE:
-			if (player.Player_ID == 0)
-			{
-				m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-				//m_pPlayer->MoveUpdate(player, m_GameTimer.GetTimeElapsed());
-			}
-			else if (player.Player_ID == 1)
-			{
-				m_pScene->m_ppObjects[0]->Move(player.pos_x, player.pos_y, player.pos_z);
-			}
-			break;
-		default:
-			break;
 		}
-		*/
 	}
 }
 

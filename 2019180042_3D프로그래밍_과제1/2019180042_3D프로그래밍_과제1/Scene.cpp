@@ -39,11 +39,11 @@ void CScene::BuildObjects()
 		m_ppObjects[i] = new CGameObject();
 		m_ppObjects[i]->SetMesh(pTankMesh);
 		m_ppObjects[i]->SetColor(RGB(255, 64, 64));
-		m_ppObjects[i]->SetPosition(0.0f, 0.0f, 0.0f);
-		XMFLOAT3 Look = { 0,0,-1 };
-		XMFLOAT3 Up = { 0,1,0 };
-		m_ppObjects[i]->LookAt(Look, Up);
-		m_ppObjects[i]->Rotate(90.0f, 0.0f, 0.0f);
+		m_ppObjects[i]->SetPosition(0.0f, 50.0f, 0.0f);
+		//XMFLOAT3 Look = { 0,0,-1 };
+		//XMFLOAT3 Up = { 0,1,0 };
+		//m_ppObjects[i]->LookAt(Look, Up);
+		//m_ppObjects[i]->Rotate(90.0f, 0.0f, 0.0f);
 	}
 
 #ifdef _WITH_DRAW_AXIS

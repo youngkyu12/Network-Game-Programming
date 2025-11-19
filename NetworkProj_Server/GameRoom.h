@@ -15,11 +15,8 @@ public:
 	void HandlePacket(Player* player, BYTE* buffer);
 
 	void Move(Player* player, char key);
-	void Rotate ( char id , POINT CursorPos );
-	
-	// Å×½ºÆ®
-	void UpdateMove(char id, XMFLOAT3 xmf3shift);
-	void UpdatePlayer(char id);
+	void Rotate ( char id , float yaw );
+
 private:
 	CRITICAL_SECTION _cs;
 	vector<Player*> PlayerManager;

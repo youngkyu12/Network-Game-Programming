@@ -17,6 +17,15 @@ void Player::SetPosition(float x, float y, float z)
 void Player::SetLook(float x, float y, float z)
 {
 	Look = XMFLOAT3(x, y, z);
+	LookAt(Look, Up);
+}
+
+void Player::LookAt(XMFLOAT3& L, XMFLOAT3& U)
+{
+	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookAtLH(Position, L, U);
+	Right = Vector3::Normalize(XMFLOAT3(xmf4x4View._11, xmf4x4View._21, xmf4x4View._31));
+	Up = Vector3::Normalize(XMFLOAT3(xmf4x4View._12, xmf4x4View._22, xmf4x4View._32));
+	Look = Vector3::Normalize(XMFLOAT3(xmf4x4View._13, xmf4x4View._23, xmf4x4View._33));
 }
 
 XMFLOAT3 Player::GetPosition()

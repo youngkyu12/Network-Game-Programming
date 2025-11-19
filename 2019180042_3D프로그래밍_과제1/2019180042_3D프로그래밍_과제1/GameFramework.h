@@ -30,7 +30,6 @@ private:
 	HBITMAP						m_hBitmapSelect = NULL;
 
 	CPlayer* m_pPlayer = NULL;
-	CPlayer* m_p2Player = NULL;
 	CScene* m_pScene = NULL;
 
 	CGameObject* m_pPickObject = NULL;
@@ -43,6 +42,8 @@ private:
 	_TCHAR						m_pszFrameRate[50];
 
 	bool stop = true;
+
+	XMFLOAT3 Up = { 0,1,0 };
 
 public:
 	void OnCreate(HINSTANCE hInstance, HWND hMainWnd);

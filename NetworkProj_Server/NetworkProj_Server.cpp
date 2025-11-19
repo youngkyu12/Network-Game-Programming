@@ -12,8 +12,9 @@ recvData는 데이터를 받을 위치를 계산한 포인터 변수 입니다.
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 {
 	Player* myPlayer = (Player*)lpParam;
-	//Room.UpdatePlayer(myPlayer->Player_ID);
 	myPlayer->SetPosition(0, 0, -50 + (myPlayer->Player_ID * 100));
+	// Look 방향 설정 안 하면 이동이나 회전할 때 오류 생겨요
+	myPlayer->SetLook(0, 0, 1 - (myPlayer->Player_ID * 2));
 	while (true)
 	{
 		Room.Update_State(myPlayer);
