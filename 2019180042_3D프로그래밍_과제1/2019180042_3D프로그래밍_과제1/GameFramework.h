@@ -45,6 +45,9 @@ private:
 
 	XMFLOAT3 Up = { 0,1,0 };
 
+	float						m_fBulletEffectiveRange = 150.0f;
+	CBulletObject* m_ppBullets[BULLETS];
+
 public:
 	void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
 	void OnDestroy();
@@ -62,9 +65,11 @@ public:
 	void HandlePacket(RecvQueue& recv_Queue);
 
 	void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
-	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
-	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
+	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, SOCKET sock);
+	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, SOCKET sock);
 
 	void SetActive(bool bActive) { m_bActive = bActive; }
+
+	void FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4World);
 };
 

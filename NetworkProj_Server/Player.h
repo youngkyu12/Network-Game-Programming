@@ -26,12 +26,15 @@ public:
 public:
 	void SetPosition(float x, float y, float z);
 	void SetLook(float x, float y, float z);
+	void SetFireFlag(bool fireflag);
+
 	XMFLOAT3 GetPosition(); // 포지션 데이터 가져오기
 	XMFLOAT3 GetVelocity();
 	XMFLOAT3 GetLook();
 	XMFLOAT3 GetUp();
 	XMFLOAT3 GetRight();
 	uint16_t GetHP(); // HP데이터 가져오기
+	bool GetFireFlag();
 
 
 	void Move(XMFLOAT3& xmf3Shift);
@@ -48,12 +51,12 @@ private:
 	XMFLOAT3 Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	XMFLOAT3 Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	XMFLOAT3 Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	
 
 	float Pitch = 0.0f;
 	float Yaw = 0.0f;
 	float Roll = 0.0f;
 	float Friction = 125.0f;
 	bool Fire_Flag;
-
 };
 

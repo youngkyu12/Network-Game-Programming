@@ -4,8 +4,9 @@ enum Packet_ID
 {
     START = 0,
     MOVE = 1,
-    TEMP = 2,
-    UPDATE = 3,
+    FIRE = 2,
+    TEMP = 3,
+    UPDATE = 4,
 };
 
 
@@ -25,7 +26,15 @@ struct InputKeyPacket
     uint16_t keyS = 0;
     //-----서버와 크기 맞추기 용 입니다.
     float yaw = 0;
-    //uint32_t mouseY = 0;
+
+};
+#pragma pack()
+
+#pragma pack(1)
+struct FirePacket
+{
+    Packetheader header;
+    bool FireFlag;
 };
 #pragma pack()
 
@@ -41,6 +50,7 @@ struct PlayerState
     float Lookx;
     float Looky;
     float Lookz;
+    bool fire;
     //float yaw;
     //char Shield;
     //bool fire;

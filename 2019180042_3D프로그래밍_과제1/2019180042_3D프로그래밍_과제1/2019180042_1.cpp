@@ -15,6 +15,7 @@ TCHAR szWindowClass[MAX_LOADSTRING];			// 기본 창 클래스 이름입니다.
 
 CGameFramework		gGameFramework;
 SOCKET sock; // 소켓
+SOCKET s;
 //char SERVERIP[16];
 char FILENAME[256]{ '\0' };
 RecvQueue recv_Queue;
@@ -70,6 +71,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	}
 
 	CreateThread(NULL, 0, ClientMain, (LPVOID)sock, 0, NULL);
+
+	s = sock;
 
 	// 응용 프로그램 초기화를 수행합니다.
 	if (!InitInstance(hInstance, nCmdShow))
@@ -205,7 +208,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEMOVE:
 	case WM_KEYDOWN:
 	case WM_KEYUP:
-		gGameFramework.OnProcessingWindowMessage(hWnd, message, wParam, lParam);
+		gGameFramework.OnProcessingWindowMessage(hWnd, message, wParam, lParam, s);
 		break;
 	case WM_COMMAND:
 		wmId = LOWORD(wParam);
@@ -318,6 +321,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 						pState.Lookx = updatePkt->players[i].Lookx;
 						pState.Looky = updatePkt->players[i].Looky;
 						pState.Lookz = updatePkt->players[i].Lookz;
+						pState.fire = updatePkt->players[i].fire;
 						recv_Queue.push(pState);
 					}
 					break;

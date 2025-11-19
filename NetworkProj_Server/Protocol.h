@@ -5,10 +5,10 @@
 #pragma pack(push, 1)
 enum
 {
-	START = 0,
 	MOVE = 1,
-	TEMP = 2,
-	UPDATE = 3,
+	FIRE = 2,
+	TEMP = 3,
+	UPDATE = 4,
 
 };
 
@@ -27,6 +27,12 @@ struct MovePacket
 	float yaw;	// rotate에 마우스 커서 말고 yaw 값 받아옴
 };
 
+struct FirePacket
+{
+	Packetheader header;
+	bool FireFlag;
+};
+
 struct PlayerState // 한명분 데이터
 {
 	int32_t playerID;
@@ -36,6 +42,7 @@ struct PlayerState // 한명분 데이터
 	float Look_x;
 	float Look_y;
 	float Look_z;
+	bool FireFlag;	// 1바이트
 	//uint16_t hp;
 };
 

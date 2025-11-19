@@ -20,6 +20,11 @@ void Player::SetLook(float x, float y, float z)
 	LookAt(Look, Up);
 }
 
+void Player::SetFireFlag(bool fireflag)
+{
+	Fire_Flag = fireflag;
+}
+
 void Player::LookAt(XMFLOAT3& L, XMFLOAT3& U)
 {
 	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookAtLH(Position, L, U);
@@ -56,6 +61,11 @@ XMFLOAT3 Player::GetRight()
 uint16_t Player::GetHP()
 {
 	return HP;
+}
+
+bool Player::GetFireFlag()
+{
+	return Fire_Flag;
 }
 
 

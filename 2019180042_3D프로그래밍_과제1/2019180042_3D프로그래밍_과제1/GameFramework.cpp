@@ -25,6 +25,7 @@ void CGameFramework::OnDestroy()
 
 	if (m_hBitmapFrameBuffer) ::DeleteObject(m_hBitmapFrameBuffer);
 	if (m_hDCFrameBuffer) ::DeleteDC(m_hDCFrameBuffer);
+	for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]) delete m_ppBullets[i];
 }
 
 void CGameFramework::BuildFrameBuffer()
@@ -81,7 +82,16 @@ void CGameFramework::BuildObjects()
 	m_pScene = new CScene(m_pPlayer);
 	m_pScene->BuildObjects();
 
-
+	CCubeMesh* pBulletMesh = new CCubeMesh(1.0f, 4.0f, 1.0f);
+	for (int i = 0; i < BULLETS; i++)
+	{
+		m_ppBullets[i] = new CBulletObject(m_fBulletEffectiveRange);
+		m_ppBullets[i]->SetMesh(pBulletMesh);
+		m_ppBullets[i]->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
+		m_ppBullets[i]->SetRotationSpeed(360.0f);
+		m_ppBullets[i]->SetMovingSpeed(120.0f);
+		m_ppBullets[i]->SetActive(false);
+	}
 }
 
 void CGameFramework::ReleaseObjects()
@@ -107,7 +117,7 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 	}
 }
 
-void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
+void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, SOCKET sock)
 {
 	switch (nMessageID)
 	{
@@ -115,14 +125,19 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		switch (wParam)
 		{
 		case 'A':
+			FirePacket firePkt;
+			firePkt.header.ID = FIRE;
+			firePkt.header.size = sizeof(FirePacket);
+			firePkt.FireFlag = true;
+			send(sock, (char*)&firePkt, firePkt.header.size, 0);
+			break;
+		case 'D':
 			if (stop) {
 				stop = false;
 			}
 			else {
 				stop = true;
 			}
-			break;
-		case 'D':
 			break;
 		}
 		break;
@@ -132,7 +147,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 }
 
 // 키보드 메시지 처리
-LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, SOCKET sock)
 {
 	switch (nMessageID)
 	{
@@ -149,7 +164,7 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 		break;
 	case WM_KEYDOWN:
 	case WM_KEYUP:
-		OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam);
+		OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam, sock);
 		break;
 	}
 	return(0);
@@ -186,6 +201,10 @@ void CGameFramework::AnimateObjects()
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
 	if (m_pPlayer) m_pPlayer->Animate(fTimeElapsed);
 	if (m_pScene) m_pScene->Animate(fTimeElapsed);
+	for (int i = 0; i < BULLETS; i++)
+	{
+		if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Animate(fTimeElapsed);
+	}
 }
 
 void CGameFramework::FrameAdvance(SOCKET sock, RecvQueue& recv_Queue)
@@ -204,6 +223,8 @@ void CGameFramework::FrameAdvance(SOCKET sock, RecvQueue& recv_Queue)
 	CCamera* pCamera = m_pPlayer->GetCamera();
 	if (m_pScene) m_pScene->Render(m_hDCFrameBuffer, pCamera);
 
+	for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Render(m_hDCFrameBuffer, pCamera);
+	
 	PresentFrameBuffer();
 
 	m_fExplosionElapsedTime += fDeltaTime;
@@ -225,6 +246,9 @@ void CGameFramework::HandlePacket(RecvQueue& recv_Queue)
 		{
 			m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
 			m_pPlayer->SetLook(Look);
+			if (player.fire == true) {
+				FireBullet(m_pPlayer->GetPosition(), m_pPlayer->GetUp(), m_pPlayer->m_xmf4x4World);
+			}
 		}
 		else if (player.Player_ID == 1)
 		{
@@ -233,8 +257,39 @@ void CGameFramework::HandlePacket(RecvQueue& recv_Queue)
 				m_pScene->m_ppObjects[0]->SetPosition(player.pos_x, player.pos_y, player.pos_z);
 				m_pScene->m_ppObjects[0]->LookTo(Look, Up);
 				m_pScene->m_ppObjects[0]->Rotate(90.0f, 0.0f, 0.0f);
+				if (player.fire == true) {
+					FireBullet(m_pScene->m_ppObjects[0]->GetPosition(), m_pScene->m_ppObjects[0]->GetLook(), m_pScene->m_ppObjects[0]->m_xmf4x4World);
+				}
 			}
 		}
+	}
+}
+
+void CGameFramework::FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4World)
+{
+
+	CBulletObject* pBulletObject = NULL;
+	for (int i = 0; i < BULLETS; i++)
+	{
+		if (!m_ppBullets[i]->m_bActive)
+		{
+			pBulletObject = m_ppBullets[i];
+			break;
+		}
+	}
+
+	if (pBulletObject)
+	{
+		XMFLOAT3 xmf3Position = pos;
+		XMFLOAT3 xmf3Direction = Up;
+		XMFLOAT3 xmf3FirePosition = Vector3::Add(xmf3Position, Vector3::ScalarProduct(xmf3Direction, 6.0f, false));
+
+		pBulletObject->m_xmf4x4World = m_xmf4x4World;
+
+		pBulletObject->SetFirePosition(xmf3FirePosition);
+		pBulletObject->SetMovingDirection(xmf3Direction);
+		pBulletObject->SetColor(RGB(255, 0, 0));
+		pBulletObject->SetActive(true);
 	}
 }
 
