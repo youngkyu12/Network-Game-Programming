@@ -28,17 +28,20 @@ void GameRoom::Update_State(Player* player)
 
 	updatePkt.numPlayers = playerCount;
 
+	uint16_t myID = player->Player_ID;
+
 	for (int i = 0; i < playerCount; ++i)
 	{
 		Player* p = PlayerManager[i];
 		XMFLOAT3 pos = p->GetPosition();
 		uint16_t hp = p->GetHP();
 
-		updatePkt.players[i].playerID = p->Player_ID;
+		if (p->Player_ID == myID) updatePkt.players[i].playerID = 0;	// 나 = 0
+		else if (p->Player_ID != myID) updatePkt.players[i].playerID = 1;	// 나X = 1 2인 기준, 3인 되면 변경
 		updatePkt.players[i].x = pos.x;
 		updatePkt.players[i].y = pos.y;
 		updatePkt.players[i].z = pos.z;
-		updatePkt.players[i].hp = hp;
+		//updatePkt.players[i].hp = hp;
 	}
 	LeaveCriticalSection(&_cs);
 
@@ -98,14 +101,16 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 		cout << "MOVE 스위치문 정상 작동" << endl;
 		MovePacket* testpkt = (MovePacket*)buffer;
 
-		player->SetPosition(testpkt->x, testpkt->y, testpkt->z);
+		if (testpkt->keyW == 1) Move(player->Player_ID, 'W');
+		else if (testpkt->keyS == 1) Move(player->Player_ID, 'S');
+		//player->SetPosition(testpkt->x, testpkt->y, testpkt->z);
 
-		cout << "x = " << testpkt->x << endl;
-		cout << "y = " << testpkt->y << endl;
-		cout << "z = " << testpkt->z << endl;
+		//cout << "x = " << testpkt->x << endl;
+		//cout << "y = " << testpkt->y << endl;
+		//cout << "z = " << testpkt->z << endl;
 
 		XMFLOAT3 currentPos = player->GetPosition();//테스트용 임시 저장
-		cout << currentPos.x << currentPos.y << currentPos.z << endl;
+		cout << currentPos.x << ", " << currentPos.y << ", " << currentPos.z << endl;
 		break;
 	}
 	case TEMP:
@@ -124,22 +129,22 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 
 void GameRoom::Move(char id, char key)
 {
-	/*
 	float Distance = 0.15f;
 	XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
 
 	switch (key)
 	{
 	case 'W':
-		xmf3Shift = Vector3::Add(xmf3Shift, PlayerManager[id]->Look, Distance);
+		xmf3Shift = Vector3::Add(xmf3Shift, PlayerManager[id]->GetLook(), Distance);
 		break;
 	case 'S':
-		xmf3Shift = Vector3::Add(xmf3Shift, PlayerManager[id]->Look, -Distance);
+		xmf3Shift = Vector3::Add(xmf3Shift, PlayerManager[id]->GetLook(), -Distance);
 		break;
 	}
 
-	PlayerManager[id]->Move(xmf3Shift, true);
-	*/
+	PlayerManager[id]->Move(xmf3Shift);
+	UpdateMove(id, xmf3Shift);
+	
 }
 
 void GameRoom::Rotate ( char id , POINT CursorPos )
@@ -156,4 +161,70 @@ void GameRoom::Rotate ( char id , POINT CursorPos )
 		PlayerManager[id]->Rotate (0.0f , cxMouseDelta , 0.0f);
 	}
 	*/
+}
+
+
+
+// 테스트
+void GameRoom::UpdateMove(char id, XMFLOAT3 xmf3shift)
+{
+	UpdateMoveState updateMPKT;
+	updateMPKT.header.ID = MOVE;
+	updateMPKT.header.size = sizeof(UpdateMoveState);
+	updateMPKT.player.x = xmf3shift.x;
+	updateMPKT.player.y = xmf3shift.y;
+	updateMPKT.player.z = xmf3shift.z;
+	EnterCriticalSection(&_cs);
+	int32_t playerCount = PlayerManager.size();
+	if (playerCount > MAX_PLAYERS)
+	{
+		playerCount = MAX_PLAYERS;
+	}
+
+	for (int i = 0; i < playerCount; ++i) {
+		if (PlayerManager[i]->Player_ID == id) {
+			updateMPKT.player.playerID = 0; // 자기자신 이동
+		}
+		else if (PlayerManager[i]->Player_ID != id) {
+			updateMPKT.player.playerID = 1; // 상대 이동
+		}
+		cout << "무브전송" << endl;
+		send(PlayerManager[i]->sock, (char*)&updateMPKT, updateMPKT.header.size, 0);
+	}
+	LeaveCriticalSection(&_cs);
+}
+
+void GameRoom::UpdatePlayer(char id)
+{
+	PlayerManager[id]->SetPosition(0, 0, -50 + (id * 100));
+	PlayerManager[id]->SetLook(0, 0, 1 - (id * 2));
+	UpdatePlayerState updatePPKT;
+	updatePPKT.header.ID = START;
+	updatePPKT.header.size = sizeof(UpdatePlayerState);
+	for (int i = 0; i < PlayerManager.size(); ++i) {
+		for (int j = 0; j < PlayerManager.size(); ++j) {
+			XMFLOAT3 pos = PlayerManager[j]->GetPosition();
+			XMFLOAT3 Look = PlayerManager[j]->GetLook();
+			if (PlayerManager[i]->Player_ID == PlayerManager[j]->Player_ID) {
+				updatePPKT.player.playerID = 0; // 자기자신
+				updatePPKT.player.x = pos.x;
+				updatePPKT.player.y = pos.y;
+				updatePPKT.player.z = pos.z;
+				updatePPKT.player.LookX = Look.x;
+				updatePPKT.player.LookY = Look.y;
+				updatePPKT.player.LookZ = Look.z;
+			}
+			else if (PlayerManager[i]->Player_ID != PlayerManager[j]->Player_ID) {
+				updatePPKT.player.playerID = 1;
+				updatePPKT.player.x = pos.x;
+				updatePPKT.player.y = pos.y;
+				updatePPKT.player.z = pos.z;
+				updatePPKT.player.LookX = Look.x;
+				updatePPKT.player.LookY = Look.y;
+				updatePPKT.player.LookZ = Look.z;
+			}
+			cout << "시작위치 전송" << endl;
+			send(PlayerManager[i]->sock, (char*)&updatePPKT, updatePPKT.header.size, 0);
+		}
+	}
 }

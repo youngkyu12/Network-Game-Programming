@@ -25,6 +25,7 @@ public:
 
 public:
 	void SetPosition(float x, float y, float z);
+	void SetLook(float x, float y, float z);
 	XMFLOAT3 GetPosition(); // 포지션 데이터 가져오기
 	XMFLOAT3 GetVelocity();
 	XMFLOAT3 GetLook();
@@ -33,12 +34,9 @@ public:
 	uint16_t GetHP(); // HP데이터 가져오기
 
 
-	void Move(DWORD dwDirection, float fDistance);
-	void Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity);
-	void Move(float x, float y, float z);
+	void Move(XMFLOAT3& xmf3Shift);
 
 	void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
-	void Update(float fTimeElapsed = 0.016f);
 
 private:
 	uint16_t HP;

@@ -5,12 +5,12 @@
 #pragma pack(push, 1)
 enum
 {
+	START = 0,
 	MOVE = 1,
 	TEMP = 2,
 	UPDATE = 3,
 
 };
-
 
 struct Packetheader
 {
@@ -22,9 +22,10 @@ struct Packetheader
 struct MovePacket
 {
 	Packetheader header;
-	float x;
-	float y;
-	float z;
+	uint16_t keyW;
+	uint16_t keyS;
+	uint32_t mouseX;
+	uint32_t mouseY;
 };
 
 struct PlayerState // 한명분 데이터
@@ -33,14 +34,49 @@ struct PlayerState // 한명분 데이터
 	float x;
 	float y;
 	float z;
-	uint16_t hp;
+	//uint16_t hp;
 };
+
 
 struct UpdateState
 {
 	Packetheader header;
 	int32_t numPlayers;
 	PlayerState players[MAX_PLAYERS];
+};
+
+
+// 테스트
+
+struct PlayerMoveState	// 움직임만을 위한 정보
+{
+	int32_t playerID;
+	float x;
+	float y;
+	float z;
+};
+
+struct UpdateMoveState	// 움직임만을 위한 패킷
+{
+	Packetheader header;
+	PlayerMoveState player;
+};
+
+struct StartPlayerState	// 플레이어 접속 했을 때 보내는 정보 (시작위치, 방향)
+{
+	int32_t playerID;
+	float x;
+	float y;
+	float z;
+	float LookX;
+	float LookY;
+	float LookZ;
+};
+
+struct UpdatePlayerState
+{
+	Packetheader header;
+	StartPlayerState player;
 };
 
 #pragma pack(pop)

@@ -14,6 +14,11 @@ void Player::SetPosition(float x, float y, float z)
 	Position = XMFLOAT3(x, y, z);
 }
 
+void Player::SetLook(float x, float y, float z)
+{
+	Look = XMFLOAT3(x, y, z);
+}
+
 XMFLOAT3 Player::GetPosition()
 {
 	return Position;
@@ -45,21 +50,10 @@ uint16_t Player::GetHP()
 }
 
 
-void Player::Move(XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
+void Player::Move(XMFLOAT3& xmf3Shift)
 {
-	if (bUpdateVelocity)
-	{
-		Velocity = Vector3::Add(Velocity, xmf3Shift);
-	}
-	else
-	{
-		Position = Vector3::Add(xmf3Shift, Position);
-	}
-}
 
-void Player::Move(float x, float y, float z)
-{
-	Move(XMFLOAT3(x, y, z), false);
+	Position = Vector3::Add(xmf3Shift, Position);
 }
 
 void Player::Rotate(float fPitch, float fYaw, float fRoll)
@@ -86,15 +80,4 @@ void Player::Rotate(float fPitch, float fYaw, float fRoll)
 	Look = Vector3::Normalize(Look);
 	Right = Vector3::Normalize(Vector3::CrossProduct(Up, Look));
 	Up = Vector3::Normalize(Vector3::CrossProduct(Look, Right));
-}
-
-void Player::Update(float fTimeElapsed)
-{
-	Move(Velocity, false);
-
-	XMFLOAT3 xmf3Deceleration = Vector3::Normalize(Vector3::ScalarProduct(Velocity, -1.0f));
-	float fLength = Vector3::Length(Velocity);
-	float fDeceleration = Friction * fTimeElapsed;
-	if (fDeceleration > fLength) fDeceleration = fLength;
-	Velocity = Vector3::Add(Velocity, xmf3Deceleration, fDeceleration);
 }

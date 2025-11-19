@@ -16,9 +16,10 @@ public:
 
 	void Move(char id, char key);
 	void Rotate ( char id , POINT CursorPos );
-
-
-
+	
+	// Å×½ºÆ®
+	void UpdateMove(char id, XMFLOAT3 xmf3shift);
+	void UpdatePlayer(char id);
 private:
 	CRITICAL_SECTION _cs;
 	vector<Player*> PlayerManager;

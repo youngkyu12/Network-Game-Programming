@@ -1,0 +1,417 @@
+﻿// LabProject02-01.cpp : 응용 프로그램에 대한 진입점을 정의합니다.
+//
+
+#include "stdafx.h"
+#include "2019180042_1.h"
+#include "GameFramework.h"
+#include "SocketQueue.h"
+
+#define MAX_LOADSTRING 100
+
+// 전역 변수:
+HINSTANCE hInst;								// 현재 인스턴스입니다.
+TCHAR szTitle[MAX_LOADSTRING];					// 제목 표시줄 텍스트입니다.
+TCHAR szWindowClass[MAX_LOADSTRING];			// 기본 창 클래스 이름입니다.
+
+CGameFramework		gGameFramework;
+SOCKET sock; // 소켓
+//char SERVERIP[16];
+char FILENAME[256]{ '\0' };
+//SendQueue send_Queue;
+RecvQueue recv_Queue;
+// HWND hIPControl;
+// HWND hButton;
+
+// 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
+ATOM				MyRegisterClass(HINSTANCE hInstance);
+BOOL				InitInstance(HINSTANCE, int);
+LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+DWORD WINAPI ClientMain(LPVOID arg);	// 소켓 통신 스레드 함수
+
+
+
+int APIENTRY _tWinMain(HINSTANCE hInstance,
+	HINSTANCE hPrevInstance,
+	LPTSTR    lpCmdLine,
+	int       nCmdShow)
+{
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
+
+	// TODO: 여기에 코드를 입력합니다.
+	MSG msg;
+	HACCEL hAccelTable;
+
+	// 전역 문자열을 초기화합니다.
+	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+	LoadString(hInstance, IDC_MY2019180042_1, szWindowClass, MAX_LOADSTRING);
+	MyRegisterClass(hInstance);
+	
+	WSADATA wsaData;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	{
+		return 1;
+	}
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock == INVALID_SOCKET)
+	{
+		return 1;
+	}
+
+	SOCKADDR_IN serverAddr;
+	memset(&serverAddr, 0, sizeof(serverAddr));
+	serverAddr.sin_family = AF_INET;
+	inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
+	serverAddr.sin_port = htons(SERVERPORT);
+
+	if (connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
+	{
+		return 1234;
+	}
+
+	CreateThread(NULL, 0, ClientMain, (LPVOID)sock, 0, NULL);
+
+	// 응용 프로그램 초기화를 수행합니다.
+	if (!InitInstance(hInstance, nCmdShow))
+	{
+		return FALSE;
+	}
+
+	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MY2019180042_1));
+
+
+	// 기본 메시지 루프입니다.
+	while (1)
+	{
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			if (msg.message == WM_QUIT) break;
+			if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+		}
+		else
+		{
+			//if (true) {
+			//	DestroyWindow(hIPControl);     // IP 입력창 제거
+			//	DestroyWindow(hButton); // 버튼 제거
+			//}
+			//else 
+			gGameFramework.FrameAdvance(sock, recv_Queue);
+		}
+	}
+	gGameFramework.OnDestroy();
+
+	return (int)msg.wParam;
+}
+
+
+
+//
+//  함수: MyRegisterClass()
+//
+//  목적: 창 클래스를 등록합니다.
+//
+//  설명:
+//
+//    Windows 95에서 추가된 'RegisterClassEx' 함수보다 먼저
+//    해당 코드가 Win32 시스템과 호환되도록
+//    하려는 경우에만 이 함수를 사용합니다. 이 함수를 호출해야
+//    해당 응용 프로그램에 연결된
+//    '올바른 형식의' 작은 아이콘을 가져올 수 있습니다.
+//
+ATOM MyRegisterClass(HINSTANCE hInstance)
+{
+	WNDCLASSEX wcex;
+
+	wcex.cbSize = sizeof(WNDCLASSEX);
+
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = hInstance;
+	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MY2019180042_1));
+	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.lpszMenuName = NULL;
+	wcex.lpszClassName = szWindowClass;
+	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+
+	return RegisterClassEx(&wcex);
+}
+
+//
+//   함수: InitInstance(HINSTANCE, int)
+//
+//   목적: 인스턴스 핸들을 저장하고 주 창을 만듭니다.
+//
+//   설명:
+//
+//        이 함수를 통해 인스턴스 핸들을 전역 변수에 저장하고
+//        주 프로그램 창을 만든 다음 표시합니다.
+//
+BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+{
+	hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
+
+	RECT rc = { 0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT };
+	DWORD dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU | WS_BORDER;
+	AdjustWindowRect(&rc, dwStyle, FALSE);
+	HWND hMainWnd = CreateWindow(szWindowClass, szTitle, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, hInstance, NULL);
+	if (!hMainWnd) return(FALSE);
+
+	gGameFramework.OnCreate(hInstance, hMainWnd);
+
+	ShowWindow(hMainWnd, nCmdShow);
+	UpdateWindow(hMainWnd);
+
+	return TRUE;
+}
+
+//
+//  함수: WndProc(HWND, UINT, WPARAM, LPARAM)
+//
+//  목적: 주 창의 메시지를 처리합니다.
+//
+//  WM_COMMAND	- 응용 프로그램 메뉴를 처리합니다.
+//  WM_PAINT	- 주 창을 그립니다.
+//  WM_DESTROY	- 종료 메시지를 게시하고 반환합니다.
+//
+//
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	int wmId, wmEvent;
+	PAINTSTRUCT ps;
+	HDC hdc;
+
+	switch (message)
+	{
+	case WM_CREATE:
+		// StartScene
+		/*hIPControl = CreateWindowEx(0, WC_IPADDRESS, NULL,
+			WS_CHILD | WS_VISIBLE,
+			0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT,
+			hWnd, (HMENU)ID_IPADDRESS,
+			hInst, NULL);*/
+		// button
+	case WM_SIZE:
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+	case WM_MOUSEMOVE:
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+		gGameFramework.OnProcessingWindowMessage(hWnd, message, wParam, lParam);
+		break;
+	case WM_COMMAND:
+		wmId = LOWORD(wParam);
+		wmEvent = HIWORD(wParam);
+		// 메뉴의 선택 영역을 구문 분석합니다.
+		switch (wmId)
+		{
+		case IDM_ABOUT:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			break;
+		case IDM_EXIT:
+			DestroyWindow(hWnd);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+		break;
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &ps);
+		// TODO: 여기에 그리기 코드를 추가합니다.
+		EndPaint(hWnd, &ps);
+		break;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
+// 정보 대화 상자의 메시지 처리기입니다.
+INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+// TCP 클라이언트 시작 부분
+DWORD WINAPI ClientMain(LPVOID arg)
+{
+	SOCKET mysock = (SOCKET)arg;
+	int retval;
+	int num = 0;
+	
+	
+
+	// 데이터 통신에 사용할 변수
+	char buf[BUFSIZE];
+	int len = 0;
+	int32_t recvByte = 0;
+
+	// 서버와 데이터 통신
+	while (1) {
+		
+		// 송신 프레임워크에서 진행 테스트
+		/* 
+		InputPacket packet = send_Queue.front();
+		send_Queue.pop();
+		memcpy(buf, &packet, sizeof(packet));
+
+		int len = sizeof(packet);
+
+		// 필요한가?
+		// 데이터 보내기(고정 길이)
+		retval = send(mysock, (char*)&len, sizeof(int), 0);
+		if (retval == SOCKET_ERROR) {
+			err_display("send()");
+			break;
+		}
+
+		// 데이터 보내기(가변 길이)
+		retval = send(mysock, buf, len, 0);
+		if (retval == SOCKET_ERROR) {
+			err_display("send()");
+			break;
+		}
+		*/
+
+		// 데이터 받기(고정 길이)
+		/*retval = recv(sock, (char*)&len, sizeof(int), MSG_WAITALL);
+		if (retval == SOCKET_ERROR) {
+			err_display("recv()");
+			break;
+		}
+		else if (retval == 0)
+			break;*/
+
+		// 데이터 받기(가변 길이)
+		// DummyClient처럼 프레임워크에서 송신하고 여기서는 받기만 하는 걸로 일단 해봤어요
+		retval = recv(mysock, buf, sizeof(buf), 0);
+		if (retval == SOCKET_ERROR) {
+			err_display("recv()");
+			break;
+		}
+		else if (retval == 0)
+			break;
+		if (retval > 0)
+		{
+			recvByte += retval; // 
+			while (1)
+			{
+				if (recvByte < sizeof(Packetheader))
+				{
+					// 패킷헤더만큼도 도착안함
+					break;
+				}
+
+				Packetheader* header = (Packetheader*)buf;
+
+				if (recvByte < header->size)
+				{
+					// 패킷이 아직 다 안옴.
+					break;
+				}
+
+				//패킷 도착 후 처리
+				switch (header->ID) {
+
+				case START:
+				{
+					UpdatePlayerState* updatePPKT = (UpdatePlayerState*)buf;
+					PlayerState playerSPKT;
+					playerSPKT.UpdateID = updatePPKT->header.ID;
+					playerSPKT.Player_ID = updatePPKT->player.playerID;
+					playerSPKT.pos_x = updatePPKT->player.x;
+					playerSPKT.pos_y = updatePPKT->player.y;
+					playerSPKT.pos_z = updatePPKT->player.z;
+					playerSPKT.Lookx = updatePPKT->player.LookX;
+					playerSPKT.Looky = updatePPKT->player.LookY;
+					playerSPKT.Lookz = updatePPKT->player.LookZ;
+					recv_Queue.push(playerSPKT);
+					break;
+				}
+				case MOVE:
+				{
+					UpdateMoveState* updateMPKT = (UpdateMoveState*)buf;
+					PlayerState playerMPKT;
+					playerMPKT.UpdateID = updateMPKT->header.ID;
+					playerMPKT.Player_ID = updateMPKT->player.playerID;
+					playerMPKT.pos_x = updateMPKT->player.x;
+					playerMPKT.pos_y = updateMPKT->player.y;
+					playerMPKT.pos_z = updateMPKT->player.z;
+					recv_Queue.push(playerMPKT);
+					break;
+				}
+				}
+
+				if (recvByte - header->size > 0)
+				{
+					memmove(buf, buf + header->size, recvByte - (header->size));
+				}
+				recvByte = recvByte - header->size; // 
+			}
+			
+			/*if (header->ID == UPDATE)
+			{
+				UpdateState* updatePkt = (UpdateState*)buf;
+
+				// 받은 모든 플레이어 정보 출력
+				for (int i = 0; i < updatePkt->numPlayers; ++i)
+				{
+					PlayerState Playerpacket;
+					Playerpacket = updatePkt->players[i];
+					recv_Queue.push(Playerpacket);
+				}
+			}
+			else
+			{
+			}
+			*/
+		}
+
+		/*
+		retval = recv(mysock, buf, sizeof(PlayerState), MSG_WAITALL);
+		if (retval == SOCKET_ERROR) {
+			err_display("recv()");
+			break;
+		}
+		else if (retval == 0)
+			break;
+		PlayerState Playerpacket;
+		memcpy(&Playerpacket, buf, sizeof(PlayerState));
+		recv_Queue.push(Playerpacket);
+		*/
+	}
+
+	// 소켓 닫기
+	closesocket(sock);
+
+	// 윈속 종료
+	WSACleanup();
+	return 0;
+}
+

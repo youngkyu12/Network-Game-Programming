@@ -27,9 +27,10 @@ struct Packetheader
 struct MovePacket
 {
 	Packetheader header;
-	float x;
-	float y;
-	float z;
+	uint16_t keyW;
+	uint16_t keyS;
+	uint32_t mouseX;
+	uint32_t mouseY;
 };
 
 struct PlayerState // 한명분 데이터
@@ -38,7 +39,7 @@ struct PlayerState // 한명분 데이터
 	float x;
 	float y;
 	float z;
-	uint16_t hp;
+	float yaw;
 };
 
 struct UpdateState
@@ -71,7 +72,7 @@ DWORD WINAPI RecvThreadMain(LPVOID lpParam)
 				// 받은 모든 플레이어 정보 출력
 				for (int i = 0; i < updatePkt->numPlayers; ++i)
 				{
-					cout << " ID " << updatePkt->players[i].playerID << " HP:" << updatePkt->players[i].hp << " X:" << updatePkt->players[i].x << " Y:" << updatePkt->players[i].y << ", Z : " << updatePkt->players[i].z << endl;
+					cout << " ID " << updatePkt->players[i].playerID << " X:" << updatePkt->players[i].x << " Y:" << updatePkt->players[i].y << ", Z : " << updatePkt->players[i].z << endl;
 				}
 			}
 			else
@@ -124,9 +125,10 @@ int main()
 
 		testPkt.header.ID = MOVE;
 		testPkt.header.size = sizeof(MovePacket); // 16바이트
-		testPkt.x = 10.5f;
-		testPkt.y = 0.0f;
-		testPkt.z = -20.1f;
+		testPkt.keyW = true;
+		testPkt.keyS = false;
+		testPkt.mouseX = 500;
+		testPkt.mouseY = 600;
 
 		if (send(sock, (char*)&testPkt, testPkt.header.size, 0) == SOCKET_ERROR)
 		{
@@ -134,8 +136,8 @@ int main()
 			break;
 		}
 
-		//cout << "보낸 바이트 크기 " << testPkt.header.size << endl;
-		cout << "MOVE 패킷 전송 성공 x=" << testPkt.x << " y=" << testPkt.y << " z=" << testPkt.z << endl;
+		cout << "보낸 바이트 크기 " << testPkt.header.size << endl;
+		cout << "MOVE 패킷 전송 성공 W=" << testPkt.keyW << " S=" << testPkt.keyS << endl;
 		Sleep(5000);
 
 	}
