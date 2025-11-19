@@ -23,22 +23,25 @@ struct InputKeyPacket
     Packetheader header;
     uint16_t keyW = 0;
     uint16_t keyS = 0;
+    //-----서버와 크기 맞추기 용 입니다.
+    uint32_t mouseX = 0;
+    uint32_t mouseY = 0;
 };
 #pragma pack()
 
 #pragma pack(1)
 struct PlayerState
 {
-    int16_t UpdateID;
+    //int16_t UpdateID;
     int32_t Player_ID;
    // char hp;
     float pos_x;
     float pos_y;
     float pos_z;
-    float Lookx;
-    float Looky;
-    float Lookz;
-    float yaw;
+    //float Lookx;
+    //float Looky;
+    //float Lookz;
+    //float yaw;
     //char Shield;
     //bool fire;
 };

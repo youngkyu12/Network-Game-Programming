@@ -17,7 +17,7 @@ GameRoom::~GameRoom()
 void GameRoom::Update_State(Player* player)
 {
 	UpdateState updatePkt;
-	updatePkt.header.ID = UPDATE; // 3
+	updatePkt.header.ID = MOVE; // 1
 
 	EnterCriticalSection(&_cs);
 	int32_t playerCount = PlayerManager.size();
@@ -36,8 +36,9 @@ void GameRoom::Update_State(Player* player)
 		XMFLOAT3 pos = p->GetPosition();
 		uint16_t hp = p->GetHP();
 
-		if (p->Player_ID == myID) updatePkt.players[i].playerID = 0;	// 나 = 0
-		else if (p->Player_ID != myID) updatePkt.players[i].playerID = 1;	// 나X = 1 2인 기준, 3인 되면 변경
+		updatePkt.players[i].playerID = p->Player_ID;
+		//if (p->Player_ID == myID) updatePkt.players[i].playerID = 0;	// 나 = 0
+		//else if (p->Player_ID != myID) updatePkt.players[i].playerID = 1;	// 나X = 1 2인 기준, 3인 되면 변경
 		updatePkt.players[i].x = pos.x;
 		updatePkt.players[i].y = pos.y;
 		updatePkt.players[i].z = pos.z;
@@ -101,8 +102,8 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 		cout << "MOVE 스위치문 정상 작동" << endl;
 		MovePacket* testpkt = (MovePacket*)buffer;
 
-		if (testpkt->keyW == 1) Move(player->Player_ID, 'W');
-		else if (testpkt->keyS == 1) Move(player->Player_ID, 'S');
+		if (testpkt->keyW == 1) Move(player, 'W');
+		else if (testpkt->keyS == 1) Move(player, 'S');
 		//player->SetPosition(testpkt->x, testpkt->y, testpkt->z);
 
 		//cout << "x = " << testpkt->x << endl;
@@ -127,7 +128,12 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	
 }
 
-void GameRoom::Move(char id, char key)
+/*
+HandlePacket 내부에서만 실행될 함수이고
+HandlePacket은 이미 Player* player를 알고 있습니다.
+플레이어 매니저를 통해서 찾을 필요 없어요.
+*/
+void GameRoom::Move(Player* player, char key)
 {
 	float Distance = 0.15f;
 	XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
@@ -135,15 +141,15 @@ void GameRoom::Move(char id, char key)
 	switch (key)
 	{
 	case 'W':
-		xmf3Shift = Vector3::Add(xmf3Shift, PlayerManager[id]->GetLook(), Distance);
+		xmf3Shift = Vector3::Add(xmf3Shift, player->GetLook(), Distance);
 		break;
 	case 'S':
-		xmf3Shift = Vector3::Add(xmf3Shift, PlayerManager[id]->GetLook(), -Distance);
+		xmf3Shift = Vector3::Add(xmf3Shift, player->GetLook(), -Distance);
 		break;
 	}
 
-	PlayerManager[id]->Move(xmf3Shift);
-	UpdateMove(id, xmf3Shift);
+	player->Move(xmf3Shift);
+	//UpdateMove(id, xmf3Shift);
 	
 }
 

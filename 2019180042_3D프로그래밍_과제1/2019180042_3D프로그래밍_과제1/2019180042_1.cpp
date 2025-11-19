@@ -341,7 +341,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 
 				case START:
 				{
-					UpdatePlayerState* updatePPKT = (UpdatePlayerState*)buf;
+					/*UpdatePlayerState* updatePPKT = (UpdatePlayerState*)buf;
 					PlayerState playerSPKT;
 					playerSPKT.UpdateID = updatePPKT->header.ID;
 					playerSPKT.Player_ID = updatePPKT->player.playerID;
@@ -351,19 +351,23 @@ DWORD WINAPI ClientMain(LPVOID arg)
 					playerSPKT.Lookx = updatePPKT->player.LookX;
 					playerSPKT.Looky = updatePPKT->player.LookY;
 					playerSPKT.Lookz = updatePPKT->player.LookZ;
-					recv_Queue.push(playerSPKT);
+					recv_Queue.push(playerSPKT);*/
 					break;
 				}
 				case MOVE:
 				{
-					UpdateMoveState* updateMPKT = (UpdateMoveState*)buf;
-					PlayerState playerMPKT;
-					playerMPKT.UpdateID = updateMPKT->header.ID;
-					playerMPKT.Player_ID = updateMPKT->player.playerID;
-					playerMPKT.pos_x = updateMPKT->player.x;
-					playerMPKT.pos_y = updateMPKT->player.y;
-					playerMPKT.pos_z = updateMPKT->player.z;
-					recv_Queue.push(playerMPKT);
+					
+					UpdateState* updatePkt = (UpdateState*)buf;
+					for (int i = 0; i < updatePkt->numPlayers; ++i)
+					{
+						PlayerState pState;
+
+						pState.Player_ID = updatePkt->players[i].Player_ID;
+						pState.pos_x = updatePkt->players[i].pos_x;
+						pState.pos_y = updatePkt->players[i].pos_y;
+						pState.pos_z = updatePkt->players[i].pos_z;
+						recv_Queue.push(pState);
+					}
 					break;
 				}
 				}

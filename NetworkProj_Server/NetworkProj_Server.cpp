@@ -12,11 +12,11 @@ recvData는 데이터를 받을 위치를 계산한 포인터 변수 입니다.
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 {
 	Player* myPlayer = (Player*)lpParam;
-	Room.UpdatePlayer(myPlayer->Player_ID);
-
+	//Room.UpdatePlayer(myPlayer->Player_ID);
+	myPlayer->SetPosition(0, 0, -50 + (myPlayer->Player_ID * 100));
 	while (true)
 	{
-		//Room.Update_State(myPlayer);
+		Room.Update_State(myPlayer);
 
 		// 시작주소 갱신.
 		char* recvData = (char*)myPlayer->recvBuffer + myPlayer->recvByte;// 포인터 연산으로 (타입)*크기 만큼 이동
