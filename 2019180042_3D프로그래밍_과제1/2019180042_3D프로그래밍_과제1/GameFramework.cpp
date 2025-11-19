@@ -179,11 +179,18 @@ void CGameFramework::ProcessInput()
 	keyPKT.header.ID = MOVE;
 	keyPKT.header.size = sizeof(MovePacket);
 
+	bool keyinput = false;
+	bool mouseinput = false;
+
 	static UCHAR pKeyBuffer[256];
 	if ( GetKeyboardState ( pKeyBuffer ) )
 	{
 		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
 		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
+
+		if (keyPKT.keyS || keyPKT.keyW) {
+			keyinput = true;
+		}
 	}
 
 	if ( !stop ) {
@@ -194,6 +201,10 @@ void CGameFramework::ProcessInput()
 			GetCursorPos ( &ptCursorPos );
 			keyPKT.yaw = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
 			SetCursorPos ( m_ptOldCursorPos.x , m_ptOldCursorPos.y );
+
+			if (keyPKT.yaw != 0) {
+				mouseinput = true;
+			}
 		}
 	}
 
@@ -202,8 +213,9 @@ void CGameFramework::ProcessInput()
 	// 그래서 이렇게 안 하고 Send_Queue에 push해서 사용하도록 변경하겠습니다.
 	send_Queue.push(keyPKT);
 	*/
-
-	send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
+	if (keyinput || mouseinput) {
+		send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
+	}
 	
 }
 
@@ -268,7 +280,7 @@ void CGameFramework::HandlePacket()
 				m_pScene->m_ppObjects[0]->LookTo(Look, Up);
 				m_pScene->m_ppObjects[0]->Rotate(90.0f, 0.0f, 0.0f);
 				if (player.fire == true) {
-					FireBullet(m_pScene->m_ppObjects[0]->GetPosition(), m_pScene->m_ppObjects[0]->GetLook(), m_pScene->m_ppObjects[0]->m_xmf4x4World);
+					FireBullet(m_pScene->m_ppObjects[0]->GetPosition(), m_pScene->m_ppObjects[0]->GetUp(), m_pScene->m_ppObjects[0]->m_xmf4x4World);
 				}
 			}
 		}
