@@ -220,18 +220,18 @@ void CGameFramework::HandlePacket(RecvQueue& recv_Queue)
 		player = recv_Queue.front();
 		recv_Queue.pop();
 		//-----------------
-		XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz };
+		XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz};
 		if (player.Player_ID == 0)
 		{
 			m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-			m_pPlayer->LookAt(Look, Up);
+			m_pPlayer->SetLook(Look);
 		}
 		else if (player.Player_ID == 1)
 		{
 			if (m_pScene && m_pScene->m_ppObjects[0])
 			{
 				m_pScene->m_ppObjects[0]->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-				m_pScene->m_ppObjects[0]->LookAt(Look, Up);
+				m_pScene->m_ppObjects[0]->LookTo(Look, Up);
 				m_pScene->m_ppObjects[0]->Rotate(90.0f, 0.0f, 0.0f);
 			}
 		}

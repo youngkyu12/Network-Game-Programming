@@ -61,6 +61,13 @@ void CPlayer::LookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
 	m_xmf3Look = Vector3::Normalize(XMFLOAT3(xmf4x4View._13, xmf4x4View._23, xmf4x4View._33));
 }
 
+void CPlayer::SetLook(XMFLOAT3& xmf3Look)
+{
+	m_xmf3Look = xmf3Look;
+	m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Up, m_xmf3Look));
+	m_xmf3Up = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Look, m_xmf3Right));
+}
+
 void CPlayer::Move(XMFLOAT3& xmf3Shift)
 {
 	m_xmf3Position = Vector3::Add(xmf3Shift, m_xmf3Position);

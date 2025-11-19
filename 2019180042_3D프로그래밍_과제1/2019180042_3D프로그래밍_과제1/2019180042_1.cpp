@@ -315,6 +315,9 @@ DWORD WINAPI ClientMain(LPVOID arg)
 						pState.pos_x = updatePkt->players[i].pos_x;
 						pState.pos_y = updatePkt->players[i].pos_y;
 						pState.pos_z = updatePkt->players[i].pos_z;
+						pState.Lookx = updatePkt->players[i].Lookx;
+						pState.Looky = updatePkt->players[i].Looky;
+						pState.Lookz = updatePkt->players[i].Lookz;
 						recv_Queue.push(pState);
 					}
 					break;

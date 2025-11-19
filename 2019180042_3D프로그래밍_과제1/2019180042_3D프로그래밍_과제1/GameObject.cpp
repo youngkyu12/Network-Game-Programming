@@ -136,6 +136,7 @@ void CGameObject::LookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
 	m_xmf4x4World._31 = xmf4x4View._13; m_xmf4x4World._32 = xmf4x4View._23; m_xmf4x4World._33 = xmf4x4View._33;
 }
 
+
 void CGameObject::UpdateBoundingBox()
 {
 	if (m_pMesh)

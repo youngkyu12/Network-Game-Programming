@@ -46,6 +46,9 @@ void GameRoom::Update_State(Player* player)
 		updatePkt.players[i].Look_x = Look.x;
 		updatePkt.players[i].Look_y = Look.y;
 		updatePkt.players[i].Look_z = Look.z;
+
+		cout << " 전송완료" << endl;
+		cout << "Lookx = " << Look.x << ", Looky = " << Look.y << ", Lookz = " << Look.z;
 		//updatePkt.players[i].hp = hp;
 	}
 	LeaveCriticalSection(&_cs);
@@ -109,7 +112,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 		if (testpkt->keyW == 1) Move(player, 'W');
 		else if (testpkt->keyS == 1) Move(player, 'S');
 
-		if (testpkt->yaw > 0) Rotate(player->Player_ID, testpkt->yaw);
+		if (testpkt->yaw != 0) Rotate(player->Player_ID, testpkt->yaw);
 		//player->SetPosition(testpkt->x, testpkt->y, testpkt->z);
 
 		//cout << "x = " << testpkt->x << endl;
@@ -118,6 +121,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 
 		XMFLOAT3 currentPos = player->GetPosition();//테스트용 임시 저장
 		cout << currentPos.x << ", " << currentPos.y << ", " << currentPos.z << endl;
+		cout << testpkt->yaw << endl;
 		break;
 	}
 	case TEMP:

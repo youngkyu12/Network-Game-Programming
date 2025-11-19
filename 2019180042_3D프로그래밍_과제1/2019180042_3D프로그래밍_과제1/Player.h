@@ -31,6 +31,8 @@ public:
 public:
 	void SetPosition(float x, float y, float z);
 
+	void SetLook(XMFLOAT3& xmf3Look);
+
 	void LookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up);
 
 	void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
