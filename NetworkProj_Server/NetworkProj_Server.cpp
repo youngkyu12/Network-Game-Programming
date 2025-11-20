@@ -3,7 +3,7 @@
 #define SERVERPORT 8922
 
 GameRoom Room;
-
+//브랜치 테스트용 주석
 /*
 recvData는 데이터를 받을 위치를 계산한 포인터 변수 입니다.
 가독성을 위한 일종의 책갈피 역할이라고 생각해주시면 됩니다.
