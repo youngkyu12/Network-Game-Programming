@@ -190,7 +190,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			20, 220, 200, 25,
 			hWnd, (HMENU)ID_IPADDRESS,
 			hInst, NULL);
-		SendMessage(hIPControl, IPM_SETADDRESS, 0, MAKEIPADDRESS(127, 0, 0, 1));
+		SendMessage(hIPControl, IPM_SETADDRESS, 0, MAKEIPADDRESS(192,168,67,248));
 		// button
 		hButton = CreateWindow(_T("button"), _T("접속"),
 			WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,

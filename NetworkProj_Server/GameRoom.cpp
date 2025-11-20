@@ -53,6 +53,7 @@ void GameRoom::Update_State(Player* player)
 			if (p->check == 2) {
 				p->SetFireFlag(false);
 				p->check = 0;
+			}
 		}
 		
 		//updatePkt.players[i].hp = hp;
