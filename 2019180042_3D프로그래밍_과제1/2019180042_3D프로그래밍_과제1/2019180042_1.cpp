@@ -17,8 +17,6 @@ CGameFramework		gGameFramework;
 
  char SeverIP[16];
 
- //깃 병합 테스트용 주석
-
  HANDLE hIpEvent; // connect 대기 이벤트
  HWND hEdit = nullptr;
 
