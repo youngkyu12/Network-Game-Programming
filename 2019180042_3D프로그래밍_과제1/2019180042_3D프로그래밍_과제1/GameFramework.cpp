@@ -25,6 +25,7 @@ void CGameFramework::OnDestroy()
 
 	if (m_hBitmapFrameBuffer) ::DeleteObject(m_hBitmapFrameBuffer);
 	if (m_hDCFrameBuffer) ::DeleteDC(m_hDCFrameBuffer);
+	for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]) delete m_ppBullets[i];
 }
 
 void CGameFramework::BuildFrameBuffer()
@@ -81,6 +82,16 @@ void CGameFramework::BuildObjects()
 	m_pScene = new CScene(m_pPlayer);
 	m_pScene->BuildObjects();
 
+	CCubeMesh* pBulletMesh = new CCubeMesh(1.0f, 4.0f, 1.0f);
+	for (int i = 0; i < BULLETS; i++)
+	{
+		m_ppBullets[i] = new CBulletObject(m_fBulletEffectiveRange);
+		m_ppBullets[i]->SetMesh(pBulletMesh);
+		m_ppBullets[i]->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
+		m_ppBullets[i]->SetRotationSpeed(360.0f);
+		m_ppBullets[i]->SetMovingSpeed(120.0f);
+		m_ppBullets[i]->SetActive(false);
+	}
 }
 
 void CGameFramework::ReleaseObjects()
@@ -113,15 +124,23 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
+		case VK_ESCAPE:
+			::PostQuitMessage(0);
+			break;
 		case 'A':
+			FirePacket firePkt;
+			firePkt.header.ID = FIRE;
+			firePkt.header.size = sizeof(FirePacket);
+			firePkt.FireFlag = true;
+			send(sock, (char*)&firePkt, firePkt.header.size, 0);
+			break;
+		case 'D':
 			if (stop) {
 				stop = false;
 			}
 			else {
 				stop = true;
 			}
-			break;
-		case 'D':
 			break;
 		}
 		break;
@@ -154,15 +173,24 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 	return(0);
 }
 
-void CGameFramework::ProcessInput (SendQueue& send_Queue)
+void CGameFramework::ProcessInput()
 {
-	InputPacket packet = { 0, 0, 0, 0 };
+	MovePacket keyPKT;
+	keyPKT.header.ID = MOVE;
+	keyPKT.header.size = sizeof(MovePacket);
+
+	bool keyinput = false;
+	bool mouseinput = false;
 
 	static UCHAR pKeyBuffer[256];
 	if ( GetKeyboardState ( pKeyBuffer ) )
 	{
-		packet.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
-		packet.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
+		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
+		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
+
+		if (keyPKT.keyS || keyPKT.keyW) {
+			keyinput = true;
+		}
 	}
 
 	if ( !stop ) {
@@ -171,12 +199,24 @@ void CGameFramework::ProcessInput (SendQueue& send_Queue)
 			SetCursor ( NULL );
 			POINT ptCursorPos;
 			GetCursorPos ( &ptCursorPos );
-			packet.mouseX = ptCursorPos.x;
-			packet.mouseY = ptCursorPos.y;
+			keyPKT.yaw = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
 			SetCursorPos ( m_ptOldCursorPos.x , m_ptOldCursorPos.y );
+
+			if (keyPKT.yaw != 0) {
+				mouseinput = true;
+			}
 		}
 	}
-	send_Queue.push(packet);
+
+	/* [11/20]
+	// 네트워크 스레드가 있는데 렌더하는 주 스레드에서 Send가 발생하면 프레임이 많이 떨어져서 끊기는 현상이 자주 발생합니다.
+	// 그래서 이렇게 안 하고 Send_Queue에 push해서 사용하도록 변경하겠습니다.
+	send_Queue.push(keyPKT);
+	*/
+	if (keyinput || mouseinput) {
+		send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
+	}
+	
 }
 
 void CGameFramework::AnimateObjects()
@@ -184,19 +224,19 @@ void CGameFramework::AnimateObjects()
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
 	if (m_pPlayer) m_pPlayer->Animate(fTimeElapsed);
 	if (m_pScene) m_pScene->Animate(fTimeElapsed);
+	for (int i = 0; i < BULLETS; i++)
+	{
+		if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Animate(fTimeElapsed);
+	}
 }
 
-void CGameFramework::FrameAdvance(SendQueue& send_Queue, RecvQueue& recv_Queue)
+void CGameFramework::FrameAdvance()
 {
 	m_GameTimer.Tick(60.0f);
-	ProcessInput(send_Queue);
+	ProcessInput();
 
-	// 여기서 리시브?
-	//HandlePacket(recv_Queue);
-
-
-
-	m_pPlayer->Update(recv_Queue, m_GameTimer.GetTimeElapsed());
+	HandlePacket();
+	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 
 	AnimateObjects();
 
@@ -205,6 +245,8 @@ void CGameFramework::FrameAdvance(SendQueue& send_Queue, RecvQueue& recv_Queue)
 	CCamera* pCamera = m_pPlayer->GetCamera();
 	if (m_pScene) m_pScene->Render(m_hDCFrameBuffer, pCamera);
 
+	for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Render(m_hDCFrameBuffer, pCamera);
+	
 	PresentFrameBuffer();
 
 	m_fExplosionElapsedTime += fDeltaTime;
@@ -213,9 +255,63 @@ void CGameFramework::FrameAdvance(SendQueue& send_Queue, RecvQueue& recv_Queue)
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }
 
-void CGameFramework::HandlePacket(RecvQueue& recv_Queue)
+void CGameFramework::HandlePacket()
 {
 	// player update
+	PlayerState player;
+	while (!recv_Queue.empty()) {
+		player = recv_Queue.front();
+		recv_Queue.pop();
+		//-----------------
+		XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz};
+		if (player.Player_ID == 0)
+		{
+			m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
+			m_pPlayer->SetLook(Look);
+			if (player.fire == true) {
+				FireBullet(m_pPlayer->GetPosition(), m_pPlayer->GetUp(), m_pPlayer->m_xmf4x4World);
+			}
+		}
+		else if (player.Player_ID == 1)
+		{
+			if (m_pScene && m_pScene->m_ppObjects[0])
+			{
+				m_pScene->m_ppObjects[0]->SetPosition(player.pos_x, player.pos_y, player.pos_z);
+				m_pScene->m_ppObjects[0]->LookTo(Look, Up);
+				m_pScene->m_ppObjects[0]->Rotate(90.0f, 0.0f, 0.0f);
+				if (player.fire == true) {
+					FireBullet(m_pScene->m_ppObjects[0]->GetPosition(), m_pScene->m_ppObjects[0]->GetUp(), m_pScene->m_ppObjects[0]->m_xmf4x4World);
+				}
+			}
+		}
+	}
 }
 
 
+void CGameFramework::FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4World)
+{
+
+	CBulletObject* pBulletObject = NULL;
+	for (int i = 0; i < BULLETS; i++)
+	{
+		if (!m_ppBullets[i]->m_bActive)
+		{
+			pBulletObject = m_ppBullets[i];
+			break;
+		}
+	}
+
+	if (pBulletObject)
+	{
+		XMFLOAT3 xmf3Position = pos;
+		XMFLOAT3 xmf3Direction = Up;
+		XMFLOAT3 xmf3FirePosition = Vector3::Add(xmf3Position, Vector3::ScalarProduct(xmf3Direction, 6.0f, false));
+
+		pBulletObject->m_xmf4x4World = m_xmf4x4World;
+
+		pBulletObject->SetFirePosition(xmf3FirePosition);
+		pBulletObject->SetMovingDirection(xmf3Direction);
+		pBulletObject->SetColor(RGB(255, 0, 0));
+		pBulletObject->SetActive(true);
+	}
+}

@@ -55,8 +55,9 @@ using namespace DirectX::PackedVector;
 
 #define EPSILON					1.0e-6f
 
-#define SERVERPORT 9000
-#define BUFSIZE    50
+#define SERVERPORT 8922
+#define SERVERIP 127.0.0.1
+#define BUFSIZE    1024
 #define FILENAMELEN 256
 
 void err_quit(const char* msg);

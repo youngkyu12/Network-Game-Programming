@@ -1,43 +1,68 @@
 #pragma once
 
+enum Packet_ID
+{
+    START = 0,
+    MOVE = 1,
+    FIRE = 2,
+    TEMP = 3,
+    UPDATE = 4,
+};
+
 
 #pragma pack(1)
-struct InputPacket
+struct Packetheader
 {
-    BYTE keyW;      // 0 or 1
-    BYTE keyS;      // 0 or 1
-    LONG mouseX;    // 커서 X
-    LONG mouseY;    // 커서 Y
+    uint16_t size;
+    uint16_t ID; // Packet_ID
 };
 #pragma pack()
 
-enum Packet_ID
+#pragma pack(1)
+struct MovePacket
 {
-    KEY_INPUT = 1,
-    MOVE_MOUSE = 2,
-    FIRE_OBJECT = 3,
-    PLAYER_STATE = 4
+    Packetheader header;
+    uint16_t keyW = 0;
+    uint16_t keyS = 0;
+    //-----서버와 크기 맞추기 용 입니다.
+    float yaw = 0;
+
 };
+#pragma pack()
 
 #pragma pack(1)
-struct PacketHeader
+struct FirePacket
 {
-    uint16_t size;
-    uint16_t id; // Packet_ID
+    Packetheader header;
+    bool FireFlag;
 };
 #pragma pack()
 
 #pragma pack(1)
 struct PlayerState
 {
-    //char Player_ID;
+    //int16_t UpdateID;
+    int32_t Player_ID;
    // char hp;
     float pos_x;
     float pos_y;
     float pos_z;
-    float yaw;
+    float Lookx;
+    float Looky;
+    float Lookz;
+    bool fire;
+    //float yaw;
     //char Shield;
     //bool fire;
+};
+#pragma pack()
+
+#pragma pack(1)
+struct UpdateState
+{
+    Packetheader header;
+    int32_t numPlayers;
+    PlayerState players[3];
 };
 #pragma pack()
 
@@ -46,7 +71,7 @@ public:
     SendQueue() { InitializeCriticalSection(&cs); }
     ~SendQueue() { DeleteCriticalSection(&cs); }
 
-    void push(InputPacket data) {
+    void push(MovePacket data) {
         EnterCriticalSection(&cs);
         sendqueue.push(data);
         LeaveCriticalSection(&cs);
@@ -65,19 +90,19 @@ public:
         return result;
     }
 
-    InputPacket front() {
+    MovePacket front() {
         EnterCriticalSection(&cs);
         if (!sendqueue.empty()) {
-            InputPacket result = sendqueue.front();
+            MovePacket result = sendqueue.front();
             LeaveCriticalSection(&cs);
             return result;
         }
         LeaveCriticalSection(&cs);
-        throw std::runtime_error("Queue is empty");
+        //throw std::runtime_error("Queue is empty");
     }
 
 private:
-    std::queue<InputPacket> sendqueue;
+    std::queue<MovePacket> sendqueue;
     CRITICAL_SECTION cs;
 };
 
@@ -120,7 +145,7 @@ public:
             return result;
         }
         LeaveCriticalSection(&cs);
-        throw std::runtime_error("Queue is empty");
+        //throw std::runtime_error("Queue is empty");
     }
 
 private:
