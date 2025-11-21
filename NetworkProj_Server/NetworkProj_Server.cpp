@@ -15,6 +15,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 	myPlayer->SetPosition(0, 0, -50 + (myPlayer->Player_ID * 100));
 	// Look 방향 설정 안 하면 이동이나 회전할 때 오류 생겨요
 	myPlayer->SetLook(0, 0, 1 - (myPlayer->Player_ID * 2));
+
 	while (true)
 	{
 		Room.Update_State(myPlayer);
@@ -145,7 +146,7 @@ int main()
 		}
 		
 		//recv 100ms 동안 안들어오면 타임아웃오류
-		int recvTimeout = 33; //100ms
+		int recvTimeout = 16; //100ms
 		if (setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recvTimeout, sizeof(recvTimeout)) == SOCKET_ERROR)
 		{
 			cout << "옵션 설정 실패" << endl;

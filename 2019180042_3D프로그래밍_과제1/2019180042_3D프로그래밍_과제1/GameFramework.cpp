@@ -208,13 +208,13 @@ void CGameFramework::ProcessInput()
 		}
 	}
 
-	/* [11/20]
+	// [11/20]
 	// 네트워크 스레드가 있는데 렌더하는 주 스레드에서 Send가 발생하면 프레임이 많이 떨어져서 끊기는 현상이 자주 발생합니다.
 	// 그래서 이렇게 안 하고 Send_Queue에 push해서 사용하도록 변경하겠습니다.
-	send_Queue.push(keyPKT);
-	*/
+	
 	if (keyinput || mouseinput) {
-		send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
+		send_Queue.push(keyPKT);
+		//send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
 	}
 	
 }

@@ -79,7 +79,12 @@ public:
 
     void pop() {
         EnterCriticalSection(&cs);
-        if (!sendqueue.empty()) sendqueue.pop();
+        if (!sendqueue.empty())
+        {
+            MovePacket result = sendqueue.front();
+            sendqueue.pop();
+            //return result;
+        }
         LeaveCriticalSection(&cs);
     }
 

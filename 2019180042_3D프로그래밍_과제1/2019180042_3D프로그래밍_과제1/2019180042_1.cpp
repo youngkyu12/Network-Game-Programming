@@ -190,7 +190,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			20, 220, 200, 25,
 			hWnd, (HMENU)ID_IPADDRESS,
 			hInst, NULL);
-		SendMessage(hIPControl, IPM_SETADDRESS, 0, MAKEIPADDRESS(192,168,67,248));
+		SendMessage(hIPControl, IPM_SETADDRESS, 0, MAKEIPADDRESS(127,0,0,1));
 		// button
 		hButton = CreateWindow(_T("button"), _T("접속"),
 			WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
@@ -318,20 +318,8 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	int32_t recvByte = 0;
 
 	// 서버와 데이터 통신
-	while (1) {
-		// MovePacket packet = gGameFramework.send_Queue.front();
-		// gGameFramework.send_Queue.pop();
-		// memcpy(buf, &packet, sizeof(packet));
-
-		
-		/*[11/20]
-		retval = send(sock, (char*)&packet, sizeof(packet), 0);
-		if (retval == SOCKET_ERROR) {
-			err_display("send()");
-			break;
-		}
-		*/
-
+	while (1) 
+	{
 		retval = recv(sock, buf, sizeof(buf), 0);
 		// 송신 프레임워크에서 진행 테스트
 		if (retval == SOCKET_ERROR) {
@@ -363,7 +351,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				switch (header->ID) {
 				case MOVE:
 				{
-					
+
 					UpdateState* updatePkt = (UpdateState*)buf;
 					for (int i = 0; i < updatePkt->numPlayers; ++i)
 					{
@@ -390,6 +378,23 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				recvByte = recvByte - header->size;
 			}
 		}
+		if (!gGameFramework.send_Queue.empty())
+		{
+			MovePacket packet = gGameFramework.send_Queue.front();
+			gGameFramework.send_Queue.pop();
+			//memcpy(buf, &packet, sizeof(packet));
+
+			//[11/20]
+			retval = send(sock, (char*)&packet, sizeof(packet), 0);
+			if (retval == SOCKET_ERROR) 
+			{
+				err_display("send()");
+				break;
+			}
+
+		}
+		 
+		
 	}
 
 	// 소켓 닫기
