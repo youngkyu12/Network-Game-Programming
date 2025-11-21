@@ -119,7 +119,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 		if (testpkt->keyW == 1) Move(player, 'W');
 		else if (testpkt->keyS == 1) Move(player, 'S');
 
-		if (testpkt->yaw != 0) Rotate(player->Player_ID, testpkt->yaw);
+		if (testpkt->yaw != 0) Rotate(player, testpkt->yaw);
 		//player->SetPosition(testpkt->x, testpkt->y, testpkt->z);
 
 		//cout << "x = " << testpkt->x << endl;
@@ -171,7 +171,8 @@ void GameRoom::Move(Player* player, char key)
 	player->Move(xmf3Shift);
 }
 
-void GameRoom::Rotate ( char id , float yaw )
+void GameRoom::Rotate (Player* player, float yaw )
 {
-	PlayerManager[id]->Rotate (0.0f , yaw , 0.0f);
+	//데이터를 수정할떄는 playermanager에 접근하면 안됩니다.
+	player->Rotate (0.0f , yaw , 0.0f);
 }

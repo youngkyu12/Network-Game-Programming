@@ -15,7 +15,7 @@ public:
 	void HandlePacket(Player* player, BYTE* buffer);
 
 	void Move(Player* player, char key);
-	void Rotate ( char id , float yaw );
+	void Rotate(Player* player, float yaw);
 
 private:
 	CRITICAL_SECTION _cs;
