@@ -84,9 +84,17 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 				cout << "recv 500ms 타임아웃" << endl;
 				continue;
 			}
+
+			if (WSAGetLastError() == WSA_IO_PENDING)
+			{
+				//오류가 아닌 의도한 것
+				cout << "997에러 발생, 무시" << endl;
+				//Sleep(5000);
+				continue;
+			}
 			
 			//비정상 종료
-			cout << "ID : " << myPlayer->Player_ID << " 비정상 종료" << endl;
+			cout << "ID : " << myPlayer->Player_ID << " 비정상 종료" << WSAGetLastError() << endl;
 			Room.Remove_Player(myPlayer);
 			Room.Check_PLayer();
 			break;
