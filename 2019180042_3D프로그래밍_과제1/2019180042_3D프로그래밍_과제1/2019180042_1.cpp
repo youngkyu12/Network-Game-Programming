@@ -19,8 +19,8 @@ CGameFramework		gGameFramework;
 
  HANDLE hIpEvent; // connect 대기 이벤트
  HWND hEdit = nullptr;
-
-
+ HANDLE hClientThread;
+ bool g_isClientRunning = true;
 
  void DisplayText(const char* fmt, ...);
  void DisplayError(const char* msg);
@@ -54,7 +54,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	LoadString(hInstance, IDC_MY2019180042_1, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
 	
-	CreateThread(NULL, 0, ClientMain, NULL, 0, NULL);
+	hClientThread = CreateThread(NULL, 0, ClientMain, NULL, 0, NULL);
 
 
 	// 응용 프로그램 초기화를 수행합니다.
@@ -85,6 +85,14 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 				gGameFramework.FrameAdvance();
 			}
 		}
+	}
+
+	g_isClientRunning = false;// 종료 신호
+	if (hClientThread != NULL)
+	{
+		WaitForSingleObject(hClientThread, INFINITE);// 스레드 종료 대기
+		CloseHandle(hClientThread);
+
 	}
 	gGameFramework.OnDestroy();
 
@@ -323,7 +331,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	int32_t recvByte = 0;
 
 	// 서버와 데이터 통신
-	while (1) 
+	while (g_isClientRunning)
 	{
 		//버퍼를 계속 덮어쓰기로 저장하게 해서 쪼개져서 오면 제대로 수신을 못하고 있어 수정했습니다.
 		char* recvData = buf + recvByte;
