@@ -410,7 +410,8 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				err_display("send()");
 				break;
 			}
-		} 	
+		} 
+		//Sleep(1); //CPU 과부하 방지 - 추후에 추가 고려
 	}
 	// 소켓 닫기
 	closesocket(sock);
