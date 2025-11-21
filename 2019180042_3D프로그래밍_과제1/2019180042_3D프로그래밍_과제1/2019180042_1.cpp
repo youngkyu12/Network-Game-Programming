@@ -311,10 +311,11 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	}
 	
 	gGameFramework.sock = sock;
-	// recv 타임아웃 설정
-	int recvtimeout = 1;
-	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&recvtimeout, sizeof(recvtimeout));
-
+	u_long on = 1;
+	if (ioctlsocket(sock, FIONBIO, &on) == SOCKET_ERROR)
+	{
+		return 1;
+	}
 
 	// 데이터 통신에 사용할 변수
 	char buf[BUFSIZE];
@@ -330,10 +331,11 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		retval = recv(sock, recvData, (sizeof(buf) - recvByte), 0);
 		if (retval == SOCKET_ERROR)
 		{
-			if (WSAGetLastError() == WSAETIMEDOUT) {/*타임아웃*/ }
+			if (WSAGetLastError() == WSAEWOULDBLOCK)
+			{
+			}
 			else
 			{
-				err_display("recv()");
 				break;
 			}
 		}
