@@ -378,23 +378,18 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				recvByte = recvByte - header->size;
 			}
 		}
-		if (!gGameFramework.send_Queue.empty())
-		{
-			MovePacket packet = gGameFramework.send_Queue.front();
-			gGameFramework.send_Queue.pop();
-			//memcpy(buf, &packet, sizeof(packet));
 
-			//[11/20]
+		//리팩토링 - 홍성호
+		MovePacket packet;
+		if (gGameFramework.send_Queue.pop(packet))
+		{
 			retval = send(sock, (char*)&packet, sizeof(packet), 0);
-			if (retval == SOCKET_ERROR) 
+			if (retval == SOCKET_ERROR)
 			{
 				err_display("send()");
 				break;
 			}
-
-		}
-		 
-		
+		} 	
 	}
 
 	// 소켓 닫기

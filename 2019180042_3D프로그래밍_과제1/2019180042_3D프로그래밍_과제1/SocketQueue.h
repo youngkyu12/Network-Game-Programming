@@ -71,39 +71,25 @@ public:
     SendQueue() { InitializeCriticalSection(&cs); }
     ~SendQueue() { DeleteCriticalSection(&cs); }
 
-    void push(MovePacket data) {
+    void push(MovePacket data) 
+    {
         EnterCriticalSection(&cs);
         sendqueue.push(data);
         LeaveCriticalSection(&cs);
     }
 
-    void pop() {
+    bool pop(MovePacket& outData) 
+    {
         EnterCriticalSection(&cs);
-        if (!sendqueue.empty())
+        if (sendqueue.empty())
         {
-            MovePacket result = sendqueue.front();
-            sendqueue.pop();
-            //return result;
-        }
-        LeaveCriticalSection(&cs);
-    }
-
-    bool empty() {
-        EnterCriticalSection(&cs);
-        bool result = sendqueue.empty();
-        LeaveCriticalSection(&cs);
-        return result;
-    }
-
-    MovePacket front() {
-        EnterCriticalSection(&cs);
-        if (!sendqueue.empty()) {
-            MovePacket result = sendqueue.front();
             LeaveCriticalSection(&cs);
-            return result;
+            return false; // 비어있을시 실패 반환
         }
+        outData = sendqueue.front();
+        sendqueue.pop();
         LeaveCriticalSection(&cs);
-        //throw std::runtime_error("Queue is empty");
+        return true; // 성공적으로 데이터를 넘겼다면 true 반환
     }
 
 private:
@@ -127,30 +113,18 @@ public:
         LeaveCriticalSection(&cs);
     }
 
-    void pop() {
+    bool pop(PlayerState& outData) 
+    {
         EnterCriticalSection(&cs);
-        if (!recvqueue.empty()) {
-            recvqueue.pop();
-        }
-        LeaveCriticalSection(&cs);
-    }
-
-    bool empty() {
-        EnterCriticalSection(&cs);
-        bool result = recvqueue.empty();
-        LeaveCriticalSection(&cs);
-        return result;
-    }
-
-    PlayerState front() {
-        EnterCriticalSection(&cs);
-        if (!recvqueue.empty()) {
-            PlayerState result = recvqueue.front();
+        if (recvqueue.empty())
+        {
             LeaveCriticalSection(&cs);
-            return result;
+            return false;
         }
+        outData = recvqueue.front();
+        recvqueue.pop();
         LeaveCriticalSection(&cs);
-        //throw std::runtime_error("Queue is empty");
+        return true;
     }
 
 private:

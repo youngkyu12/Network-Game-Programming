@@ -212,9 +212,9 @@ void CGameFramework::ProcessInput()
 	// 네트워크 스레드가 있는데 렌더하는 주 스레드에서 Send가 발생하면 프레임이 많이 떨어져서 끊기는 현상이 자주 발생합니다.
 	// 그래서 이렇게 안 하고 Send_Queue에 push해서 사용하도록 변경하겠습니다.
 	
-	if (keyinput || mouseinput) {
+	if (keyinput || mouseinput)
+	{
 		send_Queue.push(keyPKT);
-		//send(sock, (char*)&keyPKT, keyPKT.header.size, 0);
 	}
 	
 }
@@ -257,12 +257,10 @@ void CGameFramework::FrameAdvance()
 
 void CGameFramework::HandlePacket()
 {
-	// player update
+	// 리팩토링 - 홍성호
 	PlayerState player;
-	while (!recv_Queue.empty()) {
-		player = recv_Queue.front();
-		recv_Queue.pop();
-		//-----------------
+	while (recv_Queue.pop(player)) 
+	{
 		XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz};
 		if (player.Player_ID == 0)
 		{
