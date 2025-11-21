@@ -132,7 +132,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			firePkt.header.ID = FIRE;
 			firePkt.header.size = sizeof(FirePacket);
 			firePkt.FireFlag = true;
-			send(sock, (char*)&firePkt, firePkt.header.size, 0);
+			//send(sock, (char*)&firePkt, firePkt.header.size, 0);
 			break;
 		case 'D':
 			if (stop) {

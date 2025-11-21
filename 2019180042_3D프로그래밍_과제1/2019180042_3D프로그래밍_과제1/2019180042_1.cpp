@@ -309,8 +309,12 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	{
 		DisplayError_Quit("connect()");
 	}
-
+	
 	gGameFramework.sock = sock;
+	// recv 타임아웃 설정
+	int recvtimeout = 1;
+	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&recvtimeout, sizeof(recvtimeout));
+
 
 	// 데이터 통신에 사용할 변수
 	char buf[BUFSIZE];
@@ -320,17 +324,24 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	// 서버와 데이터 통신
 	while (1) 
 	{
-		retval = recv(sock, buf, sizeof(buf), 0);
-		// 송신 프레임워크에서 진행 테스트
-		if (retval == SOCKET_ERROR) {
-			err_display("recv()");
-			break;
+		//버퍼를 계속 덮어쓰기로 저장하게 해서 쪼개져서 오면 제대로 수신을 못하고 있어 수정했습니다.
+		char* recvData = buf + recvByte;
+
+		retval = recv(sock, recvData, (sizeof(buf) - recvByte), 0);
+		if (retval == SOCKET_ERROR)
+		{
+			if (WSAGetLastError() == WSAETIMEDOUT) {/*타임아웃*/ }
+			else
+			{
+				err_display("recv()");
+				break;
+			}
 		}
 		else if (retval == 0)
 			break;
 		if (retval > 0)
 		{
-			recvByte += retval; // 
+			recvByte += retval;
 			while (1)
 			{
 				if (recvByte < sizeof(Packetheader))
@@ -375,13 +386,13 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				{
 					memmove(buf, buf + header->size, recvByte - (header->size));
 				}
-				recvByte = recvByte - header->size;
+				recvByte -= header->size;
 			}
 		}
 
 		//리팩토링 - 홍성호
 		MovePacket packet;
-		if (gGameFramework.send_Queue.pop(packet))
+		while (gGameFramework.send_Queue.pop(packet))
 		{
 			retval = send(sock, (char*)&packet, sizeof(packet), 0);
 			if (retval == SOCKET_ERROR)
@@ -391,7 +402,6 @@ DWORD WINAPI ClientMain(LPVOID arg)
 			}
 		} 	
 	}
-
 	// 소켓 닫기
 	closesocket(sock);
 
