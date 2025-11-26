@@ -26,7 +26,6 @@ public:
 public:
 	void SetPosition(float x, float y, float z);
 	void SetLook(float x, float y, float z);
-	void SetFireFlag(bool fireflag);
 
 	XMFLOAT3 GetPosition(); // 포지션 데이터 가져오기
 	XMFLOAT3 GetVelocity();
@@ -38,6 +37,7 @@ public:
 
 
 	void Move(XMFLOAT3& xmf3Shift);
+	void Fire();
 	
 	void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
 
@@ -59,6 +59,9 @@ private:
 	float Yaw = 0.0f;
 	float Roll = 0.0f;
 	float Friction = 125.0f;
-	bool Fire_Flag;
+	bool is_Firing = false;
+	DWORD fireStartTime = 0;
+	
+
 };
 

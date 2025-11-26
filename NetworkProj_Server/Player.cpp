@@ -20,10 +20,6 @@ void Player::SetLook(float x, float y, float z)
 	LookAt(Look, Up);
 }
 
-void Player::SetFireFlag(bool fireflag)
-{
-	Fire_Flag = fireflag;
-}
 
 void Player::LookAt(XMFLOAT3& L, XMFLOAT3& U)
 {
@@ -65,7 +61,7 @@ uint16_t Player::GetHP()
 
 bool Player::GetFireFlag()
 {
-	return Fire_Flag;
+	return is_Firing;
 }
 
 
@@ -73,6 +69,12 @@ void Player::Move(XMFLOAT3& xmf3Shift)
 {
 
 	Position = Vector3::Add(xmf3Shift, Position);
+}
+
+void Player::Fire()
+{
+	is_Firing = true;
+	fireStartTime = GetTickCount();// 지금부터 1초 시작
 }
 
 void Player::Rotate(float fPitch, float fYaw, float fRoll)
