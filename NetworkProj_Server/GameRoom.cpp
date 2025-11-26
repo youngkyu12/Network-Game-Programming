@@ -36,7 +36,6 @@ void GameRoom::Update_State(Player* player)
 		XMFLOAT3 pos = p->GetPosition();
 		//uint16_t hp = p->GetHP();
 		XMFLOAT3 Look = p->GetLook();
-		bool FireFlag = p->GetFireFlag();
 
 		if (p->Player_ID == myID) updatePkt.players[i].playerID = 0;	// 나 = 0
 		else if (p->Player_ID != myID) updatePkt.players[i].playerID = 1;	// 나X = 1 2인 기준, 3인 되면 변경
@@ -47,15 +46,7 @@ void GameRoom::Update_State(Player* player)
 		updatePkt.players[i].Look_x = Look.x;
 		updatePkt.players[i].Look_y = Look.y;
 		updatePkt.players[i].Look_z = Look.z;
-		if (FireFlag == true) {
-			updatePkt.players[i].FireFlag = true;
-			p->check += 1;
-			if (p->check == 2) {
-				p->SetFireFlag(false);
-				p->check = 0;
-			}
-		}
-		
+		updatePkt.players[i].FireFlag = p->GetFireFlag();
 		//updatePkt.players[i].hp = hp;
 	}
 	LeaveCriticalSection(&_cs);
@@ -133,10 +124,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	}
 	case FIRE:
 	{
-		cout << "FIRE 스위치문 정상 작동" << endl;
-		FirePacket* firePkt = (FirePacket*)buffer;
-		player->SetFireFlag(firePkt->FireFlag);
-		cout << "fire true" << endl;
+		player->SetFireFlag();
 		break;
 	}
 	case TEMP:

@@ -59,14 +59,19 @@ uint16_t Player::GetHP()
 	return HP;
 }
 
+bool Player::GetFireFlag()
+{
+	return is_Firing;
+}
 
-bool Player::SetFireFlag()
+
+void Player::SetFireFlag()
 {
 	if (is_Firing == true)
 	{
-		if (GetTickCount() - fireStartTime >= 1000)
+		if (GetTickCount() - fireStartTime >= 100)
 		{
-			// 1초 지났으면 자동으로 초기화.
+			// 100ms 지났으면 자동으로 초기화.
 			is_Firing = false;
 		}
 	}
