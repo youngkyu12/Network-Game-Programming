@@ -128,11 +128,9 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			::PostQuitMessage(0);
 			break;
 		case 'A':
-			FirePacket firePkt;
+			/*FirePacket firePkt;
 			firePkt.header.ID = FIRE;
-			firePkt.header.size = sizeof(FirePacket);
-			firePkt.FireFlag = true;
-			//send(sock, (char*)&firePkt, firePkt.header.size, 0);
+			firePkt.header.size = sizeof(FirePacket);*/
 			break;
 		case 'D':
 			if (stop) {
@@ -191,6 +189,12 @@ void CGameFramework::ProcessInput()
 		if (keyPKT.keyS || keyPKT.keyW) {
 			keyinput = true;
 		}
+	}
+	// A누르면 FireFlag 생성
+	if (pKeyBuffer['A'] & 0xF0)
+	{
+		keyPKT.FireFlag = 1;
+		keyinput = true;
 	}
 
 	if ( !stop ) {
@@ -266,7 +270,8 @@ void CGameFramework::HandlePacket()
 		{
 			m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
 			m_pPlayer->SetLook(Look);
-			if (player.fire == true) {
+			if (player.fire == true) 
+			{
 				FireBullet(m_pPlayer->GetPosition(), m_pPlayer->GetUp(), m_pPlayer->m_xmf4x4World);
 			}
 		}

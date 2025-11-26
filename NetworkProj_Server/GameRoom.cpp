@@ -111,6 +111,9 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 		else if (testpkt->keyS == 1) Move(player, 'S');
 
 		if (testpkt->yaw != 0) Rotate(player, testpkt->yaw);
+
+		if (testpkt->FireFlag == true) player->SetFireFlag();
+		cout << "FIRE 수신. 현재 상태 : " << player->GetFireFlag() << endl;
 		//player->SetPosition(testpkt->x, testpkt->y, testpkt->z);
 
 		//cout << "x = " << testpkt->x << endl;
@@ -125,6 +128,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	case FIRE:
 	{
 		player->SetFireFlag();
+		cout << "FIRE 수신. 현재 상태 : " << player->GetFireFlag() << endl;
 		break;
 	}
 	case TEMP:

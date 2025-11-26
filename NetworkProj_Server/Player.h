@@ -33,7 +33,7 @@ public:
 	XMFLOAT3 GetUp();
 	XMFLOAT3 GetRight();
 	uint16_t GetHP(); // HP데이터 가져오기
-	bool GetFireFlag();
+	uint8_t GetFireFlag();
 	void SetFireFlag();
 
 
@@ -61,7 +61,7 @@ private:
 	float Roll = 0.0f;
 	float Friction = 125.0f;
 
-	bool is_Firing = false;
+	uint8_t is_Firing = 0;// false = 0 true = 1
 	DWORD fireStartTime = 0;
 	
 

@@ -25,6 +25,7 @@ struct MovePacket
 	uint16_t keyW;
 	uint16_t keyS;
 	float yaw;	// rotate에 마우스 커서 말고 yaw 값 받아옴
+	uint8_t FireFlag = 0; // false = 0 true = 1
 };
 
 struct FirePacket

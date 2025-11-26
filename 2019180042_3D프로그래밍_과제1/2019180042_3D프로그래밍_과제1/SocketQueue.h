@@ -26,6 +26,7 @@ struct MovePacket
     uint16_t keyS = 0;
     //-----서버와 크기 맞추기 용 입니다.
     float yaw = 0;
+    uint8_t FireFlag = 0; // false = 0 true = 1
 
 };
 #pragma pack()
@@ -34,7 +35,6 @@ struct MovePacket
 struct FirePacket
 {
     Packetheader header;
-    bool FireFlag;
 };
 #pragma pack()
 
