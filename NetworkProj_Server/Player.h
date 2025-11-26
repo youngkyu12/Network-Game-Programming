@@ -33,7 +33,7 @@ public:
 	XMFLOAT3 GetUp();
 	XMFLOAT3 GetRight();
 	uint16_t GetHP(); // HP데이터 가져오기
-	bool GetFireFlag();
+	bool SetFireFlag();
 
 
 	void Move(XMFLOAT3& xmf3Shift);
