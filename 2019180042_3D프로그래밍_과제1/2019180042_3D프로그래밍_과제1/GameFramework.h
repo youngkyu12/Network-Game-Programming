@@ -29,6 +29,7 @@ private:
 	HBITMAP						m_hBitmapFrameBuffer = NULL;
 	HBITMAP						m_hBitmapSelect = NULL;
 
+	CCamera* m_pCamera = NULL;
 	CPlayer* m_pPlayer = NULL;
 	CScene* m_pScene = NULL;
 
@@ -78,7 +79,5 @@ public:
 public:
 	SendQueue send_Queue;
 	RecvQueue recv_Queue;
-
-	SOCKET sock;
 };
 

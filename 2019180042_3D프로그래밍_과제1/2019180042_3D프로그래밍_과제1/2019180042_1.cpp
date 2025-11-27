@@ -20,7 +20,6 @@ CGameFramework		gGameFramework;
  HANDLE hIpEvent; // connect 대기 이벤트
  HWND hEdit = nullptr;
  HANDLE hClientThread;
- bool g_isClientRunning = true;
 
  void DisplayText(const char* fmt, ...);
  void DisplayError(const char* msg);
@@ -87,7 +86,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		}
 	}
 
-	g_isClientRunning = false;// 종료 신호
 	if (hClientThread != NULL)
 	{
 		WaitForSingleObject(hClientThread, INFINITE);// 스레드 종료 대기
@@ -188,7 +186,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static HWND hIPControl = nullptr;
 	static HWND hButton = nullptr;
 	
-
 	switch (message)
 	{
 	case WM_CREATE:
@@ -318,14 +315,13 @@ DWORD WINAPI ClientMain(LPVOID arg)
 		DisplayError_Quit("connect()");
 	}
 	
-	gGameFramework.sock = sock;
 	// 데이터 통신에 사용할 변수
 	char buf[BUFSIZE];
 	int len = 0;
 	int32_t recvByte = 0;
 
 	// 서버와 데이터 통신
-	while (g_isClientRunning)
+	while (gGameFramework.IsRunning())
 	{
 		//버퍼를 계속 덮어쓰기로 저장하게 해서 쪼개져서 오면 제대로 수신을 못하고 있어 수정했습니다.
 		char* recvData = buf + recvByte;

@@ -64,34 +64,25 @@ void CGameFramework::PresentFrameBuffer()
 
 void CGameFramework::BuildObjects()
 {
-	CCamera* pCamera = new CCamera();
-	pCamera->SetViewport(0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
-	pCamera->GeneratePerspectiveProjectionMatrix(1.01f, 500.0f, 60.0f);
-	pCamera->SetFOVAngle(60.0f);
+	m_pCamera = new CCamera();
+	m_pCamera->SetViewport(0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
+	m_pCamera->GeneratePerspectiveProjectionMatrix(1.01f, 500.0f, 60.0f);
+	m_pCamera->SetFOVAngle(60.0f);
 
-	pCamera->GenerateOrthographicProjectionMatrix(1.01f, 50.0f, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
+	m_pCamera->GenerateOrthographicProjectionMatrix(1.01f, 50.0f, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
 
 	CTankMesh* pTankMesh = new CTankMesh(6.0f, 6.0f, 6.0f);
 	m_pPlayer = new CTankPlayer();
 	m_pPlayer->SetPosition(0.0f, 0.0f, 0.0f);
 	m_pPlayer->SetMesh(pTankMesh);
 	m_pPlayer->SetColor(RGB(255, 0, 0));
-	m_pPlayer->SetCamera(pCamera);
+	m_pPlayer->SetCamera(m_pCamera);
 	m_pPlayer->SetCameraOffset(XMFLOAT3(0.0f, 5.0f, -15.0f));
 
 	m_pScene = new CScene(m_pPlayer);
 	m_pScene->BuildObjects();
 
-	CCubeMesh* pBulletMesh = new CCubeMesh(1.0f, 4.0f, 1.0f);
-	for (int i = 0; i < BULLETS; i++)
-	{
-		m_ppBullets[i] = new CBulletObject(m_fBulletEffectiveRange);
-		m_ppBullets[i]->SetMesh(pBulletMesh);
-		m_ppBullets[i]->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
-		m_ppBullets[i]->SetRotationSpeed(360.0f);
-		m_ppBullets[i]->SetMovingSpeed(120.0f);
-		m_ppBullets[i]->SetActive(false);
-	}
+	
 }
 
 void CGameFramework::ReleaseObjects()
@@ -102,6 +93,7 @@ void CGameFramework::ReleaseObjects()
 		delete m_pScene;
 	}
 
+	if (m_pCamera) delete m_pCamera;
 	if (m_pPlayer) delete m_pPlayer;
 }
 
@@ -125,6 +117,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		switch (wParam)
 		{
 		case VK_ESCAPE:
+			SetRunning(false);
 			::PostQuitMessage(0);
 			break;
 		case 'A':
@@ -182,17 +175,12 @@ void CGameFramework::ProcessInput()
 	{
 		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
 		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
+		keyPKT.FireFlag = (pKeyBuffer['A'] & 0xF0) ? 1 : 0;
 
-		if (keyPKT.keyS || keyPKT.keyW) 
+		if (keyPKT.keyS || keyPKT.keyW || keyPKT.FireFlag)
 		{
 			keyinput = true;
 		}
-	}
-	// A누르면 FireFlag 생성
-	if (pKeyBuffer['A'] & 0xF0)
-	{
-		keyPKT.FireFlag = 1;
-		keyinput = true;
 	}
 
 	if ( !stop ) {
@@ -222,10 +210,7 @@ void CGameFramework::AnimateObjects()
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
 	if (m_pPlayer) m_pPlayer->Animate(fTimeElapsed);
 	if (m_pScene) m_pScene->Animate(fTimeElapsed);
-	for (int i = 0; i < BULLETS; i++)
-	{
-		if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Animate(fTimeElapsed);
-	}
+	
 }
 
 void CGameFramework::FrameAdvance()
@@ -240,10 +225,9 @@ void CGameFramework::FrameAdvance()
 
 	ClearFrameBuffer(RGB(255, 255, 255));
 
-	CCamera* pCamera = m_pPlayer->GetCamera();
-	if (m_pScene) m_pScene->Render(m_hDCFrameBuffer, pCamera);
+	
+	if (m_pScene) m_pScene->Render(m_hDCFrameBuffer, m_pCamera);
 
-	for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Render(m_hDCFrameBuffer, pCamera);
 	
 	PresentFrameBuffer();
 
@@ -266,7 +250,7 @@ void CGameFramework::HandlePacket()
 			m_pPlayer->SetLook(Look);
 			if (player.fire == 1 && m_pPlayer->PrevFire == false) 
 			{
-				FireBullet(m_pPlayer->GetPosition(), m_pPlayer->GetUp(), m_pPlayer->m_xmf4x4World);
+				m_pPlayer->FireBullet();
 			}
 			m_pPlayer->PrevFire = player.fire; // 현재 상태를 과거의 상태값으로 저장.(다음 턴 사용을 위해서)
 		}
