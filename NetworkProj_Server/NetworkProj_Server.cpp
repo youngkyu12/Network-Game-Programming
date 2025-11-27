@@ -14,7 +14,6 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 {
 	Player* myPlayer = (Player*)lpParam;
 	myPlayer->SetPosition(0, 0, -50 + (myPlayer->Player_ID * 100));
-	// Look 방향 설정 안 하면 이동이나 회전할 때 오류 생겨요
 	myPlayer->SetLook(0, 0, 1 - (myPlayer->Player_ID * 2));
 
 	while (true)
@@ -24,7 +23,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 
 		// 시작주소 갱신.
 		char* recvData = (char*)myPlayer->recvBuffer + myPlayer->recvByte;// 포인터 연산으로 (타입)*크기 만큼 이동
-		cout << "ID : " << myPlayer->Player_ID << "리시브 데이터 크기" << myPlayer->recvByte << endl;
+		//cout << "ID : " << myPlayer->Player_ID << "리시브 데이터 크기" << myPlayer->recvByte << endl;
 
 		int32_t remainSize = BUF_SIZE - myPlayer->recvByte;
 		if (remainSize <= 0)
@@ -40,7 +39,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		if (recvBytes > 0)
 		{
 			myPlayer->recvByte += recvBytes; //버퍼에 쌓인 데이터 크기 갱신
-			cout << "ID " << myPlayer->Player_ID << " :" << recvBytes << endl;
+			//cout << "ID " << myPlayer->Player_ID << " :" << recvBytes << endl;
 
 			BYTE* Tempbuffer = myPlayer->recvBuffer;
 			while (1)
@@ -48,7 +47,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 				if (myPlayer->recvByte < sizeof(Packetheader))
 				{
 					// 패킷헤더만큼도 도착안했으면
-					cout << "헤더보다 작음" << endl;
+					//cout << "헤더보다 작음" << endl;
 					break;
 				}
 				Packetheader* header = (Packetheader*)Tempbuffer;
@@ -56,7 +55,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 				if (myPlayer->recvByte < header->size)
 				{
 					//패킷이 아직 다 안옴.
-					cout << "패킷 아직 다 도착X" << endl;
+					//cout << "패킷 아직 다 도착X" << endl;
 					break;
 				}
 				// 완벽히 도착한 패킷은 HandlePacket에서 처리.
@@ -83,7 +82,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 			if (WSAGetLastError() == WSAETIMEDOUT)
 			{
 				//오류가 아닌 의도한 것
-				cout << "recv 500ms 타임아웃" << endl;
+				//cout << "recv 500ms 타임아웃" << endl;
 				continue;
 			}
 
@@ -156,7 +155,7 @@ int main()
 		}
 		
 		// 타임아웃 설정을 통해 업데이트 주기 설정.
-		int recvTimeout = 8;
+		int recvTimeout = 10;
 		if (setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recvTimeout, sizeof(recvTimeout)) == SOCKET_ERROR)
 		{
 			cout << "옵션 설정 실패" << endl;

@@ -5,6 +5,7 @@
 //
 CPlayer::CPlayer()
 {
+	PrevFire = false;
 }
 
 CPlayer::~CPlayer()

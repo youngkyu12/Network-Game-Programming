@@ -87,6 +87,10 @@ void Player::Move(XMFLOAT3& xmf3Shift)
 
 void Player::Fire()
 {
+	if (is_Firing == 1)
+	{
+		return;
+	}
 	FireTimer.Start();
 	is_Firing = 1;
 	cout << "서버내 fireflag 1로 변경" << endl;

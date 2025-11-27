@@ -34,7 +34,6 @@ void GameRoom::Update_State(Player* player)
 	{
 		Player* p = PlayerManager[i];
 		XMFLOAT3 pos = p->GetPosition();
-		//uint16_t hp = p->GetHP();
 		XMFLOAT3 Look = p->GetLook();
 
 		if (p->Player_ID == myID) updatePkt.players[i].playerID = 0;	// 나 = 0
@@ -47,7 +46,6 @@ void GameRoom::Update_State(Player* player)
 		updatePkt.players[i].Look_y = Look.y;
 		updatePkt.players[i].Look_z = Look.z;
 		updatePkt.players[i].FireFlag = p->GetFireFlag();
-		//updatePkt.players[i].hp = hp;
 	}
 	LeaveCriticalSection(&_cs);
 
@@ -104,7 +102,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	{
 	case MOVE: //이동패킷
 	{
-		cout << "MOVE 스위치문 정상 작동" << endl;
+		//cout << "MOVE 스위치문 정상 작동" << endl;
 		MovePacket* testpkt = (MovePacket*)buffer;
 
 		if (testpkt->keyW == 1) Move(player, 'W');
@@ -116,18 +114,15 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 		{
 			player->Fire(); 
 		}
-		
+
+		/*
 		XMFLOAT3 currentPos = player->GetPosition();//테스트용 임시 저장
 		//uint8_t curFireFlag = player->GetFireFlag();
 		int curFireFlag = player->GetFireFlag();
 		cout << currentPos.x << ", " << currentPos.y << ", " << currentPos.z << endl;
 		cout << testpkt->yaw << endl;
 		cout << "FIRE 수신. 현재 상태 : " << curFireFlag << endl;
-		break;
-	}
-	case TEMP:
-	{
-		cout << "TEMP 스위치문 작동" << endl;
+		*/
 		break;
 	}
 	default:

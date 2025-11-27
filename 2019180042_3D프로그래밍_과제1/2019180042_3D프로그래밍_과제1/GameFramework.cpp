@@ -128,9 +128,6 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			::PostQuitMessage(0);
 			break;
 		case 'A':
-			/*FirePacket firePkt;
-			firePkt.header.ID = FIRE;
-			firePkt.header.size = sizeof(FirePacket);*/
 			break;
 		case 'D':
 			if (stop) {
@@ -213,10 +210,6 @@ void CGameFramework::ProcessInput()
 		}
 	}
 
-	// [11/20]
-	// 네트워크 스레드가 있는데 렌더하는 주 스레드에서 Send가 발생하면 프레임이 많이 떨어져서 끊기는 현상이 자주 발생합니다.
-	// 그래서 이렇게 안 하고 Send_Queue에 push해서 사용하도록 변경하겠습니다.
-	
 	if (keyinput || mouseinput)
 	{
 		send_Queue.push(keyPKT);
@@ -236,7 +229,7 @@ void CGameFramework::AnimateObjects()
 }
 
 void CGameFramework::FrameAdvance()
-{
+{ 
 	m_GameTimer.Tick(60.0f);
 	ProcessInput();
 
@@ -271,10 +264,11 @@ void CGameFramework::HandlePacket()
 		{
 			m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
 			m_pPlayer->SetLook(Look);
-			if (player.fire == 1) 
+			if (player.fire == 1 && m_pPlayer->PrevFire == false) 
 			{
 				FireBullet(m_pPlayer->GetPosition(), m_pPlayer->GetUp(), m_pPlayer->m_xmf4x4World);
 			}
+			m_pPlayer->PrevFire = player.fire; // 현재 상태를 과거의 상태값으로 저장.(다음 턴 사용을 위해서)
 		}
 		else if (player.Player_ID == 1)
 		{
@@ -283,9 +277,11 @@ void CGameFramework::HandlePacket()
 				m_pScene->m_ppObjects[0]->SetPosition(player.pos_x, player.pos_y, player.pos_z);
 				m_pScene->m_ppObjects[0]->LookTo(Look, Up);
 				m_pScene->m_ppObjects[0]->Rotate(90.0f, 0.0f, 0.0f);
-				if (player.fire == true) {
+				if (player.fire == 1 && m_pScene->m_ppObjects[0]->PrevFire == false) 
+				{
 					FireBullet(m_pScene->m_ppObjects[0]->GetPosition(), m_pScene->m_ppObjects[0]->GetUp(), m_pScene->m_ppObjects[0]->m_xmf4x4World);
 				}
+				m_pScene->m_ppObjects[0]->PrevFire = player.fire;
 			}
 		}
 	}

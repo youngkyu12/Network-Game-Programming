@@ -6,10 +6,11 @@
 class CGameObject
 {
 public:
-	CGameObject() {}
+	CGameObject() { PrevFire = false; }
 	virtual ~CGameObject();
 
 public:
+	bool PrevFire = false;// 이전 발사 상태 체크용
 	bool						m_bActive = true;
 
 	CMesh* m_pMesh = NULL;
