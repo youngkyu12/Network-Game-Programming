@@ -186,7 +186,8 @@ void CGameFramework::ProcessInput()
 		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
 		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
 
-		if (keyPKT.keyS || keyPKT.keyW) {
+		if (keyPKT.keyS || keyPKT.keyW) 
+		{
 			keyinput = true;
 		}
 	}
@@ -270,7 +271,7 @@ void CGameFramework::HandlePacket()
 		{
 			m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
 			m_pPlayer->SetLook(Look);
-			if (player.fire == true) 
+			if (player.fire == 1) 
 			{
 				FireBullet(m_pPlayer->GetPosition(), m_pPlayer->GetUp(), m_pPlayer->m_xmf4x4World);
 			}

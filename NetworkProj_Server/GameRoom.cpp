@@ -112,24 +112,17 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 
 		if (testpkt->yaw != 0) Rotate(player, testpkt->yaw);
 
-		if (testpkt->FireFlag == true) player->SetFireFlag();
+		if (testpkt->FireFlag == 1)// True 이면... 
+		{
+			player->Fire(); 
+		}
 		
-		//player->SetPosition(testpkt->x, testpkt->y, testpkt->z);
-
-		//cout << "x = " << testpkt->x << endl;
-		//cout << "y = " << testpkt->y << endl;
-		//cout << "z = " << testpkt->z << endl;
-
 		XMFLOAT3 currentPos = player->GetPosition();//테스트용 임시 저장
+		//uint8_t curFireFlag = player->GetFireFlag();
+		int curFireFlag = player->GetFireFlag();
 		cout << currentPos.x << ", " << currentPos.y << ", " << currentPos.z << endl;
 		cout << testpkt->yaw << endl;
-		cout << "FIRE 수신. 현재 상태 : " << player->GetFireFlag() << endl;
-		break;
-	}
-	case FIRE:
-	{
-		player->SetFireFlag();
-		cout << "FIRE 수신. 현재 상태 : " << player->GetFireFlag() << endl;
+		cout << "FIRE 수신. 현재 상태 : " << curFireFlag << endl;
 		break;
 	}
 	case TEMP:

@@ -9,36 +9,28 @@ enum Packet_ID
     UPDATE = 4,
 };
 
-
 #pragma pack(1)
 struct Packetheader
 {
     uint16_t size;
     uint16_t ID; // Packet_ID
 };
-#pragma pack()
 
-#pragma pack(1)
 struct MovePacket
 {
     Packetheader header;
     uint16_t keyW = 0;
     uint16_t keyS = 0;
-    //-----서버와 크기 맞추기 용 입니다.
     float yaw = 0;
     uint8_t FireFlag = 0; // false = 0 true = 1
 
 };
-#pragma pack()
 
-#pragma pack(1)
 struct FirePacket
 {
     Packetheader header;
 };
-#pragma pack()
 
-#pragma pack(1)
 struct PlayerState
 {
     //int16_t UpdateID;
@@ -55,9 +47,7 @@ struct PlayerState
     //char Shield;
     //bool fire;
 };
-#pragma pack()
 
-#pragma pack(1)
 struct UpdateState
 {
     Packetheader header;

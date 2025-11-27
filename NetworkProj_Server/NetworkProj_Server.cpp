@@ -3,7 +3,8 @@
 #define SERVERPORT 8922
 
 GameRoom Room;
-// 메인으로 병합 테스트하기 위한 주석입니다.
+Timer FireTimer;
+
 /*
 recvData는 데이터를 받을 위치를 계산한 포인터 변수 입니다.
 가독성을 위한 일종의 책갈피 역할이라고 생각해주시면 됩니다.
@@ -18,6 +19,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 
 	while (true)
 	{
+		myPlayer->CheckFireFlag();
 		Room.Update_State(myPlayer);
 
 		// 시작주소 갱신.

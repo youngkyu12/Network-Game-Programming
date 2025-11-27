@@ -1,5 +1,6 @@
 #include "Player.h"
 
+
 Player::Player()
 {
 
@@ -65,14 +66,15 @@ uint8_t Player::GetFireFlag()
 }
 
 
-void Player::SetFireFlag()
+void Player::CheckFireFlag()
 {
 	if (is_Firing == 1)
 	{
-		if (GetTickCount() - fireStartTime >= 100)
+		if (FireTimer.IsElapsed(100))
 		{
-			// 100ms 지났으면 자동으로 초기화.
 			is_Firing = 0;
+			FireTimer.Stop(); 
+			cout << "1초 경과. 발사 상태 해제" << endl;
 		}
 	}
 }
@@ -85,9 +87,11 @@ void Player::Move(XMFLOAT3& xmf3Shift)
 
 void Player::Fire()
 {
-	is_Firing = true;
-	fireStartTime = GetTickCount();// 지금부터 1초 시작
+	FireTimer.Start();
+	is_Firing = 1;
+	cout << "서버내 fireflag 1로 변경" << endl;
 }
+
 
 void Player::Rotate(float fPitch, float fYaw, float fRoll)
 {
@@ -113,4 +117,14 @@ void Player::Rotate(float fPitch, float fYaw, float fRoll)
 	Look = Vector3::Normalize(Look);
 	Right = Vector3::Normalize(Vector3::CrossProduct(Up, Look));
 	Up = Vector3::Normalize(Vector3::CrossProduct(Look, Right));
+}
+
+Timer::Timer()
+{
+	startTime = 0;
+	isActive = false;
+}
+
+Timer::~Timer()
+{
 }
