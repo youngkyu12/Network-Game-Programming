@@ -49,6 +49,8 @@ public:
 	virtual void Animate(float fElapsedTime);
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 
+	virtual void FireBullet() {}
+
 	void SetCamera(CCamera* pCamera) { m_pCamera = pCamera; }
 	CCamera* GetCamera() { return(m_pCamera); }
 };
@@ -60,6 +62,11 @@ class CTankPlayer : public CPlayer
 public:
 	CTankPlayer();
 	virtual ~CTankPlayer();
+
+	float			m_fBulletEffectiveRange = 150.0f;
+	CBulletObject*	m_ppBullets[BULLETS];
+
+	void FireBullet();
 
 	virtual void OnUpdateTransform();
 	virtual void Animate(float fElapsedTime);
