@@ -155,8 +155,8 @@ int main()
 			return 1;
 		}
 		
-		//recv 100ms 동안 안들어오면 타임아웃오류
-		int recvTimeout = 16; //100ms
+		// 타임아웃 설정을 통해 업데이트 주기 설정.
+		int recvTimeout = 8;
 		if (setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recvTimeout, sizeof(recvTimeout)) == SOCKET_ERROR)
 		{
 			cout << "옵션 설정 실패" << endl;

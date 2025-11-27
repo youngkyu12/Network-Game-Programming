@@ -319,12 +319,6 @@ DWORD WINAPI ClientMain(LPVOID arg)
 	}
 	
 	gGameFramework.sock = sock;
-	u_long on = 1;
-	if (ioctlsocket(sock, FIONBIO, &on) == SOCKET_ERROR)
-	{
-		return 1;
-	}
-
 	// 데이터 통신에 사용할 변수
 	char buf[BUFSIZE];
 	int len = 0;
@@ -411,7 +405,6 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				break;
 			}
 		} 
-		//Sleep(1); //CPU 과부하 방지 - 추후에 추가 고려
 	}
 	// 소켓 닫기
 	closesocket(sock);
