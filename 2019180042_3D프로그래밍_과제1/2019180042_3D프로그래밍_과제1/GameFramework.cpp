@@ -82,8 +82,17 @@ void CGameFramework::BuildObjects()
 
 	m_pScene = new CScene(m_pPlayer);
 	m_pScene->BuildObjects();
-
-	
+	// ÃÑ¾Ë »ý¼º
+	CCubeMesh* pBulletMesh = new CCubeMesh(1.0f, 4.0f, 1.0f);
+	for (int i = 0; i < BULLETS; i++)
+	{
+		m_ppBullets[i] = new CBulletObject(500.0f);
+		m_ppBullets[i]->SetMesh(pBulletMesh);
+		m_ppBullets[i]->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
+		m_ppBullets[i]->SetRotationSpeed(360.0f);
+		m_ppBullets[i]->SetMovingSpeed(120.0f);
+		m_ppBullets[i]->SetActive(false);
+	}
 }
 
 void CGameFramework::ReleaseObjects()
@@ -225,6 +234,13 @@ void CGameFramework::AnimateObjects()
 	if (m_pPlayer) m_pPlayer->Animate(fTimeElapsed);
 	if (m_pScene) m_pScene->Animate(fTimeElapsed);
 	
+	for (int i = 0; i < BULLETS; i++)
+	{
+		if (m_ppBullets[i] && m_ppBullets[i]->m_bActive)
+		{
+			m_ppBullets[i]->Animate(fTimeElapsed);
+		}
+	}
 }
 
 void CGameFramework::FrameAdvance()
@@ -242,6 +258,13 @@ void CGameFramework::FrameAdvance()
 	
 	if (m_pScene) m_pScene->Render(m_hDCFrameBuffer, m_pCamera);
 
+	for (int i = 0; i < BULLETS; i++)
+	{
+		if (m_ppBullets[i] && m_ppBullets[i]->m_bActive)
+		{
+			m_ppBullets[i]->Render(m_hDCFrameBuffer, m_pCamera);
+		}
+	}
 	
 	PresentFrameBuffer();
 
