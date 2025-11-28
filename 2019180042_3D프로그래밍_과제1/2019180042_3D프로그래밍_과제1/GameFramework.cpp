@@ -169,15 +169,28 @@ void CGameFramework::ProcessInput()
 
 	bool keyinput = false;
 	bool mouseinput = false;
+	static bool A_PressedPrev = false; // 이전상태 기억
 
 	static UCHAR pKeyBuffer[256];
 	if ( GetKeyboardState ( pKeyBuffer ) )
 	{
 		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
 		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
-		keyPKT.FireFlag = (pKeyBuffer['A'] & 0xF0) ? 1 : 0;
 
-		if (keyPKT.keyS || keyPKT.keyW || keyPKT.FireFlag)
+		bool A_PressedNow = (pKeyBuffer['A'] & 0xF0) ? true : false;
+		// A키 단발성으로 입력받기
+		if (A_PressedNow == true && A_PressedPrev == false)
+		{
+			keyPKT.FireFlag = 1;
+			keyinput = true;
+		}
+		else
+		{
+			keyPKT.FireFlag = 0;
+		}
+		A_PressedPrev = A_PressedNow;
+
+		if (keyPKT.keyS || keyPKT.keyW)
 		{
 			keyinput = true;
 		}

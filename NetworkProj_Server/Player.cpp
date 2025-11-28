@@ -87,6 +87,7 @@ void Player::Move(XMFLOAT3& xmf3Shift)
 
 void Player::Fire()
 {
+	// 혹시 같은 패킷이 두번오면 타이머에 영향없게 retrun 처리
 	if (is_Firing == 1)
 	{
 		return;
