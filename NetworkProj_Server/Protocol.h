@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#define MAX_PLAYERS 3
+#define MAX_PLAYERS 10
 
 #pragma pack(push, 1)
 enum
@@ -28,12 +28,6 @@ struct MovePacket
 	uint8_t FireFlag = 0; // false = 0 true = 1
 };
 
-struct FirePacket
-{
-	Packetheader header;
-	bool FireFlag;
-};
-
 struct PlayerState // 한명분 데이터
 {
 	int32_t playerID;
@@ -43,7 +37,7 @@ struct PlayerState // 한명분 데이터
 	float Look_x;
 	float Look_y;
 	float Look_z;
-	bool FireFlag;	// 1바이트
+	uint8_t FireFlag;
 };
 
 

@@ -359,7 +359,8 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				}
 
 				//패킷 도착 후 처리
-				switch (header->ID) {
+				switch (header->ID) 
+				{
 				case MOVE:
 				{
 

@@ -9,7 +9,7 @@ enum Packet_ID
     UPDATE = 4,
 };
 
-#pragma pack(1)
+#pragma pack(push, 1)
 struct Packetheader
 {
     uint16_t size;
@@ -26,11 +26,6 @@ struct MovePacket
 
 };
 
-struct FirePacket
-{
-    Packetheader header;
-};
-
 struct PlayerState
 {
     int32_t Player_ID;
@@ -40,7 +35,7 @@ struct PlayerState
     float Lookx;
     float Looky;
     float Lookz;
-    bool fire;
+    uint8_t fire;
 };
 
 struct UpdateState
@@ -50,7 +45,7 @@ struct UpdateState
     int32_t numPlayers;
     PlayerState players[MAX_PLAYERS];
 };
-#pragma pack()
+#pragma pack(pop)
 
 class SendQueue {
 public:

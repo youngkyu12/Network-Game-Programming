@@ -45,9 +45,9 @@ void GameRoom::Update_State(Player* player)
 	}
 	LeaveCriticalSection(&_cs);
 
-	uint16_t packetSize = sizeof(Packetheader) + sizeof(int32_t) + (playerCount * sizeof(PlayerState));
+	uint16_t packetSize = sizeof(Packetheader) + sizeof(uint8_t) + sizeof(int32_t) + (playerCount * sizeof(PlayerState));
 	updatePkt.header.size = packetSize;
-
+	
 	send(player->sock, (char*)&updatePkt, packetSize, 0);
 }
 
@@ -111,14 +111,6 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 			player->Fire(); 
 		}
 
-		/*
-		XMFLOAT3 currentPos = player->GetPosition();//테스트용 임시 저장
-		//uint8_t curFireFlag = player->GetFireFlag();
-		int curFireFlag = player->GetFireFlag();
-		cout << currentPos.x << ", " << currentPos.y << ", " << currentPos.z << endl;
-		cout << testpkt->yaw << endl;
-		cout << "FIRE 수신. 현재 상태 : " << curFireFlag << endl;
-		*/
 		break;
 	}
 	default:
