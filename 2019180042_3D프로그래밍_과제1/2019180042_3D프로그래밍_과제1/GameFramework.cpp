@@ -262,7 +262,7 @@ void CGameFramework::HandlePacket()
 		{
 			m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
 			m_pPlayer->SetLook(Look);
-			if (player.fire == 1 ) 
+			if (player.fire == 1 && m_pPlayer->PrevFire == false)
 			{
 				m_pPlayer->FireBullet();
 			}
