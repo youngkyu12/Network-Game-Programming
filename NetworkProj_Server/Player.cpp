@@ -12,48 +12,39 @@ Player::~Player()
 
 void Player::SetPosition(float x, float y, float z)
 {
-	Position = XMFLOAT3(x, y, z);
+	m_xmf4x4World._41 = x;
+	m_xmf4x4World._42 = y;
+	m_xmf4x4World._43 = z;
 }
 
 void Player::SetLook(float x, float y, float z)
 {
-	Look = XMFLOAT3(x, y, z);
+	XMFLOAT3 Look = XMFLOAT3(x, y, z);
+	XMFLOAT3 Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	LookAt(Look, Up);
 }
 
 
 void Player::LookAt(XMFLOAT3& L, XMFLOAT3& U)
 {
-	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookAtLH(Position, L, U);
-	Right = Vector3::Normalize(XMFLOAT3(xmf4x4View._11, xmf4x4View._21, xmf4x4View._31));
-	Up = Vector3::Normalize(XMFLOAT3(xmf4x4View._12, xmf4x4View._22, xmf4x4View._32));
-	Look = Vector3::Normalize(XMFLOAT3(xmf4x4View._13, xmf4x4View._23, xmf4x4View._33));
+	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookAtLH(GetPosition(), L, U);
+	m_xmf4x4World._11 = xmf4x4View._11; m_xmf4x4World._12 = xmf4x4View._21; m_xmf4x4World._13 = xmf4x4View._31;
+	m_xmf4x4World._21 = xmf4x4View._12; m_xmf4x4World._22 = xmf4x4View._22; m_xmf4x4World._23 = xmf4x4View._32;
+	m_xmf4x4World._31 = xmf4x4View._13; m_xmf4x4World._32 = xmf4x4View._23; m_xmf4x4World._33 = xmf4x4View._33;
 }
 
 XMFLOAT3 Player::GetPosition()
 {
-	return Position;
-}
-
-XMFLOAT3 Player::GetVelocity()
-{
-	return Velocity;
+	return(XMFLOAT3(m_xmf4x4World._41, m_xmf4x4World._42, m_xmf4x4World._43));
 }
 
 XMFLOAT3 Player::GetLook()
 {
-	return Look;
+	XMFLOAT3 xmf3LookAt(m_xmf4x4World._31, m_xmf4x4World._32, m_xmf4x4World._33);
+	xmf3LookAt = Vector3::Normalize(xmf3LookAt);
+	return(xmf3LookAt);
 }
 
-XMFLOAT3 Player::GetUp()
-{
-	return Up;
-}
-
-XMFLOAT3 Player::GetRight()
-{
-	return Right;
-}
 
 uint16_t Player::GetHP()
 {
@@ -79,10 +70,29 @@ void Player::CheckFireFlag()
 	}
 }
 
+void Player::UpdateBoundingBox()
+{
+	// 로컬 기준(센터=0, 방향=단위 쿼터니언, 크기=3,3,3)을 템플릿으로 사용
+	const BoundingOrientedBox localBox(
+		XMFLOAT3(0.0f, 0.0f, 0.0f),
+		XMFLOAT3(3.0f, 3.0f, 3.0f),
+		XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	BoundingOrientedBox worldBox;
+	localBox.Transform(worldBox, XMLoadFloat4x4(&m_xmf4x4World));
+
+	// 필요 시 정규화(안전용)
+	XMStoreFloat4(&worldBox.Orientation,
+		XMQuaternionNormalize(XMLoadFloat4(&worldBox.Orientation)));
+
+	m_xmOOBB = worldBox;
+}
+
 void Player::Move(XMFLOAT3& xmf3Shift)
 {
-
-	Position = Vector3::Add(xmf3Shift, Position);
+	m_xmf4x4World._41 += xmf3Shift.x;
+	m_xmf4x4World._42 += xmf3Shift.y;
+	m_xmf4x4World._43 += xmf3Shift.z;
 }
 
 void Player::Fire()
@@ -100,28 +110,8 @@ void Player::Fire()
 
 void Player::Rotate(float fPitch, float fYaw, float fRoll)
 {
-	if (fPitch != 0.0f)
-	{
-		XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&Right), XMConvertToRadians(fPitch));
-		Look = Vector3::TransformNormal(Look, mtxRotate);
-		Up = Vector3::TransformNormal(Up, mtxRotate);
-	}
-	if (fYaw != 0.0f)
-	{
-		XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&Up), XMConvertToRadians(fYaw));
-		Look = Vector3::TransformNormal(Look, mtxRotate);
-		Right = Vector3::TransformNormal(Right, mtxRotate);
-	}
-	if (fRoll != 0.0f)
-	{
-		XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&Look), XMConvertToRadians(fRoll));
-		Up = Vector3::TransformNormal(Up, mtxRotate);
-		Right = Vector3::TransformNormal(Right, mtxRotate);
-	}
-
-	Look = Vector3::Normalize(Look);
-	Right = Vector3::Normalize(Vector3::CrossProduct(Up, Look));
-	Up = Vector3::Normalize(Vector3::CrossProduct(Look, Right));
+	XMFLOAT4X4 mtxRotate = Matrix4x4::RotationYawPitchRoll(fPitch, fYaw, fRoll);
+	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
 }
 
 Timer::Timer()

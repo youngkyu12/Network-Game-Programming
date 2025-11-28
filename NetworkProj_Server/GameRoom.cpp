@@ -137,11 +137,79 @@ void GameRoom::Move(Player* player, char key)
 		break;
 	}
 
-	player->Move(xmf3Shift);
+	// 충돌 검사 후 위치 결정
+	XMFLOAT3 resolvedPos;
+	if (CheckPlayerByPlayerCollisions(player, xmf3Shift, resolvedPos))
+	{
+		// 이동 가능: 실제 이동량 = (결정된 위치 - 현재 위치)
+		XMFLOAT3 cur = player->GetPosition();
+		XMFLOAT3 delta(resolvedPos.x - cur.x, resolvedPos.y - cur.y, resolvedPos.z - cur.z);
+		player->Move(delta);
+		player->UpdateBoundingBox();
+	}
+	else
+	{
+		// 이동 불가: 위치 변화 없음
+	}
 }
 
 void GameRoom::Rotate (Player* player, float yaw )
 {
 	//데이터를 수정할떄는 playermanager에 접근하면 안됩니다.
 	player->Rotate (0.0f , yaw , 0.0f);
+}
+
+bool GameRoom::CheckPlayerByPlayerCollisions(Player* mover, const XMFLOAT3& desiredShift, XMFLOAT3& outResolvedPos)
+{
+	if (!mover)
+	{
+		return false;
+	}
+
+	// 현재 위치
+	const XMFLOAT3 curPos = mover->GetPosition();
+	// 이동 후 목표 위치(충돌 없을 때 반환할 위치)
+	const XMFLOAT3 targetPos(curPos.x + desiredShift.x, curPos.y + desiredShift.y, curPos.z + desiredShift.z);
+
+	// 이동 전/후 OOBB 준비
+	mover->UpdateBoundingBox();
+	BoundingOrientedBox movedBox = mover->GetBoundingBox();
+	movedBox.Center.x += desiredShift.x;
+	movedBox.Center.y += desiredShift.y;
+	movedBox.Center.z += desiredShift.z;
+
+	bool blocked = false;
+
+	EnterCriticalSection(&_cs);
+	const size_t count = PlayerManager.size();
+	for (size_t i = 0; i < count; ++i)
+	{
+		Player* other = PlayerManager[i];
+		if (!other || other == mover) continue;
+
+		other->UpdateBoundingBox();
+		const BoundingOrientedBox& otherBox = other->GetBoundingBox();
+
+		if (movedBox.Intersects(otherBox))
+		{
+			// 충돌 발견
+			cout << "Player " << mover->Player_ID << " 충돌 with Player " << other->Player_ID << endl;
+			blocked = true;
+			break;
+		}
+	}
+	LeaveCriticalSection(&_cs);
+
+	if (blocked)
+	{
+		// 충돌: 이동 불가 -> 현재 위치 반환
+		outResolvedPos = curPos;
+		return false;
+	}
+	else
+	{
+		// 충돌 없음: 이동 가능 -> 목표 위치 반환
+		outResolvedPos = targetPos;
+		return true;
+	}
 }

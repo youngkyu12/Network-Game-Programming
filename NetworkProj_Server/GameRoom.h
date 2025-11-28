@@ -17,6 +17,9 @@ public:
 	void Move(Player* player, char key);
 	void Rotate(Player* player, float yaw);
 
+	bool CheckPlayerByPlayerCollisions(Player* mover, const XMFLOAT3& desiredShift, XMFLOAT3& outResolvedPos);
+
+
 private:
 	CRITICAL_SECTION _cs;
 	vector<Player*> PlayerManager;

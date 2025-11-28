@@ -65,17 +65,17 @@ public:
 	void SetLook(float x, float y, float z);
 
 	XMFLOAT3 GetPosition(); // 포지션 데이터 가져오기
-	XMFLOAT3 GetVelocity();
 	XMFLOAT3 GetLook();
-	XMFLOAT3 GetUp();
-	XMFLOAT3 GetRight();
 	uint16_t GetHP(); // HP데이터 가져오기
 	uint8_t GetFireFlag();
 	void CheckFireFlag();
 
+	void UpdateBoundingBox();
 
 	void Move(XMFLOAT3& xmf3Shift);
 	void Fire();
+
+	const BoundingOrientedBox& GetBoundingBox() const { return m_xmOOBB; }
 
 	void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
 
@@ -86,12 +86,18 @@ public:
 private:
 	uint16_t HP;
 
+	/* 행렬로 대체
 	XMFLOAT3 Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	XMFLOAT3 Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	XMFLOAT3 Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	XMFLOAT3 Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	XMFLOAT3 Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	*/
 
+	// World Matrix와 OOBB 충돌체
+	// 충돌검사 일단 Move에서만 수행하겠습니다.
+	XMFLOAT4X4	m_xmf4x4World = Matrix4x4::Identity();
+	BoundingOrientedBox	m_xmOOBB = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(3.0, 3.0, 3.0), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	//
 
 	float Pitch = 0.0f;
 	float Yaw = 0.0f;
