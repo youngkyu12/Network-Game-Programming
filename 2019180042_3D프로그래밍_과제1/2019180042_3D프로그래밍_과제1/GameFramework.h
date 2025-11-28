@@ -6,7 +6,6 @@
 #include "SocketQueue.h"
 
 
-
 class CGameFramework
 {
 public:
@@ -30,7 +29,7 @@ private:
 	HBITMAP						m_hBitmapSelect = NULL;
 
 	CCamera* m_pCamera = NULL;
-	CPlayer* m_pPlayer = NULL;
+	CPlayer* m_pPlayer[Players];
 	CScene* m_pScene = NULL;
 
 	CGameObject* m_pPickObject = NULL;
@@ -48,7 +47,7 @@ private:
 	XMFLOAT3 Up = { 0,1,0 };
 
 	float						m_fBulletEffectiveRange = 150.0f;
-	CBulletObject* m_ppBullets[BULLETS];
+	//CBulletObject* m_ppBullets[BULLETS];
 
 public:
 	void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
@@ -72,7 +71,7 @@ public:
 
 	void SetActive(bool bActive) { m_bActive = bActive; }
 
-	void FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4World);
+	// void FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4World);
 	void SetRunning(bool running) { m_isRunning = running; }
 	bool IsRunning() const { return m_isRunning; }
 

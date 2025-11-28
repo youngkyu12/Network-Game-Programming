@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "SocketQueue.h"
 
+#define Players 10
 
 class CPlayer : public CGameObject
 {

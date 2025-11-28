@@ -26,7 +26,8 @@ void CGameFramework::OnDestroy()
 
 	if (m_hBitmapFrameBuffer) ::DeleteObject(m_hBitmapFrameBuffer);
 	if (m_hDCFrameBuffer) ::DeleteDC(m_hDCFrameBuffer);
-	for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]) delete m_ppBullets[i];
+	// GameObject에서 Player로 변환 과정
+	//for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]) delete m_ppBullets[i];
 }
 
 void CGameFramework::BuildFrameBuffer()
@@ -73,16 +74,25 @@ void CGameFramework::BuildObjects()
 	m_pCamera->GenerateOrthographicProjectionMatrix(1.01f, 50.0f, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
 
 	CTankMesh* pTankMesh = new CTankMesh(6.0f, 6.0f, 6.0f);
-	m_pPlayer = new CTankPlayer();
-	m_pPlayer->SetPosition(0.0f, 0.0f, 0.0f);
-	m_pPlayer->SetMesh(pTankMesh);
-	m_pPlayer->SetColor(RGB(255, 0, 0));
-	m_pPlayer->SetCamera(m_pCamera);
-	m_pPlayer->SetCameraOffset(XMFLOAT3(0.0f, 5.0f, -15.0f));
+	for (int i = 0; i < Players; i++)
+	{
+		m_pPlayer[i] = new CTankPlayer();
+		m_pPlayer[i]->SetPosition(0.0f, 1000.0f, 0.0f);
+		m_pPlayer[i]->SetMesh(pTankMesh);
+		if (i == 0) {
+			m_pPlayer[i]->SetColor(RGB(255, 0, 0));
+			m_pPlayer[i]->SetCamera(m_pCamera);
+			m_pPlayer[i]->SetCameraOffset(XMFLOAT3(0.0f, 5.0f, -15.0f));
+		}
+		else {
+			m_pPlayer[i]->SetColor(RGB(0, 0, 255));
+		}
+	}
 
-	m_pScene = new CScene(m_pPlayer);
+	m_pScene = new CScene(m_pPlayer[0]);
 	m_pScene->BuildObjects();
 	// 총알 생성
+	/* GameObject에서 Player로 변환 과정
 	CCubeMesh* pBulletMesh = new CCubeMesh(1.0f, 4.0f, 1.0f);
 	for (int i = 0; i < BULLETS; i++)
 	{
@@ -93,6 +103,7 @@ void CGameFramework::BuildObjects()
 		m_ppBullets[i]->SetMovingSpeed(120.0f);
 		m_ppBullets[i]->SetActive(false);
 	}
+	*/
 }
 
 void CGameFramework::ReleaseObjects()
@@ -104,7 +115,12 @@ void CGameFramework::ReleaseObjects()
 	}
 
 	if (m_pCamera) delete m_pCamera;
-	if (m_pPlayer) delete m_pPlayer;
+
+	// GameObject에서 Player로 변환 과정
+	for (int i = 0; i < Players; i++)
+	{
+		if (m_pPlayer[i]) delete m_pPlayer[i];
+	}
 }
 
 void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
@@ -231,9 +247,15 @@ void CGameFramework::ProcessInput()
 void CGameFramework::AnimateObjects()
 {
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
-	if (m_pPlayer) m_pPlayer->Animate(fTimeElapsed);
+	//GameObject에서 Player로 변환 과정
+	for (int i = 0; i < Players; i++)
+	{
+		m_pPlayer[i]->Animate(fTimeElapsed);
+	}
+	//
 	if (m_pScene) m_pScene->Animate(fTimeElapsed);
 	
+	/* GameObject에서 Player로 변환 과정
 	for (int i = 0; i < BULLETS; i++)
 	{
 		if (m_ppBullets[i] && m_ppBullets[i]->m_bActive)
@@ -241,6 +263,7 @@ void CGameFramework::AnimateObjects()
 			m_ppBullets[i]->Animate(fTimeElapsed);
 		}
 	}
+	*/
 }
 
 void CGameFramework::FrameAdvance()
@@ -249,7 +272,10 @@ void CGameFramework::FrameAdvance()
 	ProcessInput();
 
 	HandlePacket();
-	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
+
+	//GameObject에서 Player로 변환 과정 카메라 업데이트만 실행
+	m_pPlayer[0]->Update(m_GameTimer.GetTimeElapsed());
+	//m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 
 	AnimateObjects();
 
@@ -258,6 +284,12 @@ void CGameFramework::FrameAdvance()
 	
 	if (m_pScene) m_pScene->Render(m_hDCFrameBuffer, m_pCamera);
 
+	for (int i = 0; i < Players; i++)
+	{
+		m_pPlayer[i]->Render(m_hDCFrameBuffer, m_pCamera);
+	}
+
+	/*GameObject에서 Player로 변환 과정
 	for (int i = 0; i < BULLETS; i++)
 	{
 		if (m_ppBullets[i] && m_ppBullets[i]->m_bActive)
@@ -265,6 +297,7 @@ void CGameFramework::FrameAdvance()
 			m_ppBullets[i]->Render(m_hDCFrameBuffer, m_pCamera);
 		}
 	}
+	*/
 	
 	PresentFrameBuffer();
 
@@ -282,14 +315,14 @@ void CGameFramework::HandlePacket()
 	{
 		XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz};
 		if (player.Player_ID == MyPlayerID)
-		{
-			m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-			m_pPlayer->SetLook(Look);
-			if (player.fire == 1 && m_pPlayer->PrevFire == false)
+		{	//GameObject에서 Player로 변환 과정 m_pPlayer -> m_pPlayer[0]
+			m_pPlayer[0]->SetPosition(player.pos_x, player.pos_y, player.pos_z);
+			m_pPlayer[0]->SetLook(Look);
+			if (player.fire == 1 && m_pPlayer[0]->PrevFire == false)
 			{
-				m_pPlayer->FireBullet();
+				m_pPlayer[0]->FireBullet();
 			}
-			m_pPlayer->PrevFire = player.fire; // 현재 상태를 과거의 상태값으로 저장.(다음 턴 사용을 위해서)
+			m_pPlayer[0]->PrevFire = player.fire; // 현재 상태를 과거의 상태값으로 저장.(다음 턴 사용을 위해서)
 		}
 		else
 		{
@@ -297,26 +330,26 @@ void CGameFramework::HandlePacket()
 			// 내 ID보다 작으면 그대로... 크면 -1하여 땡겨줌(원래 내가 차지했어야할 공간을 땡겨주기)
 			if (player.Player_ID < MyPlayerID)
 			{
-				objIndex = player.Player_ID;
+				objIndex = player.Player_ID + 1;
 			}
 			else
 			{
-				objIndex = player.Player_ID - 1;
+				objIndex = player.Player_ID;
 			}
 
 			if (m_pScene && objIndex >= 0 && objIndex < 10) //10명까지
 			{
-				CGameObject* p_Obj = m_pScene->m_ppObjects[objIndex];
-				if (p_Obj)
+				//GameObject에서 Player로 변환 과정 m_pPlayer[objIndex]
+				CPlayer* Other_player = m_pPlayer[objIndex];
+				if (Other_player)
 				{
-					p_Obj->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-					p_Obj->LookTo(Look, Up);
-					p_Obj->Rotate(90.0f, 0.0f, 0.0f);
-					if (player.fire == 1 && p_Obj->PrevFire == false)
+					Other_player->SetPosition(player.pos_x, player.pos_y, player.pos_z);
+					Other_player->SetLook(Look);
+					if (player.fire == 1 && Other_player->PrevFire == false)
 					{
-						FireBullet(p_Obj->GetPosition(), p_Obj->GetUp(), p_Obj->m_xmf4x4World);
+						Other_player->FireBullet();
 					}
-					p_Obj->PrevFire = player.fire;
+					Other_player->PrevFire = player.fire;
 				}
 				
 			}
@@ -325,6 +358,7 @@ void CGameFramework::HandlePacket()
 }
 
 
+/*
 void CGameFramework::FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4World)
 {
 
@@ -352,3 +386,4 @@ void CGameFramework::FireBullet(XMFLOAT3 pos, XMFLOAT3 Up, XMFLOAT4X4 m_xmf4x4Wo
 		pBulletObject->SetActive(true);
 	}
 }
+*/

@@ -29,11 +29,11 @@ void CScene::BuildObjects()
 	m_pWallsObject->m_pxmf4WallPlanes[5] = XMFLOAT4(0.0f, 0.0f, -1.0f, fHalfDepth);
 	m_pWallsObject->m_xmOOBBPlayerMoveCheck = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(fHalfWidth, fHalfHeight, fHalfDepth * 0.05f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 
+	/*
 	CTankMesh* pTankMesh = new CTankMesh(6.0f, 6.0f, 6.0f);
 
 	m_nObjects = 10;
 	m_ppObjects = new CGameObject * [m_nObjects];
-
 
 	for (int i = 0; i < m_nObjects; ++i) {
 		m_ppObjects[i] = new CGameObject();
@@ -45,6 +45,7 @@ void CScene::BuildObjects()
 		//m_ppObjects[i]->LookAt(Look, Up);
 		//m_ppObjects[i]->Rotate(90.0f, 0.0f, 0.0f);
 	}
+	*/
 
 #ifdef _WITH_DRAW_AXIS
 	m_pWorldAxis = new CGameObject();
@@ -115,9 +116,12 @@ void CScene::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 		m_pPlayer->Render(hDCFrameBuffer, pCamera);
 	}
 
+	/*
 	for (int i = 0; i < m_nObjects; i++) {
 		m_ppObjects[i]->Render(hDCFrameBuffer, pCamera);
 	}
+	*/
+
 	//UI
 #ifdef _WITH_DRAW_AXIS
 	CGraphicsPipeline::SetViewOrthographicProjectTransform(&pCamera->m_xmf4x4ViewOrthographicProject);
