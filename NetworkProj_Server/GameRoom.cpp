@@ -18,7 +18,7 @@ void GameRoom::Update_State(Player* player)
 {
 	UpdateState updatePkt;
 	updatePkt.header.ID = MOVE; // 1
-
+	updatePkt.My_ID = player->Player_ID;
 	EnterCriticalSection(&_cs);
 	int32_t playerCount = PlayerManager.size();
 	if (playerCount > MAX_PLAYERS)
@@ -28,17 +28,13 @@ void GameRoom::Update_State(Player* player)
 
 	updatePkt.numPlayers = playerCount;
 
-	uint16_t myID = player->Player_ID;
-
 	for (int i = 0; i < playerCount; ++i)
 	{
 		Player* p = PlayerManager[i];
 		XMFLOAT3 pos = p->GetPosition();
 		XMFLOAT3 Look = p->GetLook();
 
-		if (p->Player_ID == myID) updatePkt.players[i].playerID = 0;	// 나 = 0
-		else if (p->Player_ID != myID) updatePkt.players[i].playerID = 1;	// 나X = 1 2인 기준, 3인 되면 변경
-		
+		updatePkt.players[i].playerID = p->Player_ID;
 		updatePkt.players[i].x = pos.x;
 		updatePkt.players[i].y = pos.y;
 		updatePkt.players[i].z = pos.z;

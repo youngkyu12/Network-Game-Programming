@@ -31,7 +31,7 @@ void CScene::BuildObjects()
 
 	CTankMesh* pTankMesh = new CTankMesh(6.0f, 6.0f, 6.0f);
 
-	m_nObjects = 1;
+	m_nObjects = 10;
 	m_ppObjects = new CGameObject * [m_nObjects];
 
 

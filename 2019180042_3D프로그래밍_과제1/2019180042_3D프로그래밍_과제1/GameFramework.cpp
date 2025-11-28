@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "GameFramework.h"
+extern uint8_t MyPlayerID;
 
 void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 {
@@ -252,33 +253,49 @@ void CGameFramework::FrameAdvance()
 
 void CGameFramework::HandlePacket()
 {
-	// 리팩토링 - 홍성호
+	// 리팩토링
 	PlayerState player;
 	while (recv_Queue.pop(player)) 
 	{
 		XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz};
-		if (player.Player_ID == 0)
+		if (player.Player_ID == MyPlayerID)
 		{
 			m_pPlayer->SetPosition(player.pos_x, player.pos_y, player.pos_z);
 			m_pPlayer->SetLook(Look);
-			if (player.fire == 1 && m_pPlayer->PrevFire == false) 
+			if (player.fire == 1 ) 
 			{
 				m_pPlayer->FireBullet();
 			}
 			m_pPlayer->PrevFire = player.fire; // 현재 상태를 과거의 상태값으로 저장.(다음 턴 사용을 위해서)
 		}
-		else if (player.Player_ID == 1)
+		else
 		{
-			if (m_pScene && m_pScene->m_ppObjects[0])
+			int objIndex = -1;
+			// 내 ID보다 작으면 그대로... 크면 -1하여 땡겨줌(원래 내가 차지했어야할 공간을 땡겨주기)
+			if (player.Player_ID < MyPlayerID)
 			{
-				m_pScene->m_ppObjects[0]->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-				m_pScene->m_ppObjects[0]->LookTo(Look, Up);
-				m_pScene->m_ppObjects[0]->Rotate(90.0f, 0.0f, 0.0f);
-				if (player.fire == 1 && m_pScene->m_ppObjects[0]->PrevFire == false) 
+				objIndex = player.Player_ID;
+			}
+			else
+			{
+				objIndex = player.Player_ID - 1;
+			}
+
+			if (m_pScene && objIndex >= 0 && objIndex < 10) //10명까지
+			{
+				CGameObject* p_Obj = m_pScene->m_ppObjects[objIndex];
+				if (p_Obj)
 				{
-					FireBullet(m_pScene->m_ppObjects[0]->GetPosition(), m_pScene->m_ppObjects[0]->GetUp(), m_pScene->m_ppObjects[0]->m_xmf4x4World);
+					p_Obj->SetPosition(player.pos_x, player.pos_y, player.pos_z);
+					p_Obj->LookTo(Look, Up);
+					p_Obj->Rotate(90.0f, 0.0f, 0.0f);
+					if (player.fire == 1 && p_Obj->PrevFire == false)
+					{
+						FireBullet(p_Obj->GetPosition(), p_Obj->GetUp(), p_Obj->m_xmf4x4World);
+					}
+					p_Obj->PrevFire = player.fire;
 				}
-				m_pScene->m_ppObjects[0]->PrevFire = player.fire;
+				
 			}
 		}
 	}

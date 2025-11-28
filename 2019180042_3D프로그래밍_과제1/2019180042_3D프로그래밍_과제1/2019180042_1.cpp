@@ -12,7 +12,7 @@
 HINSTANCE hInst;								// 현재 인스턴스입니다.
 TCHAR szTitle[MAX_LOADSTRING];					// 제목 표시줄 텍스트입니다.
 TCHAR szWindowClass[MAX_LOADSTRING];			// 기본 창 클래스 이름입니다.
-
+uint8_t MyPlayerID = -1;
 CGameFramework		gGameFramework;
 
  char SeverIP[16];
@@ -364,6 +364,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 				{
 
 					UpdateState* updatePkt = (UpdateState*)buf;
+					MyPlayerID = updatePkt->My_ID;
 					for (int i = 0; i < updatePkt->numPlayers; ++i)
 					{
 						PlayerState pState;

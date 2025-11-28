@@ -33,9 +33,7 @@ struct FirePacket
 
 struct PlayerState
 {
-    //int16_t UpdateID;
     int32_t Player_ID;
-   // char hp;
     float pos_x;
     float pos_y;
     float pos_z;
@@ -43,14 +41,12 @@ struct PlayerState
     float Looky;
     float Lookz;
     bool fire;
-    //float yaw;
-    //char Shield;
-    //bool fire;
 };
 
 struct UpdateState
 {
     Packetheader header;
+    uint8_t My_ID;
     int32_t numPlayers;
     PlayerState players[3];
 };

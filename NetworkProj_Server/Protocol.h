@@ -44,13 +44,13 @@ struct PlayerState // 한명분 데이터
 	float Look_y;
 	float Look_z;
 	bool FireFlag;	// 1바이트
-	//uint16_t hp;
 };
 
 
 struct UpdateState
 {
 	Packetheader header;
+	uint8_t My_ID;
 	int32_t numPlayers;
 	PlayerState players[MAX_PLAYERS];
 };
