@@ -4,8 +4,6 @@
 #include "Camera.h"
 #include "SocketQueue.h"
 
-#define Players 10
-
 class CPlayer : public CGameObject
 {
 public:
@@ -30,6 +28,9 @@ public:
 
 	CCamera* m_pCamera = NULL;
 
+	static CPlayer** s_ppPlayers;
+	static int       s_nPlayers;
+
 public:
 	void SetPosition(float x, float y, float z);
 
@@ -49,6 +50,10 @@ public:
 	virtual void OnUpdateTransform();
 	virtual void Animate(float fElapsedTime);
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
+
+	
+	static void RegisterPlayers(CPlayer** ppPlayers, int nPlayers) { s_ppPlayers = ppPlayers; s_nPlayers = nPlayers; }
+
 
 	virtual void FireBullet() {}
 

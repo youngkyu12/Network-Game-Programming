@@ -63,6 +63,7 @@ public:
 public:
 	void SetPosition(float x, float y, float z);
 	void SetLook(float x, float y, float z);
+	void SetHP(uint16_t value) { HP = value; }
 
 	XMFLOAT3 GetPosition(); // 포지션 데이터 가져오기
 	XMFLOAT3 GetLook();

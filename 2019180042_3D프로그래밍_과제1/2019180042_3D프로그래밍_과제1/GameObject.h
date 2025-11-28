@@ -136,18 +136,43 @@ public:
 
 public:
 	virtual void Animate(float fElapsedTime);
+	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera); // 폭발 렌더링 지원
 
-	float						m_fBulletEffectiveRange = 50.0f;
-	float						m_fMovingDistance = 0.0f;
-	float						m_fRotationAngle = 0.0f;
-	XMFLOAT3					m_xmf3FirePosition = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	float                       m_fBulletEffectiveRange = 1000.0f;
+	float                       m_fMovingDistance = 0.0f;
+	float                       m_fRotationAngle = 0.0f;
+	XMFLOAT3                    m_xmf3FirePosition = XMFLOAT3(0.0f, 0.0f, 1.0f);
 
-	float						m_fElapsedTimeAfterFire = 0.0f;
-	float						m_fLockingDelayTime = 0.3f;
-	float						m_fLockingTime = 4.0f;
+	float                       m_fElapsedTimeAfterFire = 0.0f;
+	float                       m_fLockingDelayTime = 0.3f;
+	float                       m_fLockingTime = 4.0f;
 	CGameObject* m_pLockedObject = NULL;
 
+	// 이동 제한/폭발 상태
+	float                       m_fTravelLimit = 0.0f;
+	bool                        m_bHasTarget = false;
+
+	// 폭발 파편 효과(ExplosiveObject에서 가져옴)
+	bool                        m_bExploding = false;
+	float                       m_fExplosionElapsed = 0.0f;
+	float                       m_fExplosionDuration = 0.6f;
+
+	bool                        m_bBlowingUp = false; // 파편 애니메이션 플래그
+	XMFLOAT4X4                  m_pxmf4x4Transforms[EXPLOSION_DEBRISES];
+	float                       m_fElapsedTimes = 0.0f;
+	float                       m_fDuration = 0.5f;
+	float                       m_fExplosionSpeed = 50.0f;
+	float                       m_fExplosionRotation = 360.0f;
+
+	// 파편 공용 리소스
+	static CMesh* s_pExplosionMesh;
+	static XMFLOAT3             s_pxmf3SphereVectors[EXPLOSION_DEBRISES];
+	static void                 PrepareExplosion();
+
 	void SetFirePosition(XMFLOAT3 xmf3FirePosition);
+	void SetTravelLimit(float dist, bool hasTarget) { m_fTravelLimit = dist; m_bHasTarget = hasTarget; }
+
+	void StartExplosion(); // 파편 폭발 시작
 	void Reset();
 };
 

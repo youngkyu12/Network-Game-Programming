@@ -74,7 +74,7 @@ void CGameFramework::BuildObjects()
 	m_pCamera->GenerateOrthographicProjectionMatrix(1.01f, 50.0f, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
 
 	CTankMesh* pTankMesh = new CTankMesh(6.0f, 6.0f, 6.0f);
-	for (int i = 0; i < Players; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		m_pPlayer[i] = new CTankPlayer();
 		m_pPlayer[i]->SetPosition(0.0f, 1000.0f, 0.0f);
@@ -88,6 +88,8 @@ void CGameFramework::BuildObjects()
 			m_pPlayer[i]->SetColor(RGB(0, 0, 255));
 		}
 	}
+
+	CPlayer::RegisterPlayers(reinterpret_cast<CPlayer**>(m_pPlayer), MAX_PLAYERS);
 
 	m_pScene = new CScene(m_pPlayer[0]);
 	m_pScene->BuildObjects();
@@ -117,7 +119,7 @@ void CGameFramework::ReleaseObjects()
 	if (m_pCamera) delete m_pCamera;
 
 	// GameObject에서 Player로 변환 과정
-	for (int i = 0; i < Players; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (m_pPlayer[i]) delete m_pPlayer[i];
 	}
@@ -248,7 +250,7 @@ void CGameFramework::AnimateObjects()
 {
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
 	//GameObject에서 Player로 변환 과정
-	for (int i = 0; i < Players; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		m_pPlayer[i]->Animate(fTimeElapsed);
 	}
@@ -284,7 +286,7 @@ void CGameFramework::FrameAdvance()
 	
 	if (m_pScene) m_pScene->Render(m_hDCFrameBuffer, m_pCamera);
 
-	for (int i = 0; i < Players; i++)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		m_pPlayer[i]->Render(m_hDCFrameBuffer, m_pCamera);
 	}

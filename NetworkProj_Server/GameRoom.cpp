@@ -109,6 +109,9 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 		if (testpkt->FireFlag == 1)// True 이면... 
 		{
 			player->Fire(); 
+
+			// 발사 처리 및 결과
+			RayHitResult res = ProcessFire(player);
 		}
 
 		break;
@@ -212,4 +215,71 @@ bool GameRoom::CheckPlayerByPlayerCollisions(Player* mover, const XMFLOAT3& desi
 		outResolvedPos = targetPos;
 		return true;
 	}
+}
+
+RayHitResult GameRoom::ProcessFire(Player* shooter)
+{
+	RayHitResult result;
+	if (!shooter) return result;
+
+	// Ray 정보 준비 (원점, 방향)
+	const XMFLOAT3 originF = shooter->GetPosition();
+	XMFLOAT3 dirF = shooter->GetLook();
+	dirF = Vector3::Normalize(dirF); // 안전상 한 번 더 정규화
+
+	XMVECTOR origin = XMLoadFloat3(&originF);
+	XMVECTOR direction = XMLoadFloat3(&dirF);
+
+	// 최대 사거리(필요 시 조정)
+	const float kMaxRange = 1000.0f;
+
+	float nearestDist = kMaxRange;
+	Player* nearestTarget = nullptr;
+
+	EnterCriticalSection(&_cs);
+	// 최신 OOBB 갱신
+	for (size_t i = 0; i < PlayerManager.size(); ++i)
+	{
+		Player* target = PlayerManager[i];
+		if (!target || target == shooter) continue;
+
+		target->UpdateBoundingBox();
+
+		// Ray-OOBB 교차 검사
+		float dist = 0.0f;
+		if (target->GetBoundingBox().Intersects(origin, direction, dist))
+		{
+			// 사거리 내이고 더 가까운 대상이면 갱신
+			if (dist >= 0.0f && dist < nearestDist)
+			{
+				nearestDist = dist;
+				nearestTarget = target;
+			}
+		}
+	}
+	// 피격 처리
+	if (nearestTarget)
+	{
+		// 피격 위치: origin + direction * nearestDist
+		XMVECTOR hitPosV = XMVectorMultiplyAdd(direction, XMVectorReplicate(nearestDist), origin);
+		XMFLOAT3 hitPosF;
+		XMStoreFloat3(&hitPosF, hitPosV);
+
+		// HP 감소(예: 10)
+		const uint16_t damage = 10;
+		uint16_t hp = nearestTarget->GetHP();
+		uint16_t newHp = (hp > damage) ? (hp - damage) : 0;
+		nearestTarget->SetHP(newHp);
+
+		// 피격 결과 출력
+		cout << "Player " << shooter->Player_ID << " 가 Player " << nearestTarget->Player_ID
+			<< " 를 피격! 남은 HP: " << newHp << endl;
+
+		result.hit = true;
+		result.hitPos = hitPosF;
+		result.hitPlayerId = nearestTarget->Player_ID;
+	}
+	LeaveCriticalSection(&_cs);
+
+	return result;
 }

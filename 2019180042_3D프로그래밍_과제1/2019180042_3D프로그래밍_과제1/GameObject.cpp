@@ -281,9 +281,14 @@ void CExplosiveObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
+CMesh* CBulletObject::s_pExplosionMesh = NULL;
+XMFLOAT3 CBulletObject::s_pxmf3SphereVectors[EXPLOSION_DEBRISES];
+
 CBulletObject::CBulletObject(float fEffectiveRange)
 {
 	m_fBulletEffectiveRange = fEffectiveRange;
+	s_pExplosionMesh = NULL;
+	s_pxmf3SphereVectors[EXPLOSION_DEBRISES];
 }
 
 CBulletObject::~CBulletObject()
@@ -302,61 +307,104 @@ void CBulletObject::Reset()
 	m_fElapsedTimeAfterFire = 0;
 	m_fMovingDistance = 0;
 	m_fRotationAngle = 0.0f;
-
+	m_bHasTarget = false;
+	m_bExploding = false;
+	m_fExplosionElapsed = 0.0f;
+	m_fTravelLimit = m_fBulletEffectiveRange;
 	m_bActive = false;
+}
+
+void CBulletObject::PrepareExplosion()
+{
+	// 한 번만 준비
+	if (!s_pExplosionMesh)
+	{
+		for (int i = 0; i < EXPLOSION_DEBRISES; i++)
+			XMStoreFloat3(&s_pxmf3SphereVectors[i], ::RandomUnitVectorOnSphere());
+		s_pExplosionMesh = new CCubeMesh(0.5f, 0.5f, 0.5f);
+	}
+}
+
+void CBulletObject::StartExplosion()
+{
+	// 파편 폭발 시작
+	m_bExploding = true;              // 기존 깜박임 플래그 유지 가능(사용 안 해도 됨)
+	m_fExplosionElapsed = 0.0f;
+
+	m_bBlowingUp = true;              // 파편 애니메이션 활성화
+	m_fElapsedTimes = 0.0f;
+	// 이동 중지
+	m_fMovingDistance = 0.0f;
 }
 
 void CBulletObject::Animate(float fElapsedTime)
 {
-	m_fElapsedTimeAfterFire += fElapsedTime;
-
-	float fDistance = m_fMovingSpeed * fElapsedTime;
-
-	if ((m_fElapsedTimeAfterFire > m_fLockingDelayTime) && m_pLockedObject)
+	// 파편 폭발 중이면 파편 애니메이션(ExplosiveObject와 동일 로직)
+	if (m_bBlowingUp)
 	{
-		XMFLOAT3 xmf3Position = GetPosition();
-		XMVECTOR xmvPosition = XMLoadFloat3(&xmf3Position);
-
-		XMFLOAT3 xmf3LockedObjectPosition = m_pLockedObject->GetPosition();
-		XMVECTOR xmvLockedObjectPosition = XMLoadFloat3(&xmf3LockedObjectPosition);
-		XMVECTOR xmvToLockedObject = xmvLockedObjectPosition - xmvPosition;
-		xmvToLockedObject = XMVector3Normalize(xmvToLockedObject);
-
-		XMVECTOR xmvMovingDirection = XMLoadFloat3(&m_xmf3MovingDirection);
-		xmvMovingDirection = XMVector3Normalize(XMVectorLerp(xmvMovingDirection, xmvToLockedObject, 0.25f));
-		XMStoreFloat3(&m_xmf3MovingDirection, xmvMovingDirection);
+		m_fElapsedTimes += fElapsedTime;
+		if (m_fElapsedTimes <= m_fDuration)
+		{
+			XMFLOAT3 xmf3Position = GetPosition();
+			for (int i = 0; i < EXPLOSION_DEBRISES; i++)
+			{
+				m_pxmf4x4Transforms[i] = Matrix4x4::Identity();
+				m_pxmf4x4Transforms[i]._41 = xmf3Position.x + s_pxmf3SphereVectors[i].x * m_fExplosionSpeed * m_fElapsedTimes;
+				m_pxmf4x4Transforms[i]._42 = xmf3Position.y + s_pxmf3SphereVectors[i].y * m_fExplosionSpeed * m_fElapsedTimes;
+				m_pxmf4x4Transforms[i]._43 = xmf3Position.z + s_pxmf3SphereVectors[i].z * m_fExplosionSpeed * m_fElapsedTimes;
+				m_pxmf4x4Transforms[i] = Matrix4x4::Multiply(
+					Matrix4x4::RotationAxis(s_pxmf3SphereVectors[i], m_fExplosionRotation * m_fElapsedTimes),
+					m_pxmf4x4Transforms[i]);
+			}
+		}
+		else
+		{
+			// 파편 애니메이션 끝
+			m_bBlowingUp = false;
+			m_fElapsedTimes = 0.0f;
+			die = true;
+			Reset(); // 재사용 가능 상태로
+		}
+		return;
 	}
-#ifdef _WITH_VECTOR_OPERATION
-	XMFLOAT3 xmf3Position = GetPosition();
+	// 기존 비행/충돌 이동
+	m_fElapsedTimeAfterFire += fElapsedTime;
+	float fStep = m_fMovingSpeed * fElapsedTime;
 
+	XMFLOAT3 cur = GetPosition();
+	XMFLOAT3 move = Vector3::ScalarProduct(m_xmf3MovingDirection, fStep, false);
+	SetPosition(Vector3::Add(cur, move));
+	m_fMovingDistance += fStep;
+
+	// 회전 효과
 	m_fRotationAngle += m_fRotationSpeed * fElapsedTime;
-	if (m_fRotationAngle > 360.0f) m_fRotationAngle = m_fRotationAngle - 360.0f;
-
-	XMFLOAT4X4 mtxRotate1 = Matrix4x4::RotationYawPitchRoll(0.0f, m_fRotationAngle, 0.0f);
-
-	XMFLOAT3 xmf3RotationAxis = Vector3::CrossProduct(m_xmf3RotationAxis, m_xmf3MovingDirection, true);
-	float fDotProduct = Vector3::DotProduct(m_xmf3RotationAxis, m_xmf3MovingDirection);
-	float fRotationAngle = ::IsEqual(fDotProduct, 1.0f) ? 0.0f : (float)XMConvertToDegrees(acos(fDotProduct));
-	XMFLOAT4X4 mtxRotate2 = Matrix4x4::RotationAxis(xmf3RotationAxis, fRotationAngle);
-
-	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate1, mtxRotate2);
-
-	XMFLOAT3 xmf3Movement = Vector3::ScalarProduct(m_xmf3MovingDirection, fDistance, false);
-	xmf3Position = Vector3::Add(xmf3Position, xmf3Movement);
-	SetPosition(xmf3Position);
-#else
-	XMFLOAT4X4 mtxRotate = Matrix4x4::RotationYawPitchRoll(0.0f, m_fRotationSpeed * fElapsedTime, 0.0f);
+	if (m_fRotationAngle > 360.0f) m_fRotationAngle -= 360.0f;
+	XMFLOAT4X4 mtxRotate = Matrix4x4::RotationYawPitchRoll(0.0f, XMConvertToRadians(m_fRotationAngle), 0.0f);
 	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
-	XMFLOAT3 xmf3Movement = Vector3::ScalarProduct(m_xmf3MovingDirection, fDistance, false);
-	XMFLOAT3 xmf3Position = GetPosition();
-	xmf3Position = Vector3::Add(xmf3Position, xmf3Movement);
-	SetPosition(xmf3Position);
-	m_fMovingDistance += fDistance;
-#endif
 
 	UpdateBoundingBox();
 
-	if ((m_fMovingDistance > m_fBulletEffectiveRange) || (m_fElapsedTimeAfterFire > m_fLockingTime)) Reset();
+	// 이동 완료 충돌 위치 도달 시 파편 폭발 시작
+	if (m_fMovingDistance >= m_fTravelLimit && m_bHasTarget)
+	{
+		StartExplosion();
+	}
+}
+
+// 폭발 중에는 파편들을 렌더, 아니면 기존 메시 렌더
+void CBulletObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
+{
+	if (m_bBlowingUp)
+	{
+		if (!s_pExplosionMesh) PrepareExplosion();
+		for (int i = 0; i < EXPLOSION_DEBRISES; i++)
+		{
+			CGameObject::Render(hDCFrameBuffer, &m_pxmf4x4Transforms[i], s_pExplosionMesh);
+		}
+		return;
+	}
+	// 기존 렌더 경로
+	CGameObject::Render(hDCFrameBuffer, pCamera);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -367,4 +415,3 @@ void CAxisObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 	m_pMesh->Render(hDCFrameBuffer);
 }
-

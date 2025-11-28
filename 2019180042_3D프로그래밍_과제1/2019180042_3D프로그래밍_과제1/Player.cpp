@@ -3,9 +3,14 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
+CPlayer** CPlayer::s_ppPlayers = nullptr;
+int CPlayer::s_nPlayers = 0;
+
 CPlayer::CPlayer()
 {
 	PrevFire = false;
+	s_ppPlayers = nullptr;
+	s_nPlayers = 0;
 }
 
 CPlayer::~CPlayer()
@@ -107,12 +112,14 @@ void CPlayer::OnUpdateTransform()
 	m_xmf4x4World._21 = m_xmf3Up.x; m_xmf4x4World._22 = m_xmf3Up.y; m_xmf4x4World._23 = m_xmf3Up.z;
 	m_xmf4x4World._31 = m_xmf3Look.x; m_xmf4x4World._32 = m_xmf3Look.y; m_xmf4x4World._33 = m_xmf3Look.z;
 	m_xmf4x4World._41 = m_xmf3Position.x; m_xmf4x4World._42 = m_xmf3Position.y; m_xmf4x4World._43 = m_xmf3Position.z;
+	UpdateBoundingBox();
 }
 
 void CPlayer::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
 	CGameObject::Render(hDCFrameBuffer, pCamera);
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -125,7 +132,7 @@ CTankPlayer::CTankPlayer()
 		m_ppBullets[i]->SetMesh(pBulletMesh);
 		m_ppBullets[i]->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
 		m_ppBullets[i]->SetRotationSpeed(360.0f);
-		m_ppBullets[i]->SetMovingSpeed(120.0f);
+		m_ppBullets[i]->SetMovingSpeed(500.0f);
 		m_ppBullets[i]->SetActive(false);
 	}
 }
@@ -173,17 +180,49 @@ void CTankPlayer::FireBullet()
 		}
 	}
 
-	if (pBulletObject)
+	if (!pBulletObject) return;
+
+	// 발사 위치/방향
+	XMFLOAT3 origin = GetPosition();
+	XMFLOAT3 dir = GetUp(); // 현재 코드에서 Up이 포신 방향
+	XMVECTOR vOrigin = XMLoadFloat3(&origin);
+	XMVECTOR vDir = XMVector3Normalize(XMLoadFloat3(&dir));
+
+	float nearestDist = FLT_MAX;
+	bool  hitFound = false;
+
+	// 다른 플레이어와 OOBB 교차 검사
+	if (s_ppPlayers)
 	{
-		XMFLOAT3 xmf3Position = GetPosition();
-		XMFLOAT3 xmf3Direction = GetUp();
-		XMFLOAT3 xmf3FirePosition = Vector3::Add(xmf3Position, Vector3::ScalarProduct(xmf3Direction, 6.0f, false));
+		for (int i = 0; i < s_nPlayers; ++i)
+		{
+			CPlayer* other = s_ppPlayers[i];
+			if (!other || other == this) continue;
 
-		pBulletObject->m_xmf4x4World = m_xmf4x4World;
-
-		pBulletObject->SetFirePosition(xmf3FirePosition);
-		pBulletObject->SetMovingDirection(xmf3Direction);
-		pBulletObject->SetColor(RGB(255, 0, 0));
-		pBulletObject->SetActive(true);
+			// OOBB가 업데이트 되어 있다고 가정(매 프레임 Animate에서 Transform 반영)
+			float dist = 0.0f;
+			if (other->m_xmOOBB.Intersects(vOrigin, vDir, dist))
+			{
+				if (dist >= 0.0f && dist < nearestDist)
+				{
+					nearestDist = dist;
+					hitFound = true;
+				}
+			}
+		}
 	}
+
+	// 충돌 없으면 기존 사거리 사용, 있으면 충돌 거리 사용
+	float travelLimit = hitFound ? nearestDist : m_fBulletEffectiveRange;
+
+	// 총알 초기화
+	XMFLOAT3 firePos = Vector3::Add(origin, Vector3::ScalarProduct(dir, 6.0f, false));
+	pBulletObject->m_xmf4x4World = m_xmf4x4World;
+	pBulletObject->SetFirePosition(firePos);
+	pBulletObject->SetMovingDirection(dir);
+	pBulletObject->SetColor(RGB(255, 0, 0));
+	pBulletObject->m_fMovingDistance = 0.0f;
+	pBulletObject->m_bExploding = false;
+	pBulletObject->SetTravelLimit(travelLimit, hitFound);
+	pBulletObject->SetActive(true);
 }
