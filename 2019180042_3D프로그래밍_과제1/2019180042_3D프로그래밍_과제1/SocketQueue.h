@@ -1,5 +1,5 @@
 #pragma once
-
+#define MAX_PLAYERS 10
 enum Packet_ID
 {
     START = 0,
@@ -48,7 +48,7 @@ struct UpdateState
     Packetheader header;
     uint8_t My_ID;
     int32_t numPlayers;
-    PlayerState players[3];
+    PlayerState players[MAX_PLAYERS];
 };
 #pragma pack()
 
