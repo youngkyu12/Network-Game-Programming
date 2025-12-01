@@ -78,6 +78,14 @@ public:
 
 	const BoundingOrientedBox& GetBoundingBox() const { return m_xmOOBB; }
 
+	bool HasBoundingBox () const { return m_hasOOBB; }
+
+	void SetEmptyBoundingBox ();
+
+	// 다시 활성화할 때 사용할 API 예시
+	void SetBoundingBox ( const XMFLOAT3& center , const XMFLOAT3& extents , const XMFLOAT4& orientation );
+
+
 	void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
 
 	void LookAt(XMFLOAT3& Look, XMFLOAT3& Up);
@@ -85,7 +93,7 @@ public:
 	int check = 0;
 
 private:
-	uint16_t HP;
+	uint16_t HP = 100;
 
 	/* 행렬로 대체
 	XMFLOAT3 Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -108,5 +116,6 @@ private:
 	uint8_t is_Firing = 0;// false = 0 true = 1
 	Timer FireTimer;
 
+	bool m_hasOOBB = true; // 충돌체 활성화 여부
 };
 

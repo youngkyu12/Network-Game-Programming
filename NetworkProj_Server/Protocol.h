@@ -31,6 +31,7 @@ struct MovePacket
 struct PlayerState // 한명분 데이터
 {
 	int32_t playerID;
+	int32_t hp;
 	float x;
 	float y;
 	float z;

@@ -4,6 +4,8 @@
 #include "Camera.h"
 #include "SocketQueue.h"
 
+
+
 class CPlayer : public CGameObject
 {
 public:
@@ -25,6 +27,8 @@ public:
 	float           			m_fPitch = 0.0f;
 	float           			m_fYaw = 0.0f;
 	float           			m_fRoll = 0.0f;
+
+	int hp = DEAD_PLAYER;
 
 	CCamera* m_pCamera = NULL;
 

@@ -107,6 +107,22 @@ void Player::Fire()
 	cout << "서버내 fireflag 1로 변경" << endl;
 }
 
+void Player::SetEmptyBoundingBox ()
+{
+	m_hasOOBB = false; // 논리적으로 비활성화
+	// 필요 시 디버깅용으로만 유지(실제 충돌에 사용하지 않음)
+	m_xmOOBB = BoundingOrientedBox ( XMFLOAT3 ( 0.0f , 0.0f , 0.0f ) ,
+		XMFLOAT3 ( 0.0f , 0.0f , 0.0f ) ,
+		XMFLOAT4 ( 0.0f , 0.0f , 0.0f , 1.0f ) );
+}
+
+
+void Player::SetBoundingBox ( const XMFLOAT3& center , const XMFLOAT3& extents , const XMFLOAT4& orientation )
+{
+	m_xmOOBB = BoundingOrientedBox ( center , extents , orientation );
+	m_hasOOBB = true;
+}
+
 
 void Player::Rotate(float fPitch, float fYaw, float fRoll)
 {

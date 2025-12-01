@@ -16,7 +16,8 @@ void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	BuildFrameBuffer();
 
 	BuildObjects();
-
+	ResetPlayerLists ();
+	m_eGameState = EGameState::Start;
 	_tcscpy_s(m_pszFrameRate, _T("Project ("));
 }
 
@@ -77,7 +78,7 @@ void CGameFramework::BuildObjects()
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		m_pPlayer[i] = new CTankPlayer();
-		m_pPlayer[i]->SetPosition(0.0f, -100.0f, 0.0f);
+		m_pPlayer[i]->SetPosition(0.0f, 0.0f, 0.0f);
 		m_pPlayer[i]->SetMesh(pTankMesh);
 		if (i == 0) {
 			m_pPlayer[i]->SetColor(RGB(255, 0, 0));
@@ -93,6 +94,7 @@ void CGameFramework::BuildObjects()
 
 	m_pScene = new CScene(m_pPlayer[0]);
 	m_pScene->BuildObjects();
+
 	// 총알 생성
 	/* GameObject에서 Player로 변환 과정
 	CCubeMesh* pBulletMesh = new CCubeMesh(1.0f, 4.0f, 1.0f);
@@ -148,8 +150,6 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			SetRunning(false);
 			::PostQuitMessage(0);
 			break;
-		case 'A':
-			break;
 		case 'D':
 			if (stop) {
 				stop = false;
@@ -157,6 +157,9 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			else {
 				stop = true;
 			}
+			break;
+		case 'P':
+			m_eGameState = EGameState::Playing;
 			break;
 		}
 		break;
@@ -222,6 +225,8 @@ void CGameFramework::ProcessInput()
 		{
 			keyinput = true;
 		}
+
+		
 	}
 
 	if ( !stop ) {
@@ -239,6 +244,7 @@ void CGameFramework::ProcessInput()
 		}
 	}
 
+	if (m_pPlayer )
 	if (keyinput || mouseinput)
 	{
 		send_Queue.push(keyPKT);
@@ -252,7 +258,7 @@ void CGameFramework::AnimateObjects()
 	//GameObject에서 Player로 변환 과정
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		m_pPlayer[i]->Animate(fTimeElapsed);
+		if ( m_pPlayer[i]->hp != DEAD_PLAYER )m_pPlayer[i]->Animate ( fTimeElapsed );
 	}
 	//
 	if (m_pScene) m_pScene->Animate(fTimeElapsed);
@@ -271,26 +277,31 @@ void CGameFramework::AnimateObjects()
 void CGameFramework::FrameAdvance()
 { 
 	m_GameTimer.Tick(60.0f);
-	ProcessInput();
 
-	HandlePacket();
+	if ( !IsGameOver () ) {
+		ProcessInput ();
+		HandlePacket ();
 
-	//GameObject에서 Player로 변환 과정 카메라 업데이트만 실행
-	m_pPlayer[0]->Update(m_GameTimer.GetTimeElapsed());
-	//m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
+		//GameObject에서 Player로 변환 과정 카메라 업데이트만 실행
+		m_pPlayer[0]->Update ( m_GameTimer.GetTimeElapsed () );
+		//m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 
-	AnimateObjects();
-
-	ClearFrameBuffer(RGB(255, 255, 255));
-
-	
-	if (m_pScene) m_pScene->Render(m_hDCFrameBuffer, m_pCamera);
-
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		m_pPlayer[i]->Render(m_hDCFrameBuffer, m_pCamera);
+		AnimateObjects ();
 	}
 
+	if ( IsGameOver () ) {
+		RenderResultScene ( m_hDCFrameBuffer );
+	}
+	else {
+		ClearFrameBuffer ( RGB ( 255 , 255 , 255 ) );
+		if ( m_pScene ) m_pScene->Render ( m_hDCFrameBuffer , m_pCamera );
+		for ( int i = 0; i < MAX_PLAYERS; i++ )
+		{
+			if ( m_pPlayer[i]->hp != DEAD_PLAYER ) {
+				m_pPlayer[i]->Render ( m_hDCFrameBuffer , m_pCamera );
+			}
+		}
+	}
 	/*GameObject에서 Player로 변환 과정
 	for (int i = 0; i < BULLETS; i++)
 	{
@@ -315,22 +326,26 @@ void CGameFramework::HandlePacket()
 	PlayerState player;
 	while (recv_Queue.pop(player)) 
 	{
-		XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz};
-		if (player.Player_ID == MyPlayerID)
+		XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz };
+		if ( player.Player_ID == MyPlayerID )
 		{	//GameObject에서 Player로 변환 과정 m_pPlayer -> m_pPlayer[0]
-			m_pPlayer[0]->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-			m_pPlayer[0]->SetLook(Look);
-			if (player.fire == 1 && m_pPlayer[0]->PrevFire == false)
+			int oldHp = m_pPlayer[0]->hp;
+			m_pPlayer[0]->hp = player.hp;
+			m_pPlayer[0]->SetPosition ( player.pos_x , player.pos_y , player.pos_z );
+			m_pPlayer[0]->SetLook ( Look );
+			if ( player.fire == 1 && m_pPlayer[0]->PrevFire == false )
 			{
-				m_pPlayer[0]->FireBullet();
+				m_pPlayer[0]->FireBullet ();
 			}
 			m_pPlayer[0]->PrevFire = player.fire; // 현재 상태를 과거의 상태값으로 저장.(다음 턴 사용을 위해서)
+			if ( oldHp != DEAD_PLAYER && player.hp == DEAD_PLAYER ) OnPlayerDeath ( MyPlayerID );
+			else if ( oldHp == DEAD_PLAYER && player.hp != DEAD_PLAYER ) OnPlayerSpawn ( MyPlayerID );
 		}
 		else
 		{
 			int objIndex = -1;
 			// 내 ID보다 작으면 그대로... 크면 -1하여 땡겨줌(원래 내가 차지했어야할 공간을 땡겨주기)
-			if (player.Player_ID < MyPlayerID)
+			if ( player.Player_ID < MyPlayerID )
 			{
 				objIndex = player.Player_ID + 1;
 			}
@@ -339,24 +354,107 @@ void CGameFramework::HandlePacket()
 				objIndex = player.Player_ID;
 			}
 
-			if (m_pScene && objIndex >= 0 && objIndex < 10) //10명까지
+			if ( m_pScene && objIndex >= 0 && objIndex < 10 ) //10명까지
 			{
 				//GameObject에서 Player로 변환 과정 m_pPlayer[objIndex]
 				CPlayer* Other_player = m_pPlayer[objIndex];
-				if (Other_player)
+				if ( Other_player )
 				{
-					Other_player->SetPosition(player.pos_x, player.pos_y, player.pos_z);
-					Other_player->SetLook(Look);
-					if (player.fire == 1 && Other_player->PrevFire == false)
+					int oldHp = Other_player->hp;
+					Other_player->hp = player.hp;
+					Other_player->SetPosition ( player.pos_x , player.pos_y , player.pos_z );
+					Other_player->SetLook ( Look );
+					if ( player.fire == 1 && Other_player->PrevFire == false )
 					{
-						Other_player->FireBullet();
+						Other_player->FireBullet ();
 					}
 					Other_player->PrevFire = player.fire;
+
+					if ( oldHp != DEAD_PLAYER && player.hp == DEAD_PLAYER ) OnPlayerDeath ( player.Player_ID );
+					else if ( oldHp == DEAD_PLAYER && player.hp != DEAD_PLAYER ) OnPlayerSpawn ( player.Player_ID );
+
 				}
-				
+
 			}
 		}
+		if ( m_eGameState == EGameState::Playing && m_alivePlayers.size () <= 1 ) {
+			TriggerGameOver ( "모든 플레이어가 사망했거나 최후의 생존자만 남았습니다." );
+		}
 	}
+}
+
+void CGameFramework::ResetPlayerLists () {
+	m_alivePlayers.clear ();
+	m_deadPlayers.clear ();
+	m_vFinalRanks.clear ();
+	m_szGameOverReason[0] = 0;
+}
+
+void CGameFramework::OnPlayerSpawn ( uint8_t id ) {
+	// 살아있는 집합에 추가
+	m_alivePlayers.insert ( id );
+	// 죽은 목록에 존재하면 제거(리스폰 대비)
+	auto it = std::find ( m_deadPlayers.begin () , m_deadPlayers.end () , id );
+	if ( it != m_deadPlayers.end () ) m_deadPlayers.erase ( it );
+}
+
+void CGameFramework::OnPlayerDeath ( uint8_t id ) {
+	// 살아있는 집합에서 제거
+	m_alivePlayers.erase ( id );
+	// 중복 방지 후 앞에 삽입(방금 죽은 사람이 앞쪽)
+	if ( !IsInDead ( id ) ) m_deadPlayers.push_front ( id );
+}
+
+void CGameFramework::TriggerGameOver ( const char* reason ) {
+	if ( IsGameOver () ) return;
+	m_eGameState = EGameState::GameOver;
+
+	// 최종 랭킹 구성: 생존자(우승) → 죽은 순서(앞에서부터 순위)
+	m_vFinalRanks.clear ();
+	for ( auto id : m_alivePlayers ) m_vFinalRanks.push_back ( id ); // 여러 명 생존 시 동순위 취급
+	for ( auto id : m_deadPlayers )  m_vFinalRanks.push_back ( id );
+
+	if ( reason ) {
+#ifdef UNICODE
+		size_t outLen = 0;
+		mbstowcs_s ( &outLen , m_szGameOverReason , reason , _TRUNCATE );
+#else
+		strncpy_s ( m_szGameOverReason , reason , _TRUNCATE );
+#endif
+	}
+}
+
+void CGameFramework::RenderResultScene ( HDC hdc ) {
+	// 배경 클리어
+	ClearFrameBuffer ( RGB ( 240 , 240 , 240 ) );
+
+	// 텍스트 설정
+	::SetBkMode ( m_hDCFrameBuffer , TRANSPARENT );
+	::SetTextColor ( m_hDCFrameBuffer , RGB ( 20 , 20 , 20 ) );
+
+	int x = 40;
+	int y = 40;
+	const int dy = 24;
+
+	// 제목
+	TextOut ( m_hDCFrameBuffer , x , y , _T ( "Game Over" ) , ( int )_tcslen ( _T ( "Game Over" ) ) );
+	y += dy;
+
+	// 랭킹 출력
+	y += dy;
+	TextOut ( m_hDCFrameBuffer , x , y , _T ( "Ranking:" ) , ( int )_tcslen ( _T ( "Ranking:" ) ) );
+	y += dy;
+
+	for ( size_t i = 0; i < m_vFinalRanks.size (); ++i ) {
+		TCHAR line[64];
+		_stprintf_s ( line , _T ( "%zu위: Player %u" ) , i + 1 , ( unsigned )m_vFinalRanks[i] );
+		TextOut ( m_hDCFrameBuffer , x , y , line , ( int )_tcslen ( line ) );
+		y += dy;
+	}
+
+	// 안내
+	y += dy;
+	TextOut ( m_hDCFrameBuffer , x , y , _T ( "ESC: 종료 " ) , 8 );
 }
 
 

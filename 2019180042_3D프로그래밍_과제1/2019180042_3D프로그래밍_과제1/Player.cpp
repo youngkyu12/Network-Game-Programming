@@ -198,6 +198,7 @@ void CTankPlayer::FireBullet()
 		{
 			CPlayer* other = s_ppPlayers[i];
 			if (!other || other == this) continue;
+			if ( other->hp == DEAD_PLAYER ) continue;
 
 			// OOBB가 업데이트 되어 있다고 가정(매 프레임 Animate에서 Transform 반영)
 			float dist = 0.0f;

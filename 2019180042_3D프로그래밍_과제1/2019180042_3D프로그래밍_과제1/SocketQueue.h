@@ -1,5 +1,7 @@
 #pragma once
 #define MAX_PLAYERS 10
+#define DEAD_PLAYER 0
+
 enum Packet_ID
 {
     START = 0,
@@ -29,6 +31,7 @@ struct MovePacket
 struct PlayerState
 {
     int32_t Player_ID;
+	int32_t hp;
     float pos_x;
     float pos_y;
     float pos_z;

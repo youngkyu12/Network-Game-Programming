@@ -35,6 +35,7 @@ void GameRoom::Update_State(Player* player)
 		XMFLOAT3 Look = p->GetLook();
 
 		updatePkt.players[i].playerID = p->Player_ID;
+		updatePkt.players[i].hp = p->GetHP ();
 		updatePkt.players[i].x = pos.x;
 		updatePkt.players[i].y = pos.y;
 		updatePkt.players[i].z = pos.z;
@@ -191,6 +192,10 @@ bool GameRoom::CheckPlayerByPlayerCollisions(Player* mover, const XMFLOAT3& desi
 		if (!other || other == mover) continue;
 
 		other->UpdateBoundingBox();
+		if ( !other->HasBoundingBox () ) {
+			// 비활성화된 충돌체는 무시
+			continue;
+		}
 		const BoundingOrientedBox& otherBox = other->GetBoundingBox();
 
 		if (movedBox.Intersects(otherBox))
@@ -245,6 +250,11 @@ RayHitResult GameRoom::ProcessFire(Player* shooter)
 
 		target->UpdateBoundingBox();
 
+		if ( !target->HasBoundingBox () ) {
+			// 비활성화된 충돌체는 무시
+			continue;
+		}
+
 		// Ray-OOBB 교차 검사
 		float dist = 0.0f;
 		if (target->GetBoundingBox().Intersects(origin, direction, dist))
@@ -270,6 +280,10 @@ RayHitResult GameRoom::ProcessFire(Player* shooter)
 		uint16_t hp = nearestTarget->GetHP();
 		uint16_t newHp = (hp > damage) ? (hp - damage) : 0;
 		nearestTarget->SetHP(newHp);
+		if (nearestTarget->GetHP() == 0)
+		{
+			nearestTarget->SetEmptyBoundingBox (); // 충돌체 비활성화
+		}
 
 		// 피격 결과 출력
 		cout << "Player " << shooter->Player_ID << " 가 Player " << nearestTarget->Player_ID

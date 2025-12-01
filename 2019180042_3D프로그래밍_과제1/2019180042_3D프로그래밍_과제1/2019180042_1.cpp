@@ -371,6 +371,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 						PlayerState pState;
 
 						pState.Player_ID = updatePkt->players[i].Player_ID;
+						pState.hp = updatePkt->players[i].hp;
 						pState.pos_x = updatePkt->players[i].pos_x;
 						pState.pos_y = updatePkt->players[i].pos_y;
 						pState.pos_z = updatePkt->players[i].pos_z;

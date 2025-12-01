@@ -16,11 +16,11 @@ void CScene::BuildObjects()
 {
 	CBulletObject::PrepareExplosion();
 
-	float fHalfWidth = 100.0f, fHalfHeight = 100.0f, fHalfDepth = 100.0f;
-	CWallMesh* pWallCubeMesh = new CWallMesh(fHalfWidth * 2.0f, fHalfHeight * 2.0f, fHalfDepth * 2.0f, 50);
+	float fHalfWidth = 200.0f, fHalfHeight = 200.0f, fHalfDepth = 200.0f;
+	CWallMesh* pWallCubeMesh = new CWallMesh(fHalfWidth * 2.0f, fHalfHeight * 2.0f, fHalfDepth * 2.0f, 20);
 
 	m_pWallsObject = new CWallsObject();
-	m_pWallsObject->SetPosition(0.0f, 99.0f, 0.0f);
+	m_pWallsObject->SetPosition(0.0f, 199.0f, 0.0f);
 	m_pWallsObject->SetMesh(pWallCubeMesh);
 	m_pWallsObject->SetColor(RGB(0, 0, 0));
 	m_pWallsObject->m_pxmf4WallPlanes[0] = XMFLOAT4(+1.0f, 0.0f, 0.0f, fHalfWidth);
@@ -96,9 +96,6 @@ void CScene::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 	CGraphicsPipeline::SetViewPerspectiveProjectTransform(&pCamera->m_xmf4x4ViewPerspectiveProject);
 	m_pWallsObject->Render(hDCFrameBuffer, pCamera);
 
-	if (m_pPlayer) {
-		m_pPlayer->Render(hDCFrameBuffer, pCamera);
-	}
 
 	/*
 	for (int i = 0; i < m_nObjects; i++) {
