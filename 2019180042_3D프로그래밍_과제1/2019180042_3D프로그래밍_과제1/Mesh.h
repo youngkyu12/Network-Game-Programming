@@ -59,8 +59,9 @@ public:
 public:
 	void SetPolygon(int nIndex, CPolygon* pPolygon);
 
+	// 와이어 프레임
 	virtual void Render(HDC hDCFrameBuffer);
-
+	
 	BOOL RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance);
 	int CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, float* pfNearHitDistance);
 };

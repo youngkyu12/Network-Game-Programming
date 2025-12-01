@@ -160,13 +160,16 @@ void CGameObject::Render(HDC hDCFrameBuffer, XMFLOAT4X4* pxmf4x4World, CMesh* pM
 {
 	if (pMesh)
 	{
+		
 		CGraphicsPipeline::SetWorldTransform(pxmf4x4World);
-
+		
 		HPEN hPen = ::CreatePen(PS_SOLID, 0, m_dwColor);
 		HPEN hOldPen = (HPEN)::SelectObject(hDCFrameBuffer, hPen);
+		
 		pMesh->Render(hDCFrameBuffer);
-		::SelectObject(hDCFrameBuffer, hOldPen);
-		::DeleteObject(hPen);
+		::SelectObject ( hDCFrameBuffer , hOldPen );
+		::DeleteObject ( hPen );
+		
 	}
 }
 

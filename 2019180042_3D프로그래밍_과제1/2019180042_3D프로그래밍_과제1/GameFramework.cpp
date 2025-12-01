@@ -77,7 +77,7 @@ void CGameFramework::BuildObjects()
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		m_pPlayer[i] = new CTankPlayer();
-		m_pPlayer[i]->SetPosition(0.0f, 1000.0f, 0.0f);
+		m_pPlayer[i]->SetPosition(0.0f, -100.0f, 0.0f);
 		m_pPlayer[i]->SetMesh(pTankMesh);
 		if (i == 0) {
 			m_pPlayer[i]->SetColor(RGB(255, 0, 0));
