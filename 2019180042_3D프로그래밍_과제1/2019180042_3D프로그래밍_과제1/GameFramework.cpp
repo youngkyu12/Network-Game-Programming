@@ -301,6 +301,7 @@ void CGameFramework::FrameAdvance()
 				m_pPlayer[i]->Render ( m_hDCFrameBuffer , m_pCamera );
 			}
 		}
+		DrawUI();
 	}
 	/*GameObject에서 Player로 변환 과정
 	for (int i = 0; i < BULLETS; i++)
@@ -381,6 +382,40 @@ void CGameFramework::HandlePacket()
 			TriggerGameOver ( "모든 플레이어가 사망했거나 최후의 생존자만 남았습니다." );
 		}
 	}
+}
+
+void CGameFramework::DrawUI()
+{
+	int oldBkMode = ::SetBkMode(m_hDCFrameBuffer, TRANSPARENT);
+	COLORREF oldTextColor = ::SetTextColor(m_hDCFrameBuffer, RGB(0, 0, 255));
+
+	int x = m_rcClient.left + 10;
+	int y = 20;
+	int lineHeight = 20;
+
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		// 살아있는 플레이어만 표시
+		if (m_pPlayer[i] && m_pPlayer[i]->hp != DEAD_PLAYER)
+		{
+			TCHAR szInfo[64];
+
+			// 내 캐릭터는 빨간색
+			if (i == MyPlayerID) {
+				::SetTextColor(m_hDCFrameBuffer, RGB(255, 0, 0));
+				_stprintf_s(szInfo, _T("P %d (Me) HP:%d"), i, m_pPlayer[i]->hp);
+			}
+			else {
+				::SetTextColor(m_hDCFrameBuffer, RGB(0, 255, 0)); 
+				_stprintf_s(szInfo, _T("P %d HP:%d"), i, m_pPlayer[i]->hp);
+			}
+
+			::TextOut(m_hDCFrameBuffer, x, y, szInfo, _tcslen(szInfo));
+			y += lineHeight; // 다음 줄로 이동
+		}
+	}
+	::SetBkMode(m_hDCFrameBuffer, oldBkMode);
+	::SetTextColor(m_hDCFrameBuffer, oldTextColor);
 }
 
 void CGameFramework::ResetPlayerLists () {
