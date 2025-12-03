@@ -19,6 +19,7 @@ void GameRoom::Update_State(Player* player)
 	UpdateState updatePkt;
 	updatePkt.header.ID = MOVE; // 1
 	updatePkt.My_ID = player->Player_ID;
+	//updatePkt.header.GameState = My_GameState;
 	EnterCriticalSection(&_cs);
 	int32_t playerCount = PlayerManager.size();
 	if (playerCount > MAX_PLAYERS)
@@ -94,6 +95,8 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	*/
 
 	Packetheader* header = (Packetheader*)buffer;
+	player->SetMyState(header->GameState);
+	cout << (int)(player->GetMyState()) << endl;
 
 	switch (header->ID)
 	{

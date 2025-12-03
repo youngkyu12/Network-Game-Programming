@@ -8,7 +8,13 @@
 #include <deque>
 #include <algorithm>
 
-enum class EGameState : uint8_t { Start , Playing , GameOver };
+enum EGameState
+{
+	None = 0,
+	Ready = 1,
+	Playing = 2,
+	GameOver = 3,
+};
 
 class CGameFramework
 {
@@ -45,7 +51,7 @@ private:
 	}
 
 	// 게임 상태
-	EGameState m_eGameState = EGameState::Playing;
+	uint8_t m_eGameState = None;
 
 	// 최종 랭킹(엔드 씬용): 앞이 높은 순위(1위)
 	std::vector<uint8_t>        m_vFinalRanks;

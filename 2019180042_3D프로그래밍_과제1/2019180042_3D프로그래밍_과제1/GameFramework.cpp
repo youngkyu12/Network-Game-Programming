@@ -17,7 +17,7 @@ void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 
 	BuildObjects();
 	ResetPlayerLists ();
-	m_eGameState = EGameState::Start;
+	m_eGameState = EGameState::None;
 	_tcscpy_s(m_pszFrameRate, _T("Project ("));
 }
 
@@ -159,7 +159,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			}
 			break;
 		case 'P':
-			m_eGameState = EGameState::Playing;
+			m_eGameState = Ready;
 			break;
 		}
 		break;
@@ -197,6 +197,7 @@ void CGameFramework::ProcessInput()
 	MovePacket keyPKT;
 	keyPKT.header.ID = MOVE;
 	keyPKT.header.size = sizeof(MovePacket);
+	keyPKT.header.GameState = m_eGameState;
 
 	bool keyinput = false;
 	bool mouseinput = false;

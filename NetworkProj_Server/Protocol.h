@@ -3,6 +3,14 @@
 #define MAX_PLAYERS 10
 
 #pragma pack(push, 1)
+enum EGameState
+{
+	None = 0,
+	Ready = 1,
+	Playing = 2,
+	GameOver = 3,
+};
+
 enum
 {
 	MOVE = 1,
@@ -16,6 +24,7 @@ struct Packetheader
 {
 	uint16_t size;
 	uint16_t ID; // 프로토콜 ID
+	uint8_t GameState;
 
 };
 

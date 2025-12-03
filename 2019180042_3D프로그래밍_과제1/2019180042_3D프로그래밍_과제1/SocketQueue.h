@@ -16,6 +16,7 @@ struct Packetheader
 {
     uint16_t size;
     uint16_t ID; // Packet_ID
+    uint8_t GameState;
 };
 
 struct MovePacket

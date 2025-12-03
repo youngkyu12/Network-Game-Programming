@@ -56,6 +56,16 @@ uint8_t Player::GetFireFlag()
 	return is_Firing;
 }
 
+uint8_t Player::GetMyState()
+{
+	return MyState;
+}
+
+void Player::SetMyState(uint8_t newState)
+{
+	MyState = newState;
+}
+
 
 void Player::CheckFireFlag()
 {

@@ -69,6 +69,8 @@ public:
 	XMFLOAT3 GetLook();
 	uint16_t GetHP(); // HP데이터 가져오기
 	uint8_t GetFireFlag();
+	uint8_t GetMyState();
+	void SetMyState(uint8_t newState);
 	void CheckFireFlag();
 
 	void UpdateBoundingBox();
@@ -107,6 +109,7 @@ private:
 	XMFLOAT4X4	m_xmf4x4World = Matrix4x4::Identity();
 	BoundingOrientedBox	m_xmOOBB = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(3.0, 3.0, 3.0), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 	//
+	uint8_t MyState = None;
 
 	float Pitch = 0.0f;
 	float Yaw = 0.0f;
