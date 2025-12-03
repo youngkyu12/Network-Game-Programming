@@ -394,6 +394,7 @@ DWORD WINAPI ClientMain(LPVOID arg)
 						pState.Looky = updatePkt->players[i].Looky;
 						pState.Lookz = updatePkt->players[i].Lookz;
 						pState.fire = updatePkt->players[i].fire;
+						pState.shield = updatePkt->players[i].shield;
 						gGameFramework.recv_Queue.push(pState);
 					}
 					break;

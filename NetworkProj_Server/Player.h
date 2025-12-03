@@ -69,14 +69,20 @@ public:
 	XMFLOAT3 GetLook();
 	uint16_t GetHP(); // HP데이터 가져오기
 	uint8_t GetFireFlag();
+	uint8_t GetShieldFlag() { return ShieldOn; }
+	uint8_t GetCooldownFlag() { return cooldown; }
 	uint8_t GetMyState();
 	void SetMyState(uint8_t newState);
 	void CheckFireFlag();
+
+	void CheckShieldFlag();
 
 	void UpdateBoundingBox();
 
 	void Move(XMFLOAT3& xmf3Shift);
 	void Fire();
+
+	void Shield();
 
 	const BoundingOrientedBox& GetBoundingBox() const { return m_xmOOBB; }
 
@@ -117,7 +123,11 @@ private:
 	float Friction = 125.0f;
 
 	uint8_t is_Firing = 0;// false = 0 true = 1
+	uint8_t ShieldOn = 0; // false = 0 true = 1
+	uint8_t cooldown = 0; // 쿨타임 여부 false = 0 true = 1
 	Timer FireTimer;
+	Timer ShieldTimer;
+	Timer CooldownTimer;
 
 	bool m_hasOOBB = true; // 충돌체 활성화 여부
 };

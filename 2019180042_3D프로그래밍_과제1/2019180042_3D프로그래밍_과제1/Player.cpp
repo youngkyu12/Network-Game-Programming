@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "Player.h"
-
+#include "Scene.h"
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 CPlayer** CPlayer::s_ppPlayers = nullptr;
+CScene* CPlayer::s_pSceneRef = nullptr;
 int CPlayer::s_nPlayers = 0;
 
 CPlayer::CPlayer()
@@ -136,16 +137,31 @@ CTankPlayer::CTankPlayer()
 		m_ppBullets[i]->SetActive(false);
 	}
 
-	CWallMesh* pShieldMesh = new CWallMesh(20.0f, -40.0f, 20.0f, 20);
+	CCubeMesh* pShieldMesh = new CCubeMesh(7.0f, 7.0f, 7.0f);
 	m_pShieldObject = new CShieldObject();
 	m_pShieldObject->SetMesh(pShieldMesh);
-	m_pShieldObject->SetColor(RGB(0, 1, 0));
+	m_pShieldObject->SetColor(RGB(255, 0, 0));
 	m_pShieldObject->SetActive(false);
 }
 
 CTankPlayer::~CTankPlayer()
 {
+	// 총알 해제
+	for (int i = 0; i < BULLETS; ++i)
+	{
+		if (m_ppBullets[i])
+		{
+			delete m_ppBullets[i];
+			m_ppBullets[i] = nullptr;
+		}
+	}
 
+	// 쉴드 오브젝트 해제
+	if (m_pShieldObject)
+	{
+		delete m_pShieldObject;
+		m_pShieldObject = nullptr;
+	}
 }
 
 void CTankPlayer::Animate(float fElapsedTime)
@@ -157,21 +173,7 @@ void CTankPlayer::Animate(float fElapsedTime)
 		if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Animate(fElapsedTime);
 	}
 
-	if (m_pShieldObject->m_bActive)
-	{
-		// 남은 시간 감소
-		m_fShieldRemainTime -= fElapsedTime;
-
-		if (m_fShieldRemainTime <= 0.0f)
-		{
-			m_fShieldRemainTime = 3.0f;
-			m_pShieldObject->SetActive(false); // 자동으로 쉴드 OFF
-		}
-		else
-		{
-			m_pShieldObject->Animate(fElapsedTime);
-		}
-	}
+	m_pShieldObject->Animate(fElapsedTime);
 }
 
 void CTankPlayer::OnUpdateTransform()
@@ -183,11 +185,10 @@ void CTankPlayer::OnUpdateTransform()
 
 void CTankPlayer::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
-	CPlayer::Render(hDCFrameBuffer, pCamera);
-
+	
 	if(m_pShieldObject->m_bActive)
 		m_pShieldObject->Render(hDCFrameBuffer, pCamera);
-
+	CPlayer::Render(hDCFrameBuffer, pCamera);
 	for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Render(hDCFrameBuffer, pCamera);
 
 }
@@ -232,6 +233,28 @@ void CTankPlayer::FireBullet()
 				if (dist >= 0.0f && dist < nearestDist)
 				{
 					nearestDist = dist;
+					hitFound = true;
+				}
+			}
+		}
+	}
+	// 다른 오브젝트와 OOBB 교차 검사
+	if (CPlayer::s_pSceneRef && CPlayer::s_pSceneRef->m_ppObjects)
+	{
+		for (int i = 0; i < CPlayer::s_pSceneRef->m_nObjects; ++i)
+		{
+			CGameObject* obj = CPlayer::s_pSceneRef->m_ppObjects[i];
+			if (!obj || !obj->m_bActive) continue;
+
+			// 총알/자기 자신 등 제외 필요 시 코드값으로 필터링
+			// 예: if (obj->m_objectcode == 'b') continue;
+
+			float distObj = 0.0f;
+			if (obj->m_xmOOBB.Intersects(vOrigin, vDir, distObj))
+			{
+				if (distObj >= 0.0f && distObj < nearestDist)
+				{
+					nearestDist = distObj;
 					hitFound = true;
 				}
 			}

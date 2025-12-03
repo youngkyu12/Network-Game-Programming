@@ -6,7 +6,7 @@
 #include "SocketQueue.h"
 #include <unordered_set>
 #include <deque>
-#include <algorithm>
+
 
 enum EGameState
 {
@@ -88,6 +88,7 @@ public:
 	void ProcessInput();
 	void AnimateObjects();
 	void FrameAdvance();
+	void RenderScene();
 	void HandlePacket();
 	void DrawUI(); // hp 그리는 함수
 	void SetMyState(uint8_t newState);

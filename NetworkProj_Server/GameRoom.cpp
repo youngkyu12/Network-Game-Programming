@@ -6,6 +6,29 @@ GameRoom::GameRoom()
 {
 	// 생성할때 초기화
 	InitializeCriticalSection(&_cs);
+
+	m_nObjects = 16;
+	m_ppObjects = new GameObject * [m_nObjects];
+
+	int cols = 4;            // 가로로 4개
+	int rows = 4;            // 세로로 4개
+	float spacingX = 40.0f;  // X축 간격
+	float spacingZ = 40.0f;  // Z축 간격
+
+	for (int i = 0; i < 16; ++i) {
+		int row = i / cols;
+		int col = i % cols;
+
+		// 가운데 기준으로 좌우/앞뒤로 벌어지게 배치
+		float x = (col - (cols - 1) / 2.0f) * spacingX;
+		float z = (row - (rows - 1) / 2.0f) * spacingZ;
+		m_ppObjects[i] = new GameObject();
+		m_ppObjects[i]->SetPosition(x, 2.0f, z);
+		m_ppObjects[i]->SetBoundingBox(
+			XMFLOAT3(0.0f, 0.0f, 0.0f),
+			XMFLOAT3(10.0f, 5.0f, 2.0f),
+			XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	}
 }
 
 GameRoom::~GameRoom()
@@ -44,6 +67,7 @@ void GameRoom::Update_State(Player* player)
 		updatePkt.players[i].Look_y = Look.y;
 		updatePkt.players[i].Look_z = Look.z;
 		updatePkt.players[i].FireFlag = p->GetFireFlag();
+		updatePkt.players[i].ShieldFlag = p->GetShieldFlag();
 	}
 	LeaveCriticalSection(&_cs);
 
@@ -69,6 +93,7 @@ void GameRoom::Remove_Player(Player* player)
 		if ((*p)->Player_ID == player->Player_ID)
 		{
 			//찾았으면 삭제
+			player->SetEmptyBoundingBox();
 			PlayerManager.erase(p);
 			break;
 		}
@@ -152,12 +177,20 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 
 		if (testpkt->FireFlag == 1)// True 이면... 
 		{
-			player->Fire(); 
-
-			// 발사 처리 및 결과
 			RayHitResult res = ProcessFire(player);
+			player->Fire(); 
+			// 발사 처리 및 결과
 		}
 
+		if (testpkt->shield == 1) // 쉴드 온
+		{
+			cout << "쉴드 온 처리 요청" << endl;
+			// 쉴드 온 처리
+			// 쉴드 타이머 시작 등등
+			if (player->GetCooldownFlag() == 0) {
+				player->Shield();
+			}
+		}
 		break;
 	}
 	default:
@@ -249,6 +282,19 @@ bool GameRoom::CheckPlayerByPlayerCollisions(Player* mover, const XMFLOAT3& desi
 			break;
 		}
 	}
+	for (size_t i = 0; i < m_nObjects; ++i)
+	{
+		GameObject* other = m_ppObjects[i];
+
+		other->UpdateBoundingBox();
+		const BoundingOrientedBox& otherBox = other->GetBoundingBox();
+
+		if (movedBox.Intersects(otherBox))
+		{
+			blocked = true;
+			break;
+		}
+	}
 	LeaveCriticalSection(&_cs);
 
 	if (blocked)
@@ -305,8 +351,28 @@ RayHitResult GameRoom::ProcessFire(Player* shooter)
 			// 사거리 내이고 더 가까운 대상이면 갱신
 			if (dist >= 0.0f && dist < nearestDist)
 			{
+				if (target->GetShieldFlag() != 1) {
+					nearestDist = dist;
+					nearestTarget = target;
+				}
+			}
+		}
+	}
+	for (size_t i = 0; i < m_nObjects; ++i)
+	{
+		GameObject* target = m_ppObjects[i];
+
+		target->UpdateBoundingBox();
+
+		// Ray-OOBB 교차 검사
+		float dist = 0.0f;
+		if (target->GetBoundingBox().Intersects(origin, direction, dist))
+		{
+			// 사거리 내이고 더 가까운 대상이면 갱신
+			if (dist >= 0.0f && dist < nearestDist)
+			{
 				nearestDist = dist;
-				nearestTarget = target;
+				nearestTarget = nullptr;
 			}
 		}
 	}

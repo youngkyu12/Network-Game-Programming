@@ -82,6 +82,51 @@ void CMesh::Render(HDC hDCFrameBuffer)
 	}
 }
 
+void CMesh::RenderFilled(HDC hDCFrameBuffer, COLORREF fillColor)
+{
+	HBRUSH hBrush = ::CreateSolidBrush(fillColor);
+	HBRUSH hOldBrush = (HBRUSH)::SelectObject(hDCFrameBuffer, hBrush);
+	HPEN hPen = ::CreatePen(PS_SOLID, 0, fillColor);
+	HPEN hOldPen = (HPEN)::SelectObject(hDCFrameBuffer, hPen);
+
+	for (int j = 0; j < m_nPolygons; ++j)
+	{
+		const int n = m_ppPolygons[j]->m_nVertices;
+		CVertex* v = m_ppPolygons[j]->m_pVertices;
+		// NDC로 각 정점 투영 및 근평면 클리핑(간단: 에지 클리핑은 생략, 각 정점 z>=0만 사용)
+		std::vector<POINT> pts;
+		pts.reserve(n);
+
+		bool anyInside = false;
+		for (int i = 0; i < n; ++i)
+		{
+			XMFLOAT3 ndc = CGraphicsPipeline::Project(v[i].m_xmf3Position);
+			// z 범위 검사(근평면 뒤는 스킵)
+			if (ndc.z >= 0.0f && ndc.z <= 1.0f)
+			{
+				XMFLOAT3 scr = CGraphicsPipeline::ScreenTransform(ndc);
+				pts.push_back(POINT{ (LONG)scr.x, (LONG)scr.y });
+				anyInside = true;
+			}
+			else
+			{
+				// 화면 밖 정점은 일단 스킵(정밀 폴리곤 클리핑 필요 시 개선)
+			}
+		}
+
+		if (anyInside && pts.size() >= 3)
+		{
+			::Polygon(hDCFrameBuffer, pts.data(), (int)pts.size());
+		}
+	}
+
+	::SelectObject(hDCFrameBuffer, hOldPen);
+	::DeleteObject(hPen);
+	::SelectObject(hDCFrameBuffer, hOldBrush);
+	::DeleteObject(hBrush);
+	return;
+}
+
 
 BOOL CMesh::RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance)
 {

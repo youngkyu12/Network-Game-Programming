@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "GameFramework.h"
+#include "GraphicsPipeline.h" // CGraphicsPipeline 관련 오류(E0276) 해결
 extern uint8_t MyPlayerID;
 
 void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
@@ -90,11 +91,9 @@ void CGameFramework::BuildObjects()
 		}
 	}
 
-	CPlayer::RegisterPlayers(reinterpret_cast<CPlayer**>(m_pPlayer), MAX_PLAYERS);
-
 	m_pScene = new CScene(m_pPlayer[0]);
 	m_pScene->BuildObjects();
-
+	CPlayer::RegisterPlayers(reinterpret_cast<CPlayer**>(m_pPlayer), MAX_PLAYERS, m_pScene);
 	// 총알 생성
 	/* GameObject에서 Player로 변환 과정
 	CCubeMesh* pBulletMesh = new CCubeMesh(1.0f, 4.0f, 1.0f);
@@ -162,7 +161,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			m_eGameState = Ready;
 			break;
 		case 'F':
-			m_pPlayer[0]->m_pShieldObject->SetActive(true);
+			//m_pPlayer[0]->m_pShieldObject->SetActive(true);
 			break;
 		}
 		break;
@@ -205,6 +204,7 @@ void CGameFramework::ProcessInput()
 	bool keyinput = false;
 	bool mouseinput = false;
 	static bool A_PressedPrev = false; // 이전상태 기억
+	static bool F_PressedPrev = false; // 이전상태 기억
 	
 	static UCHAR pKeyBuffer[256];
 	if ( GetKeyboardState ( pKeyBuffer ) )
@@ -212,9 +212,14 @@ void CGameFramework::ProcessInput()
 		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w 전송
 		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
 
+		if (keyPKT.keyS || keyPKT.keyW)
+		{
+			keyinput = true;
+		}
+
 		bool A_PressedNow = (pKeyBuffer['A'] & 0xF0) ? true : false;
 		// A키 단발성으로 입력받기, 게임시작전엔 발사 금지
-		if (A_PressedNow == true && A_PressedPrev == false && m_eGameState == Playing)
+		if (A_PressedNow == true && A_PressedPrev == false && m_pPlayer[0]->PrevFire == false && m_eGameState == Playing)
 		{
 			keyPKT.FireFlag = 1;
 			keyinput = true;
@@ -225,12 +230,17 @@ void CGameFramework::ProcessInput()
 		}
 		A_PressedPrev = A_PressedNow;
 
-		if (keyPKT.keyS || keyPKT.keyW)
+		bool F_PressedNow = (pKeyBuffer['F'] & 0xF0) ? true : false;
+		if (F_PressedNow == true && F_PressedPrev == false && m_pPlayer[0]->m_pShieldObject->m_bActive == false && m_eGameState == Playing)
 		{
+			keyPKT.shield = 1;
 			keyinput = true;
 		}
-
-		
+		else
+		{
+			keyPKT.shield = 0;
+		}
+		F_PressedPrev = F_PressedNow;
 	}
 
 	if ( !stop ) {
@@ -298,13 +308,7 @@ void CGameFramework::FrameAdvance()
 	}
 	else {
 		ClearFrameBuffer ( RGB ( 255 , 255 , 255 ) );
-		if ( m_pScene ) m_pScene->Render ( m_hDCFrameBuffer , m_pCamera );
-		for ( int i = 0; i < MAX_PLAYERS; i++ )
-		{
-			if ( m_pPlayer[i]->hp != DEAD_PLAYER ) {
-				m_pPlayer[i]->Render ( m_hDCFrameBuffer , m_pCamera );
-			}
-		}
+		RenderScene();
 		DrawUI();
 	}
 	/*GameObject에서 Player로 변환 과정
@@ -325,6 +329,57 @@ void CGameFramework::FrameAdvance()
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }
 
+void CGameFramework::RenderScene()
+{
+	// 공통 셋업
+	CGraphicsPipeline::SetViewport(&m_pCamera->m_Viewport);
+	CGraphicsPipeline::SetViewPerspectiveProjectTransform(&m_pCamera->m_xmf4x4ViewPerspectiveProject);
+
+	// 1) 씬과 플레이어를 하나의 리스트로 결합
+	std::vector<CGameObject*> drawList;
+	drawList.reserve(static_cast<size_t>((m_pScene ? m_pScene->m_nObjects : 0)) + static_cast<size_t>(MAX_PLAYERS)); // lnt-arithmetic-overflow 경고 해결
+
+	if (m_pScene)
+	{
+		// 벽은 먼저 그리기(배경)
+		m_pScene->m_pWallsObject->Render(m_hDCFrameBuffer, m_pCamera);
+
+		// 씬 오브젝트 추가
+		for (int i = 0; i < (m_pScene ? m_pScene->m_nObjects : 0); ++i)
+		{
+			if (m_pScene->m_ppObjects[i] && m_pScene->m_ppObjects[i]->m_bActive)
+				drawList.push_back(m_pScene->m_ppObjects[i]);
+		}
+	}
+
+	// 플레이어 추가
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		if (m_pPlayer[i] && m_pPlayer[i]->hp > 0)
+			drawList.push_back(m_pPlayer[i]);
+	}
+
+	// 2) 뷰 행렬로 변환한 Z(원거리 먼저) 기준 정렬
+	XMMATRIX V = XMLoadFloat4x4(&m_pCamera->m_xmf4x4View);
+	std::sort(drawList.begin(), drawList.end(),
+		[&](CGameObject* a, CGameObject* b)
+		{
+			XMVECTOR va = XMVector3TransformCoord(XMLoadFloat3(&a->GetPosition()), V);
+			XMVECTOR vb = XMVector3TransformCoord(XMLoadFloat3(&b->GetPosition()), V);
+			float za = XMVectorGetZ(va);
+			float zb = XMVectorGetZ(vb);
+			return za > zb; // 원거리 먼저
+		});
+
+	// 3) 정렬된 순서로 면 채움 후 와이어 렌더
+	for (CGameObject* obj : drawList)
+	{
+		// 필요 시 반투명 alpha로 채우기: RenderFilled(hdc, pCamera, color, alpha)
+		obj->RenderFilled(m_hDCFrameBuffer, m_pCamera, RGB(128, 128, 128));
+		obj->Render(m_hDCFrameBuffer, m_pCamera);
+	}
+}
+
 void CGameFramework::HandlePacket()
 {
 	// 리팩토링
@@ -343,6 +398,8 @@ void CGameFramework::HandlePacket()
 				m_pPlayer[0]->FireBullet ();
 			}
 			m_pPlayer[0]->PrevFire = player.fire; // 현재 상태를 과거의 상태값으로 저장.(다음 턴 사용을 위해서)
+			m_pPlayer[0]->m_pShieldObject->m_bActive = player.shield;
+
 			if ( oldHp != DEAD_PLAYER && player.hp == DEAD_PLAYER ) OnPlayerDeath ( MyPlayerID );
 			else if ( oldHp == DEAD_PLAYER && player.hp != DEAD_PLAYER ) OnPlayerSpawn ( MyPlayerID );
 		}
@@ -374,6 +431,7 @@ void CGameFramework::HandlePacket()
 						Other_player->FireBullet ();
 					}
 					Other_player->PrevFire = player.fire;
+					Other_player->m_pShieldObject->m_bActive = player.shield;
 
 					if ( oldHp != DEAD_PLAYER && player.hp == DEAD_PLAYER ) OnPlayerDeath ( player.Player_ID );
 					else if ( oldHp == DEAD_PLAYER && player.hp != DEAD_PLAYER ) OnPlayerSpawn ( player.Player_ID );
