@@ -90,6 +90,8 @@ public:
 	void FrameAdvance();
 	void HandlePacket();
 	void DrawUI(); // hp 그리는 함수
+	void SetMyState(uint8_t newState);
+	uint8_t GetMyState();
 
 	void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);

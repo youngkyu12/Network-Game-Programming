@@ -21,6 +21,7 @@ public:
 	void Remove_Player(Player* player);
 	void Update_State(Player* player);
 	void Check_PLayer();
+	void Check_State();
 	void HandlePacket(Player* player, BYTE* buffer);
 
 	void Move(Player* player, char key);

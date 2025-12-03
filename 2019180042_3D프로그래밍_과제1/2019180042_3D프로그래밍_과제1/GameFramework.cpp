@@ -379,7 +379,8 @@ void CGameFramework::HandlePacket()
 
 			}
 		}
-		if ( m_eGameState == EGameState::Playing && m_alivePlayers.size () <= 1 ) {
+		if ( m_eGameState == Playing && m_alivePlayers.size () <= 1 ) 
+		{
 			TriggerGameOver ( "모든 플레이어가 사망했거나 최후의 생존자만 남았습니다." );
 		}
 	}
@@ -419,6 +420,16 @@ void CGameFramework::DrawUI()
 	::SetTextColor(m_hDCFrameBuffer, oldTextColor);
 }
 
+void CGameFramework::SetMyState(uint8_t newState)
+{
+	m_eGameState = newState;
+}
+
+uint8_t CGameFramework::GetMyState()
+{
+	return m_eGameState;
+}
+
 void CGameFramework::ResetPlayerLists () {
 	m_alivePlayers.clear ();
 	m_deadPlayers.clear ();
@@ -443,7 +454,7 @@ void CGameFramework::OnPlayerDeath ( uint8_t id ) {
 
 void CGameFramework::TriggerGameOver ( const char* reason ) {
 	if ( IsGameOver () ) return;
-	m_eGameState = EGameState::GameOver;
+	m_eGameState = GameOver;
 
 	// 최종 랭킹 구성: 생존자(우승) → 죽은 순서(앞에서부터 순위)
 	m_vFinalRanks.clear ();

@@ -19,7 +19,7 @@ void GameRoom::Update_State(Player* player)
 	UpdateState updatePkt;
 	updatePkt.header.ID = MOVE; // 1
 	updatePkt.My_ID = player->Player_ID;
-	//updatePkt.header.GameState = My_GameState;
+	updatePkt.header.GameState = player->GetMyState();
 	EnterCriticalSection(&_cs);
 	int32_t playerCount = PlayerManager.size();
 	if (playerCount > MAX_PLAYERS)
@@ -85,6 +85,40 @@ void GameRoom::Check_PLayer()
 	LeaveCriticalSection(&_cs);
 }
 
+void GameRoom::Check_State()
+{
+	if (PlayerManager.size() < 2)
+	{
+		/*
+		원래는 여기도 락을 걸어주는게 맞지만,
+		현재 규모에서는 문제 없을꺼 같아서 제외.
+		추후에 버그 발생시 의심해야할 부분.
+		*/
+		return;
+	}
+	EnterCriticalSection(&_cs);
+	bool allReady = true;
+	for (auto player : PlayerManager)
+	{
+		if (player->GetMyState() != Ready)
+		{
+			allReady = false;
+			break;
+		}
+	}
+
+	if (allReady)
+	{
+		cout << "모든 플레이어 준비. 2로 변경" << endl;
+		for (auto player : PlayerManager)
+		{
+			player->SetMyState(Playing);
+		}
+	}
+
+	LeaveCriticalSection(&_cs);
+}
+
 void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 {
 	/*
@@ -95,8 +129,14 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	*/
 
 	Packetheader* header = (Packetheader*)buffer;
+	uint8_t PrevState = player->GetMyState();
 	player->SetMyState(header->GameState);
 	cout << (int)(player->GetMyState()) << endl;
+	if (PrevState != header->GameState && header->GameState == 1)
+	{
+		// 상태의 변화가 있고 해당 값이 1일때만 실행.
+		Check_State();
+	}
 
 	switch (header->ID)
 	{

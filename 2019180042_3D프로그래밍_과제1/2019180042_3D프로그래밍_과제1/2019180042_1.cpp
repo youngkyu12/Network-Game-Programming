@@ -358,6 +358,21 @@ DWORD WINAPI ClientMain(LPVOID arg)
 					break;
 				}
 
+				if (gGameFramework.GetMyState() == 1 && header->GameState == 0)
+				{
+					/*
+					p를 눌러서 내 상태가 1이되었지만,
+					수신받은 데이터 0과 겹쳐서 새로운 상태값이
+					갱신되지 않는걸 처리하기 위한 조건문입니다.
+					*/
+				}
+				else
+				{
+					//새로운 상태값으로 갱신
+					gGameFramework.SetMyState(header->GameState);
+				}
+
+				//gGameFramework.SetMyState(header->GameState);
 				//패킷 도착 후 처리
 				switch (header->ID) 
 				{
