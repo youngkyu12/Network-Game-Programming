@@ -31,6 +31,38 @@ void CScene::BuildObjects()
 	m_pWallsObject->m_pxmf4WallPlanes[5] = XMFLOAT4(0.0f, 0.0f, -1.0f, fHalfDepth);
 	m_pWallsObject->m_xmOOBBPlayerMoveCheck = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(fHalfWidth, fHalfHeight, fHalfDepth * 0.05f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 
+	fHalfWidth = 10.0f, fHalfHeight = 5.0f, fHalfDepth = 2.0f;
+	CObstacleMesh* pbCubeMesh = new CObstacleMesh(fHalfWidth * 2.0f, fHalfHeight * 2.0f, fHalfDepth * 2.0f, 10);
+
+	m_nObjects = 16;
+	m_ppObjects = new CWallsObject*[m_nObjects];
+
+	int cols = 4;            // 가로로 4개
+	int rows = 4;            // 세로로 4개
+	float spacingX = 40.0f;  // X축 간격
+	float spacingZ = 40.0f;  // Z축 간격
+
+	for (int i = 0; i < m_nObjects; ++i) {
+		int row = i / cols;
+		int col = i % cols;     
+
+		// 가운데 기준으로 좌우/앞뒤로 벌어지게 배치
+		float x = (col - (cols - 1) / 2.0f) * spacingX;
+		float z = (row - (rows - 1) / 2.0f) * spacingZ;
+		m_ppObjects[i] = new CWallsObject();
+		m_ppObjects[i]->SetPosition(x, fHalfDepth * 2.0f, z);
+		m_ppObjects[i]->SetMesh(pbCubeMesh);
+		m_ppObjects[i]->SetColor(RGB(0, 0, 0));
+		m_ppObjects[i]->m_pxmf4WallPlanes[0] = XMFLOAT4(+1.0f, 0.0f, 0.0f, fHalfWidth);
+		m_ppObjects[i]->m_pxmf4WallPlanes[1] = XMFLOAT4(-1.0f, 0.0f, 0.0f, fHalfWidth);
+		m_ppObjects[i]->m_pxmf4WallPlanes[2] = XMFLOAT4(0.0f, +1.0f, 0.0f, fHalfHeight);
+		m_ppObjects[i]->m_pxmf4WallPlanes[3] = XMFLOAT4(0.0f, -1.0f, 0.0f, fHalfHeight);
+		m_ppObjects[i]->m_pxmf4WallPlanes[4] = XMFLOAT4(0.0f, 0.0f, +1.0f, fHalfDepth);
+		m_ppObjects[i]->m_pxmf4WallPlanes[5] = XMFLOAT4(0.0f, 0.0f, -1.0f, fHalfDepth);
+		m_ppObjects[i]->m_xmOOBBPlayerMoveCheck = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(fHalfWidth, fHalfHeight, fHalfDepth * 0.05f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	}
+
+
 #ifdef _WITH_DRAW_AXIS
 	m_pWorldAxis = new CGameObject();
 	CAxisMesh* pAxisMesh = new CAxisMesh(0.5f, 0.5f, 0.5f);
@@ -86,7 +118,6 @@ CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient, CCamera
 void CScene::Animate(float fElapsedTime)
 {
 	m_pWallsObject->Animate(fElapsedTime);
-	for (int i = 0; i < m_nObjects; i++) m_ppObjects[i]->Animate(fElapsedTime);
 	// 바운딩 박스 업데이트
 }
 
@@ -96,12 +127,9 @@ void CScene::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 	CGraphicsPipeline::SetViewPerspectiveProjectTransform(&pCamera->m_xmf4x4ViewPerspectiveProject);
 	m_pWallsObject->Render(hDCFrameBuffer, pCamera);
 
-
-	/*
 	for (int i = 0; i < m_nObjects; i++) {
 		m_ppObjects[i]->Render(hDCFrameBuffer, pCamera);
 	}
-	*/
 
 	//UI
 #ifdef _WITH_DRAW_AXIS

@@ -39,7 +39,7 @@ private:
 	HBITMAP						m_hBitmapSelect = NULL;
 
 	CCamera* m_pCamera = NULL;
-	CPlayer* m_pPlayer[MAX_PLAYERS];
+	CTankPlayer* m_pPlayer[MAX_PLAYERS];
 	CScene* m_pScene = NULL;
 
 	// 플레이어 상태 컨테이너

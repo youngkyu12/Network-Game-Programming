@@ -161,6 +161,9 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		case 'P':
 			m_eGameState = Ready;
 			break;
+		case 'F':
+			m_pPlayer[0]->m_pShieldObject->SetActive(true);
+			break;
 		}
 		break;
 	default:
@@ -202,7 +205,7 @@ void CGameFramework::ProcessInput()
 	bool keyinput = false;
 	bool mouseinput = false;
 	static bool A_PressedPrev = false; // 이전상태 기억
-
+	
 	static UCHAR pKeyBuffer[256];
 	if ( GetKeyboardState ( pKeyBuffer ) )
 	{
