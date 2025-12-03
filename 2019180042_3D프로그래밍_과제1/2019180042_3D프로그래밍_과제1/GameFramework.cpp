@@ -210,8 +210,8 @@ void CGameFramework::ProcessInput()
 		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s 전송
 
 		bool A_PressedNow = (pKeyBuffer['A'] & 0xF0) ? true : false;
-		// A키 단발성으로 입력받기
-		if (A_PressedNow == true && A_PressedPrev == false)
+		// A키 단발성으로 입력받기, 게임시작전엔 발사 금지
+		if (A_PressedNow == true && A_PressedPrev == false && m_eGameState == Playing)
 		{
 			keyPKT.FireFlag = 1;
 			keyinput = true;
