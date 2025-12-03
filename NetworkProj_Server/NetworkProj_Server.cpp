@@ -130,6 +130,10 @@ int main()
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serverAddr.sin_port = htons(SERVERPORT);
 
+	// 네이글 알고리즘 꺼야 다른 환경에서도 잘 출력됌.
+	int opt = 1;
+	setsockopt(listenSocket, IPPROTO_TCP, TCP_NODELAY, (const char*)&opt, sizeof(opt));
+
 	// bind
 	if (bind(listenSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
 	{
