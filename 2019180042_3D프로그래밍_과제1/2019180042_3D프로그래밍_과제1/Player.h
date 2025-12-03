@@ -76,6 +76,10 @@ public:
 	float			m_fBulletEffectiveRange = 150.0f;
 	CBulletObject*	m_ppBullets[BULLETS];
 
+	CShieldObject* m_pShieldObject = nullptr;
+	float        m_fShieldRemainTime = 3.0f;
+
+	// 충돌처리
 	void FireBullet();
 
 	virtual void OnUpdateTransform();

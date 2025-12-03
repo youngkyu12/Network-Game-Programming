@@ -135,6 +135,12 @@ CTankPlayer::CTankPlayer()
 		m_ppBullets[i]->SetMovingSpeed(500.0f);
 		m_ppBullets[i]->SetActive(false);
 	}
+
+	CWallMesh* pShieldMesh = new CWallMesh(20.0f, -40.0f, 20.0f, 20);
+	m_pShieldObject = new CShieldObject();
+	m_pShieldObject->SetMesh(pShieldMesh);
+	m_pShieldObject->SetColor(RGB(0, 1, 0));
+	m_pShieldObject->SetActive(false);
 }
 
 CTankPlayer::~CTankPlayer()
@@ -150,6 +156,22 @@ void CTankPlayer::Animate(float fElapsedTime)
 	{
 		if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Animate(fElapsedTime);
 	}
+
+	if (m_pShieldObject->m_bActive)
+	{
+		// 남은 시간 감소
+		m_fShieldRemainTime -= fElapsedTime;
+
+		if (m_fShieldRemainTime <= 0.0f)
+		{
+			m_fShieldRemainTime = 3.0f;
+			m_pShieldObject->SetActive(false); // 자동으로 쉴드 OFF
+		}
+		else
+		{
+			m_pShieldObject->Animate(fElapsedTime);
+		}
+	}
 }
 
 void CTankPlayer::OnUpdateTransform()
@@ -162,6 +184,9 @@ void CTankPlayer::OnUpdateTransform()
 void CTankPlayer::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
 	CPlayer::Render(hDCFrameBuffer, pCamera);
+
+	if(m_pShieldObject->m_bActive)
+		m_pShieldObject->Render(hDCFrameBuffer, pCamera);
 
 	for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Render(hDCFrameBuffer, pCamera);
 

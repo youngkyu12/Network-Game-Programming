@@ -184,3 +184,12 @@ public:
 
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 };
+
+class CShieldObject : public CGameObject
+{
+public:
+	CShieldObject() {}
+	virtual ~CShieldObject() {}
+
+	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
+};

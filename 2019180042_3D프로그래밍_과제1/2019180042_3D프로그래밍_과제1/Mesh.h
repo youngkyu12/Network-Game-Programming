@@ -96,3 +96,9 @@ public:
 
 	virtual void Render(HDC hDCFrameBuffer);
 };
+
+class CObstacleMesh : public CMesh {
+public:
+	CObstacleMesh(float fWidth = 1.0f, float fHeight = 1.0f, float fDepth = 1.0f, int nSubRects = 20);
+	virtual ~CObstacleMesh() {}
+};

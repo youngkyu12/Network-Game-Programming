@@ -433,3 +433,100 @@ void CAxisMesh::Render(HDC hDCFrameBuffer)
 	::SelectObject(hDCFrameBuffer, hOldPen);
 	::DeleteObject(hPen);
 }
+
+CObstacleMesh::CObstacleMesh(float fWidth, float fHeight, float fDepth, int nSubRects) : CMesh((6 * nSubRects * nSubRects))
+{
+	float fx = fWidth * 0.5f;
+	float fy = fHeight * 0.5f;
+	float fz = fDepth * 0.5f;
+	float fCellWidth = fWidth * (1.0f / nSubRects);
+	float fCellHeight = fHeight * (1.0f / nSubRects);
+	float fCellDepth = fDepth * (1.0f / nSubRects);
+
+	int k = 0;
+	CPolygon* pLeftFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pLeftFace = new CPolygon(4);
+			pLeftFace->SetVertex(0, CVertex(-fx, -fy + (i * fCellHeight), -fz + (j * fCellDepth)));
+			pLeftFace->SetVertex(1, CVertex(-fx, -fy + ((i + 1) * fCellHeight), -fz + (j * fCellDepth)));
+			pLeftFace->SetVertex(2, CVertex(-fx, -fy + ((i + 1) * fCellHeight), -fz + ((j + 1) * fCellDepth)));
+			pLeftFace->SetVertex(3, CVertex(-fx, -fy + (i * fCellHeight), -fz + ((j + 1) * fCellDepth)));
+			SetPolygon(k++, pLeftFace);
+		}
+	}
+
+	CPolygon* pRightFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pRightFace = new CPolygon(4);
+			pRightFace->SetVertex(0, CVertex(+fx, -fy + (i * fCellHeight), -fz + (j * fCellDepth)));
+			pRightFace->SetVertex(1, CVertex(+fx, -fy + ((i + 1) * fCellHeight), -fz + (j * fCellDepth)));
+			pRightFace->SetVertex(2, CVertex(+fx, -fy + ((i + 1) * fCellHeight), -fz + ((j + 1) * fCellDepth)));
+			pRightFace->SetVertex(3, CVertex(+fx, -fy + (i * fCellHeight), -fz + ((j + 1) * fCellDepth)));
+			SetPolygon(k++, pRightFace);
+		}
+	}
+
+	CPolygon* pTopFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pTopFace = new CPolygon(4);
+			pTopFace->SetVertex(0, CVertex(-fx + (i * fCellWidth), +fy, -fz + (j * fCellDepth)));
+			pTopFace->SetVertex(1, CVertex(-fx + ((i + 1) * fCellWidth), +fy, -fz + (j * fCellDepth)));
+			pTopFace->SetVertex(2, CVertex(-fx + ((i + 1) * fCellWidth), +fy, -fz + ((j + 1) * fCellDepth)));
+			pTopFace->SetVertex(3, CVertex(-fx + (i * fCellWidth), +fy, -fz + ((j + 1) * fCellDepth)));
+			SetPolygon(k++, pTopFace);
+		}
+	}
+
+	CPolygon* pBottomFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pBottomFace = new CPolygon(4);
+			pBottomFace->SetVertex(0, CVertex(-fx + (i * fCellWidth), -fy, -fz + (j * fCellDepth)));
+			pBottomFace->SetVertex(1, CVertex(-fx + ((i + 1) * fCellWidth), -fy, -fz + (j * fCellDepth)));
+			pBottomFace->SetVertex(2, CVertex(-fx + ((i + 1) * fCellWidth), -fy, -fz + ((j + 1) * fCellDepth)));
+			pBottomFace->SetVertex(3, CVertex(-fx + (i * fCellWidth), -fy, -fz + ((j + 1) * fCellDepth)));
+			SetPolygon(k++, pBottomFace);
+		}
+	}
+
+	CPolygon* pFrontFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pFrontFace = new CPolygon(4);
+			pFrontFace->SetVertex(0, CVertex(-fx + (i * fCellWidth), -fy + (j * fCellHeight), -fz));
+			pFrontFace->SetVertex(1, CVertex(-fx + ((i + 1) * fCellWidth), -fy + (j * fCellHeight), -fz));
+			pFrontFace->SetVertex(2, CVertex(-fx + ((i + 1) * fCellWidth), -fy + ((j + 1) * fCellHeight), -fz));
+			pFrontFace->SetVertex(3, CVertex(-fx + (i * fCellWidth), -fy + ((j + 1) * fCellHeight), -fz));
+			SetPolygon(k++, pFrontFace);
+		}
+	}
+
+	CPolygon* pBackFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pBackFace = new CPolygon(4);
+			pBackFace->SetVertex(0, CVertex(-fx + (i * fCellWidth), -fy + (j * fCellHeight), +fz));
+			pBackFace->SetVertex(1, CVertex(-fx + ((i + 1) * fCellWidth), -fy + (j * fCellHeight), +fz));
+			pBackFace->SetVertex(2, CVertex(-fx + ((i + 1) * fCellWidth), -fy + ((j + 1) * fCellHeight), +fz));
+			pBackFace->SetVertex(3, CVertex(-fx + (i * fCellWidth), -fy + ((j + 1) * fCellHeight), +fz));
+			SetPolygon(k++, pBackFace);
+		}
+	}
+
+	m_xmOOBB = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(fx, fy, fz), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+}

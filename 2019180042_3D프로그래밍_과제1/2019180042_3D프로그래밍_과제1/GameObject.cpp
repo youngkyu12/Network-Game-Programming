@@ -418,3 +418,8 @@ void CAxisObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 	m_pMesh->Render(hDCFrameBuffer);
 }
+
+void CShieldObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
+{
+	m_pMesh->Render(hDCFrameBuffer);
+}

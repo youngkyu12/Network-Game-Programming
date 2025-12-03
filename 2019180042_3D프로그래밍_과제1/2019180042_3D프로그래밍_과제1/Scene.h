@@ -24,7 +24,7 @@ private:
 #endif
 
 public:
-	CGameObject** m_ppObjects = NULL;
+	CWallsObject** m_ppObjects = NULL;
 	CWallsObject* m_pWallsObject = NULL;
 	void BuildObjects();
 	void ReleaseObjects();
