@@ -16,16 +16,17 @@ struct Packetheader
 {
     uint16_t size;
     uint16_t ID; // Packet_ID
+    uint8_t GameState;
 };
 
 struct MovePacket
 {
     Packetheader header;
-    uint16_t keyW = 0;
-    uint16_t keyS = 0;
+    uint8_t keyW = 0;
+    uint8_t keyS = 0;
     float yaw = 0;
     uint8_t FireFlag = 0; // false = 0 true = 1
-
+    uint8_t shield = 0;
 };
 
 struct PlayerState
@@ -39,6 +40,7 @@ struct PlayerState
     float Looky;
     float Lookz;
     uint8_t fire;
+	uint8_t shield;
 };
 
 struct UpdateState

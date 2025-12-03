@@ -20,6 +20,7 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 	while (true)
 	{
 		myPlayer->CheckFireFlag();
+		myPlayer->CheckShieldFlag();
 		Room.Update_State(myPlayer);
 
 		// 시작주소 갱신.
@@ -76,6 +77,8 @@ DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 		{
 			//정상 종료
 			cout << "ID : " << myPlayer->Player_ID << " 접속 종료" << endl;
+			Room.Remove_Player(myPlayer);
+			Room.Check_PLayer();
 			break;
 		}
 		else if (recvBytes == SOCKET_ERROR)
@@ -129,6 +132,10 @@ int main()
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serverAddr.sin_port = htons(SERVERPORT);
+
+	// 네이글 알고리즘
+	int opt = 1;
+	setsockopt(listenSocket, IPPROTO_TCP, TCP_NODELAY, (const char*)&opt, sizeof(opt));
 
 	// bind
 	if (bind(listenSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)

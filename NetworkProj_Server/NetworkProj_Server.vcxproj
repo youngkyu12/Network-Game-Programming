@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameRoom.cpp" />
     <ClCompile Include="NetworkProj_Server.cpp" />
     <ClCompile Include="Player.cpp">
@@ -145,6 +146,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameRoom.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Player.h" />

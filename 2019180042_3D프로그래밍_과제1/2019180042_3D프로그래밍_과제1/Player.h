@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "SocketQueue.h"
 
+class CScene;
 
 
 class CPlayer : public CGameObject
@@ -14,6 +15,9 @@ public:
 
 public:
 	bool PrevFire = false;// 이전 발사 상태 체크용
+	bool PrevShield = false;// 이전 쉴드 상태 체크용
+	CShieldObject* m_pShieldObject = nullptr;
+
 	XMFLOAT3					m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	XMFLOAT3					m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
 	XMFLOAT3					m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
@@ -55,8 +59,13 @@ public:
 	virtual void Animate(float fElapsedTime);
 	virtual void Render(HDC hDCFrameBuffer, CCamera* pCamera);
 
-	
-	static void RegisterPlayers(CPlayer** ppPlayers, int nPlayers) { s_ppPlayers = ppPlayers; s_nPlayers = nPlayers; }
+	static CScene* s_pSceneRef;
+
+	static void RegisterPlayers(CPlayer** ppPlayers, int nPlayers, CScene* pScene) {
+		s_ppPlayers = ppPlayers;
+		s_nPlayers = nPlayers;
+		s_pSceneRef = pScene;
+	}
 
 
 	virtual void FireBullet() {}
@@ -76,6 +85,8 @@ public:
 	float			m_fBulletEffectiveRange = 150.0f;
 	CBulletObject*	m_ppBullets[BULLETS];
 
+
+	// 충돌처리
 	void FireBullet();
 
 	virtual void OnUpdateTransform();

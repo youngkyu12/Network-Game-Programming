@@ -173,9 +173,25 @@ void CGameObject::Render(HDC hDCFrameBuffer, XMFLOAT4X4* pxmf4x4World, CMesh* pM
 	}
 }
 
+void CGameObject::RenderFilled(HDC hDCFrameBuffer, XMFLOAT4X4* pxmf4x4World, CMesh* pMesh, COLORREF fillColor)
+{
+	if (pMesh)
+	{
+
+		CGraphicsPipeline::SetWorldTransform(pxmf4x4World);
+		pMesh->RenderFilled(hDCFrameBuffer, fillColor);
+
+	}
+}
+
 void CGameObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
 	if (pCamera->IsInFrustum(m_xmOOBB)) CGameObject::Render(hDCFrameBuffer, &m_xmf4x4World, m_pMesh);
+}
+
+void CGameObject::RenderFilled(HDC hDCFrameBuffer, CCamera* pCamera, COLORREF fillColor)
+{
+	if (pCamera->IsInFrustum(m_xmOOBB)) CGameObject::RenderFilled(hDCFrameBuffer, &m_xmf4x4World, m_pMesh, fillColor);
 }
 
 void CGameObject::GenerateRayForPicking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection)
@@ -417,4 +433,9 @@ void CAxisObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 	CGraphicsPipeline::SetWorldTransform(&m_xmf4x4World);
 
 	m_pMesh->Render(hDCFrameBuffer);
+}
+
+void CShieldObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
+{ 
+	m_pMesh->RenderFilled(hDCFrameBuffer, RGB(77, 255, 200));
 }

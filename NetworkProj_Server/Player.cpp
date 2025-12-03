@@ -56,16 +56,51 @@ uint8_t Player::GetFireFlag()
 	return is_Firing;
 }
 
+uint8_t Player::GetMyState()
+{
+	return MyState;
+}
+
+void Player::SetMyState(uint8_t newState)
+{
+	MyState = newState;
+}
+
 
 void Player::CheckFireFlag()
 {
 	if (is_Firing == 1)
 	{
-		if (FireTimer.IsElapsed(100))
+		if (FireTimer.IsElapsed(1000))
 		{
 			is_Firing = 0;
 			FireTimer.Stop(); 
 			cout << "1초 경과. 발사 상태 해제" << endl;
+		}
+	}
+}
+
+void Player::CheckShieldFlag()
+{
+	if (ShieldOn == 1)
+	{
+		if (ShieldTimer.IsElapsed(3000))
+		{
+			ShieldOn = 0;
+			ShieldTimer.Stop();
+			cout << "3초 경과. 방어 상태 해제" << endl;
+			cooldown = 1;
+			CooldownTimer.Start();
+			cout << "쿨타임 시작" << endl;
+		}
+	}
+	if (cooldown == 1)
+	{
+		if (CooldownTimer.IsElapsed(10000))
+		{
+			cooldown = 0;
+			CooldownTimer.Stop();
+			cout << "10초 경과. 쿨타임 해제" << endl;
 		}
 	}
 }
@@ -105,6 +140,18 @@ void Player::Fire()
 	FireTimer.Start();
 	is_Firing = 1;
 	cout << "서버내 fireflag 1로 변경" << endl;
+}
+
+void Player::Shield()
+{
+	// 혹시 같은 패킷이 두번오면 타이머에 영향없게 retrun 처리
+	if (ShieldOn == 1)
+	{
+		return;
+	}
+	ShieldTimer.Start();
+	ShieldOn = 1;
+	cout << "서버내 Shield 1로 변경" << endl;
 }
 
 void Player::SetEmptyBoundingBox ()

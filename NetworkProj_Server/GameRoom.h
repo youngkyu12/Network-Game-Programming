@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "Player.h"
+#include "GameObject.h"
 
 // 발사 처리 결과
 struct RayHitResult
@@ -21,6 +22,7 @@ public:
 	void Remove_Player(Player* player);
 	void Update_State(Player* player);
 	void Check_PLayer();
+	void Check_State();
 	void HandlePacket(Player* player, BYTE* buffer);
 
 	void Move(Player* player, char key);
@@ -40,5 +42,8 @@ private:
 	vector<Player*> PlayerManager;
 
 	POINT OldCursorPos = { 500,500 };
+
+	int			m_nObjects = 0;
+	GameObject** m_ppObjects = NULL;
 };
 

@@ -6,9 +6,15 @@
 #include "SocketQueue.h"
 #include <unordered_set>
 #include <deque>
-#include <algorithm>
 
-enum class EGameState : uint8_t { Start , Playing , GameOver };
+
+enum EGameState
+{
+	None = 0,
+	Ready = 1,
+	Playing = 2,
+	GameOver = 3,
+};
 
 class CGameFramework
 {
@@ -33,7 +39,7 @@ private:
 	HBITMAP						m_hBitmapSelect = NULL;
 
 	CCamera* m_pCamera = NULL;
-	CPlayer* m_pPlayer[MAX_PLAYERS];
+	CTankPlayer* m_pPlayer[MAX_PLAYERS];
 	CScene* m_pScene = NULL;
 
 	// 플레이어 상태 컨테이너
@@ -45,7 +51,7 @@ private:
 	}
 
 	// 게임 상태
-	EGameState m_eGameState = EGameState::Playing;
+	uint8_t m_eGameState = None;
 
 	// 최종 랭킹(엔드 씬용): 앞이 높은 순위(1위)
 	std::vector<uint8_t>        m_vFinalRanks;
@@ -82,7 +88,11 @@ public:
 	void ProcessInput();
 	void AnimateObjects();
 	void FrameAdvance();
+	void RenderScene();
 	void HandlePacket();
+	void DrawUI(); // hp 그리는 함수
+	void SetMyState(uint8_t newState);
+	uint8_t GetMyState();
 
 	void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);

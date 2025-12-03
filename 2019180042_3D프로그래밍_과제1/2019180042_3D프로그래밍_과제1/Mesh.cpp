@@ -82,6 +82,51 @@ void CMesh::Render(HDC hDCFrameBuffer)
 	}
 }
 
+void CMesh::RenderFilled(HDC hDCFrameBuffer, COLORREF fillColor)
+{
+	HBRUSH hBrush = ::CreateSolidBrush(fillColor);
+	HBRUSH hOldBrush = (HBRUSH)::SelectObject(hDCFrameBuffer, hBrush);
+	HPEN hPen = ::CreatePen(PS_SOLID, 0, fillColor);
+	HPEN hOldPen = (HPEN)::SelectObject(hDCFrameBuffer, hPen);
+
+	for (int j = 0; j < m_nPolygons; ++j)
+	{
+		const int n = m_ppPolygons[j]->m_nVertices;
+		CVertex* v = m_ppPolygons[j]->m_pVertices;
+		// NDC로 각 정점 투영 및 근평면 클리핑(간단: 에지 클리핑은 생략, 각 정점 z>=0만 사용)
+		std::vector<POINT> pts;
+		pts.reserve(n);
+
+		bool anyInside = false;
+		for (int i = 0; i < n; ++i)
+		{
+			XMFLOAT3 ndc = CGraphicsPipeline::Project(v[i].m_xmf3Position);
+			// z 범위 검사(근평면 뒤는 스킵)
+			if (ndc.z >= 0.0f && ndc.z <= 1.0f)
+			{
+				XMFLOAT3 scr = CGraphicsPipeline::ScreenTransform(ndc);
+				pts.push_back(POINT{ (LONG)scr.x, (LONG)scr.y });
+				anyInside = true;
+			}
+			else
+			{
+				// 화면 밖 정점은 일단 스킵(정밀 폴리곤 클리핑 필요 시 개선)
+			}
+		}
+
+		if (anyInside && pts.size() >= 3)
+		{
+			::Polygon(hDCFrameBuffer, pts.data(), (int)pts.size());
+		}
+	}
+
+	::SelectObject(hDCFrameBuffer, hOldPen);
+	::DeleteObject(hPen);
+	::SelectObject(hDCFrameBuffer, hOldBrush);
+	::DeleteObject(hBrush);
+	return;
+}
+
 
 BOOL CMesh::RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance)
 {
@@ -432,4 +477,101 @@ void CAxisMesh::Render(HDC hDCFrameBuffer)
 	::Draw2DLine(hDCFrameBuffer, f3PreviousProject, f3CurrentProject);
 	::SelectObject(hDCFrameBuffer, hOldPen);
 	::DeleteObject(hPen);
+}
+
+CObstacleMesh::CObstacleMesh(float fWidth, float fHeight, float fDepth, int nSubRects) : CMesh((6 * nSubRects * nSubRects))
+{
+	float fx = fWidth * 0.5f;
+	float fy = fHeight * 0.5f;
+	float fz = fDepth * 0.5f;
+	float fCellWidth = fWidth * (1.0f / nSubRects);
+	float fCellHeight = fHeight * (1.0f / nSubRects);
+	float fCellDepth = fDepth * (1.0f / nSubRects);
+
+	int k = 0;
+	CPolygon* pLeftFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pLeftFace = new CPolygon(4);
+			pLeftFace->SetVertex(0, CVertex(-fx, -fy + (i * fCellHeight), -fz + (j * fCellDepth)));
+			pLeftFace->SetVertex(1, CVertex(-fx, -fy + ((i + 1) * fCellHeight), -fz + (j * fCellDepth)));
+			pLeftFace->SetVertex(2, CVertex(-fx, -fy + ((i + 1) * fCellHeight), -fz + ((j + 1) * fCellDepth)));
+			pLeftFace->SetVertex(3, CVertex(-fx, -fy + (i * fCellHeight), -fz + ((j + 1) * fCellDepth)));
+			SetPolygon(k++, pLeftFace);
+		}
+	}
+
+	CPolygon* pRightFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pRightFace = new CPolygon(4);
+			pRightFace->SetVertex(0, CVertex(+fx, -fy + (i * fCellHeight), -fz + (j * fCellDepth)));
+			pRightFace->SetVertex(1, CVertex(+fx, -fy + ((i + 1) * fCellHeight), -fz + (j * fCellDepth)));
+			pRightFace->SetVertex(2, CVertex(+fx, -fy + ((i + 1) * fCellHeight), -fz + ((j + 1) * fCellDepth)));
+			pRightFace->SetVertex(3, CVertex(+fx, -fy + (i * fCellHeight), -fz + ((j + 1) * fCellDepth)));
+			SetPolygon(k++, pRightFace);
+		}
+	}
+
+	CPolygon* pTopFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pTopFace = new CPolygon(4);
+			pTopFace->SetVertex(0, CVertex(-fx + (i * fCellWidth), +fy, -fz + (j * fCellDepth)));
+			pTopFace->SetVertex(1, CVertex(-fx + ((i + 1) * fCellWidth), +fy, -fz + (j * fCellDepth)));
+			pTopFace->SetVertex(2, CVertex(-fx + ((i + 1) * fCellWidth), +fy, -fz + ((j + 1) * fCellDepth)));
+			pTopFace->SetVertex(3, CVertex(-fx + (i * fCellWidth), +fy, -fz + ((j + 1) * fCellDepth)));
+			SetPolygon(k++, pTopFace);
+		}
+	}
+
+	CPolygon* pBottomFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pBottomFace = new CPolygon(4);
+			pBottomFace->SetVertex(0, CVertex(-fx + (i * fCellWidth), -fy, -fz + (j * fCellDepth)));
+			pBottomFace->SetVertex(1, CVertex(-fx + ((i + 1) * fCellWidth), -fy, -fz + (j * fCellDepth)));
+			pBottomFace->SetVertex(2, CVertex(-fx + ((i + 1) * fCellWidth), -fy, -fz + ((j + 1) * fCellDepth)));
+			pBottomFace->SetVertex(3, CVertex(-fx + (i * fCellWidth), -fy, -fz + ((j + 1) * fCellDepth)));
+			SetPolygon(k++, pBottomFace);
+		}
+	}
+
+	CPolygon* pFrontFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pFrontFace = new CPolygon(4);
+			pFrontFace->SetVertex(0, CVertex(-fx + (i * fCellWidth), -fy + (j * fCellHeight), -fz));
+			pFrontFace->SetVertex(1, CVertex(-fx + ((i + 1) * fCellWidth), -fy + (j * fCellHeight), -fz));
+			pFrontFace->SetVertex(2, CVertex(-fx + ((i + 1) * fCellWidth), -fy + ((j + 1) * fCellHeight), -fz));
+			pFrontFace->SetVertex(3, CVertex(-fx + (i * fCellWidth), -fy + ((j + 1) * fCellHeight), -fz));
+			SetPolygon(k++, pFrontFace);
+		}
+	}
+
+	CPolygon* pBackFace;
+	for (int i = 0; i < nSubRects; i++)
+	{
+		for (int j = 0; j < nSubRects; j++)
+		{
+			pBackFace = new CPolygon(4);
+			pBackFace->SetVertex(0, CVertex(-fx + (i * fCellWidth), -fy + (j * fCellHeight), +fz));
+			pBackFace->SetVertex(1, CVertex(-fx + ((i + 1) * fCellWidth), -fy + (j * fCellHeight), +fz));
+			pBackFace->SetVertex(2, CVertex(-fx + ((i + 1) * fCellWidth), -fy + ((j + 1) * fCellHeight), +fz));
+			pBackFace->SetVertex(3, CVertex(-fx + (i * fCellWidth), -fy + ((j + 1) * fCellHeight), +fz));
+			SetPolygon(k++, pBackFace);
+		}
+	}
+
+	m_xmOOBB = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(fx, fy, fz), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 }

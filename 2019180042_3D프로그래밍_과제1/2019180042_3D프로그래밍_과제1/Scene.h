@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "Camera.h"
 #include "Player.h"
+#include <algorithm>
 
 class CScene
 {
@@ -12,7 +13,7 @@ public:
 	virtual ~CScene();
 
 private:
-	int							m_nObjects = 0;
+	
 	
 
 	CPlayer* m_pPlayer = NULL;
@@ -24,6 +25,7 @@ private:
 #endif
 
 public:
+	int							m_nObjects = 0;
 	CGameObject** m_ppObjects = NULL;
 	CWallsObject* m_pWallsObject = NULL;
 	void BuildObjects();

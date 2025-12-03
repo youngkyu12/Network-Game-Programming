@@ -61,6 +61,7 @@ public:
 
 	// 와이어 프레임
 	virtual void Render(HDC hDCFrameBuffer);
+	void RenderFilled(HDC hDCFrameBuffer, COLORREF fillColor);
 	
 	BOOL RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance);
 	int CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, float* pfNearHitDistance);
@@ -95,4 +96,10 @@ public:
 	virtual ~CAxisMesh() {}
 
 	virtual void Render(HDC hDCFrameBuffer);
+};
+
+class CObstacleMesh : public CMesh {
+public:
+	CObstacleMesh(float fWidth = 1.0f, float fHeight = 1.0f, float fDepth = 1.0f, int nSubRects = 20);
+	virtual ~CObstacleMesh() {}
 };
