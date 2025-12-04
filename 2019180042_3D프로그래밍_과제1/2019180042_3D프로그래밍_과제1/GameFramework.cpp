@@ -240,7 +240,7 @@ void CGameFramework::ProcessInput()
 		A_PressedPrev = A_PressedNow;
 
 		bool F_PressedNow = (pKeyBuffer['F'] & 0xF0) ? true : false;
-		if (F_PressedNow == true && F_PressedPrev == false && m_pPlayer[0]->m_pShieldObject->m_bActive == false && m_eGameState == Playing)
+		if (F_PressedNow == true && F_PressedPrev == false && m_pPlayer[0]->m_pShieldObject->m_bActive == false )
 		{
 			keyPKT.shield = 1;
 			keyinput = true;
