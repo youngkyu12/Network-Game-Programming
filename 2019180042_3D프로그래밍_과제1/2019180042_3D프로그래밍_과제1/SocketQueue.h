@@ -14,8 +14,8 @@ enum Packet_ID
 #pragma pack(push, 1)
 struct Packetheader
 {
-    uint16_t size;
-    uint16_t ID; // Packet_ID
+    uint8_t size;
+    uint8_t ID; // Packet_ID
     uint8_t GameState;
 };
 
@@ -31,8 +31,8 @@ struct MovePacket
 
 struct PlayerState
 {
-    int32_t Player_ID;
-	int32_t hp;
+    uint8_t Player_ID;
+	uint8_t hp;
     float pos_x;
     float pos_y;
     float pos_z;
@@ -47,7 +47,7 @@ struct UpdateState
 {
     Packetheader header;
     uint8_t My_ID;
-    int32_t numPlayers;
+    uint8_t numPlayers;
     PlayerState players[MAX_PLAYERS];
 };
 #pragma pack(pop)

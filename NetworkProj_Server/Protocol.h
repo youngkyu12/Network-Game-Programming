@@ -22,8 +22,8 @@ enum
 
 struct Packetheader
 {
-	uint16_t size;
-	uint16_t ID; // 프로토콜 ID
+	uint8_t size;
+	uint8_t ID; // 프로토콜 ID
 	uint8_t GameState;
 
 };
@@ -40,8 +40,8 @@ struct MovePacket
 
 struct PlayerState // 한명분 데이터
 {
-	int32_t playerID;
-	int32_t hp;
+	uint8_t playerID;
+	uint8_t hp;
 	float x;
 	float y;
 	float z;
@@ -57,7 +57,7 @@ struct UpdateState
 {
 	Packetheader header;
 	uint8_t My_ID;
-	int32_t numPlayers;
+	uint8_t numPlayers;
 	PlayerState players[MAX_PLAYERS];
 };
 
