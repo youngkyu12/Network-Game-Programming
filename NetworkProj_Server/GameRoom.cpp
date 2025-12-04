@@ -42,7 +42,7 @@ GameRoom::~GameRoom()
 void GameRoom::Update_State(Player* player)
 {
 	UpdateState updatePkt;
-	updatePkt.header.ID = MOVE; // 1
+	updatePkt.header.ID = UPDATE; // 1
 	updatePkt.My_ID = player->Player_ID;
 	updatePkt.header.GameState = player->GetMyState();
 	EnterCriticalSection(&_cs);
@@ -114,20 +114,17 @@ void GameRoom::Check_PLayer()
 
 void GameRoom::Check_State()
 {
+	EnterCriticalSection(&_cs);
 	if (PlayerManager.size() < 2)
 	{
-		/*
-		원래는 여기도 락을 걸어주는게 맞지만,
-		현재 규모에서는 문제 없을꺼 같아서 제외.
-		추후에 버그 발생시 의심해야할 부분.
-		*/
+		LeaveCriticalSection(&_cs);
 		return;
 	}
-	EnterCriticalSection(&_cs);
+	
 	bool allReady = true;
 	for (auto player : PlayerManager)
 	{
-		cout << "Player " << player->Player_ID << " 상태 " << player->GetMyState() << endl;
+		cout << "Player " << player->Player_ID << " 상태 " << (int)player->GetMyState() << endl;
 		if (player->GetMyState() != Ready)
 		{
 			allReady = false;
@@ -159,7 +156,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	Packetheader* header = (Packetheader*)buffer;
 	uint8_t PrevState = player->GetMyState();
 	player->SetMyState(header->GameState);
-	cout << (int)(player->GetMyState()) << endl;
+	//cout << (int)(player->GetMyState()) << endl;
 
 	if (PrevState == None && header->GameState == Ready)
 	{
@@ -169,7 +166,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 
 	switch (header->ID)
 	{
-	case MOVE: //이동패킷
+	case UPDATE:
 	{
 		//cout << "MOVE 스위치문 정상 작동" << endl;
 		MovePacket* testpkt = (MovePacket*)buffer;

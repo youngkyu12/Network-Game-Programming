@@ -4,11 +4,7 @@
 
 enum Packet_ID
 {
-    START = 0,
-    MOVE = 1,
-    FIRE = 2,
-    TEMP = 3,
-    UPDATE = 4,
+    UPDATE = 1,
 };
 
 #pragma pack(push, 1)

@@ -191,7 +191,7 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 void CGameFramework::ProcessInput()
 {
 	MovePacket keyPKT;
-	keyPKT.header.ID = MOVE;
+	keyPKT.header.ID = UPDATE;
 	keyPKT.header.size = sizeof(MovePacket);
 	keyPKT.header.GameState = m_eGameState;
 
