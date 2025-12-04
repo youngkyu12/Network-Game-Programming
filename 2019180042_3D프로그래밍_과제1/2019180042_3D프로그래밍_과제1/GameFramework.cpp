@@ -7,6 +7,7 @@
 #include "GraphicsPipeline.h" // CGraphicsPipeline 관련 오류(E0276) 해결
 extern uint8_t MyPlayerID;
 
+
 void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 {
 	::srand(timeGetTime());
@@ -140,6 +141,10 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 
 void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
+	if (m_eGameState == GameOver)
+	{
+		return;
+	}
 	switch (nMessageID)
 	{
 	case WM_KEYDOWN:
@@ -158,6 +163,10 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			}
 			break;
 		case 'P':
+			if (m_eGameState == Ready || m_eGameState == Playing)
+			{
+				break;
+			}
 			m_eGameState = Ready;
 			break;
 		case 'F':
