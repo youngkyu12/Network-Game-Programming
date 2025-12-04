@@ -18,7 +18,7 @@ void CScene::BuildObjects()
 	CBulletObject::PrepareExplosion();
 
 	float fHalfWidth = 200.0f, fHalfHeight = 200.0f, fHalfDepth = 200.0f;
-	CWallMesh* pWallCubeMesh = new CWallMesh(fHalfWidth * 2.0f, fHalfHeight * 2.0f, fHalfDepth * 2.0f, 20);
+	CWallMesh* pWallCubeMesh = new CWallMesh(fHalfWidth * 2.0f, fHalfHeight * 2.0f, fHalfDepth * 2.0f, 10);
 
 	m_pWallsObject = new CWallsObject();
 	m_pWallsObject->SetPosition(0.0f, 199.0f, 0.0f);
