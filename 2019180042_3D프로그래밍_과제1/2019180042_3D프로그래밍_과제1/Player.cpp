@@ -185,7 +185,7 @@ void CTankPlayer::OnUpdateTransform()
 
 void CTankPlayer::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
-	
+		
 	if(m_pShieldObject->m_bActive)
 		m_pShieldObject->Render(hDCFrameBuffer, pCamera);
 	CPlayer::Render(hDCFrameBuffer, pCamera);

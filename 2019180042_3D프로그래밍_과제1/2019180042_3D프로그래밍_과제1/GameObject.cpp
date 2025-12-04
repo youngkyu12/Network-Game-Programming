@@ -437,5 +437,6 @@ void CAxisObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 
 void CShieldObject::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 { 
+	CGraphicsPipeline::SetWorldTransform ( &m_xmf4x4World );
 	m_pMesh->RenderFilled(hDCFrameBuffer, RGB(77, 255, 200));
 }
