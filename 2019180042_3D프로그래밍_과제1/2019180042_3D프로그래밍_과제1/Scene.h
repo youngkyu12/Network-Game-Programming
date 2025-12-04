@@ -1,0 +1,39 @@
+#pragma once
+
+#include "GameObject.h"
+#include "Camera.h"
+#include "Player.h"
+#include <algorithm>
+
+class CScene
+{
+public:
+	CScene();
+	CScene(CPlayer* pPlayer);
+	virtual ~CScene();
+
+private:
+	
+	
+
+	CPlayer* m_pPlayer = NULL;
+
+
+
+#ifdef _WITH_DRAW_AXIS
+	CGameObject* m_pWorldAxis = NULL;
+#endif
+
+public:
+	int							m_nObjects = 0;
+	CGameObject** m_ppObjects = NULL;
+	CWallsObject* m_pWallsObject = NULL;
+	void BuildObjects();
+	void ReleaseObjects();
+	void Animate(float fElapsedTime);
+	void Render(HDC hDCFrameBuffer, CCamera* pCamera);
+
+	CGameObject* PickObjectPointedByCursor(int xClient, int yClient, CCamera* pCamera);
+
+
+};
