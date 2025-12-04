@@ -114,16 +114,13 @@ void GameRoom::Check_PLayer()
 
 void GameRoom::Check_State()
 {
+	EnterCriticalSection(&_cs);
 	if (PlayerManager.size() < 2)
 	{
-		/*
-		원래는 여기도 락을 걸어주는게 맞지만,
-		현재 규모에서는 문제 없을꺼 같아서 제외.
-		추후에 버그 발생시 의심해야할 부분.
-		*/
+		LeaveCriticalSection(&_cs);
 		return;
 	}
-	EnterCriticalSection(&_cs);
+	
 	bool allReady = true;
 	for (auto player : PlayerManager)
 	{
