@@ -7,15 +7,15 @@ GameRoom::GameRoom()
 	// 생성할때 초기화
 	InitializeCriticalSection(&_cs);
 
-	m_nObjects = 16;
+	m_nObjects = 4;
 	m_ppObjects = new GameObject * [m_nObjects];
 
-	int cols = 4;            // 가로로 4개
-	int rows = 4;            // 세로로 4개
-	float spacingX = 40.0f;  // X축 간격
-	float spacingZ = 40.0f;  // Z축 간격
+	int cols = 2;            // 가로로 4개
+	int rows = 2;            // 세로로 4개
+	float spacingX = 80.0f;  // X축 간격
+	float spacingZ = 80.0f;  // Z축 간격
 
-	for (int i = 0; i < 16; ++i) {
+	for (int i = 0; i < m_nObjects; ++i) {
 		int row = i / cols;
 		int col = i % cols;
 
@@ -35,6 +35,8 @@ GameRoom::~GameRoom()
 {
 	// 종료 시 제거
 	DeleteCriticalSection(&_cs);
+	for ( int i = 0; i < m_nObjects; i++ ) if ( m_ppObjects[i] ) delete m_ppObjects[i];
+	if ( m_ppObjects ) delete[] m_ppObjects;
 }
 
 void GameRoom::Update_State(Player* player)
@@ -260,8 +262,8 @@ bool GameRoom::CheckPlayerByPlayerCollisions(Player* mover, const XMFLOAT3& desi
 
 	bool blocked = false;
 
-	if (movedBox.Center.x < -200.0f || movedBox.Center.x > 200.0f ||
-		movedBox.Center.z < -200.0f || movedBox.Center.z > 200.0f)
+	if (movedBox.Center.x < -100.0f || movedBox.Center.x > 100.0f ||
+		movedBox.Center.z < -100.0f || movedBox.Center.z > 100.0f)
 	{
 		// 맵 경계 밖으로 나감
 		blocked = true;

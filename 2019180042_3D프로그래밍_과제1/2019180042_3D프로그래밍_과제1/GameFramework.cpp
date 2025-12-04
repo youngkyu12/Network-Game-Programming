@@ -375,7 +375,7 @@ void CGameFramework::RenderScene()
 	for (CGameObject* obj : drawList)
 	{
 		// 필요 시 반투명 alpha로 채우기: RenderFilled(hdc, pCamera, color, alpha)
-		obj->RenderFilled(m_hDCFrameBuffer, m_pCamera, RGB(128, 128, 128));
+		//obj->RenderFilled(m_hDCFrameBuffer, m_pCamera, RGB(128, 128, 128));
 		obj->Render(m_hDCFrameBuffer, m_pCamera);
 	}
 }

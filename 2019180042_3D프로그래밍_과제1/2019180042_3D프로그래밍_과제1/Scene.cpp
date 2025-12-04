@@ -35,13 +35,13 @@ void CScene::BuildObjects()
 	fHalfWidth = 10.0f, fHalfHeight = 5.0f, fHalfDepth = 2.0f;
 	CCubeMesh* pbCubeMesh = new CCubeMesh(fHalfWidth * 2.0f, fHalfHeight * 2.0f, fHalfDepth * 2.0f);
 
-	m_nObjects = 16;
+	m_nObjects = 4;
 	m_ppObjects = new CGameObject * [m_nObjects];
 
-	int cols = 4;            // 가로로 4개
-	int rows = 4;            // 세로로 4개
-	float spacingX = 40.0f;  // X축 간격
-	float spacingZ = 40.0f;  // Z축 간격
+	int cols = 2;            // 가로로 4개
+	int rows = 2;            // 세로로 4개
+	float spacingX = 80.0f;  // X축 간격
+	float spacingZ = 80.0f;  // Z축 간격
 
 	for (int i = 0; i < m_nObjects; ++i) {
 		int row = i / cols;
