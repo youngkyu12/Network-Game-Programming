@@ -159,7 +159,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	uint8_t PrevState = player->GetMyState();
 	player->SetMyState(header->GameState);
 	cout << (int)(player->GetMyState()) << endl;
-	if (PrevState != header->GameState && header->GameState == 1)
+	if (PrevState == 0 && header->GameState == 1)
 	{
 		// 상태의 변화가 있고 해당 값이 1일때만 실행.
 		Check_State();

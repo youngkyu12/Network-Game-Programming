@@ -141,12 +141,12 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 
 void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
-	if (m_eGameState == GameOver)
-	{
-		return;
-	}
 	switch (nMessageID)
 	{
+		if (m_eGameState == GameOver)
+		{
+			break;
+		}
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
