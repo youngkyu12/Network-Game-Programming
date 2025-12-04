@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#define MAX_PLAYERS 10
+#define MAX_PLAYERS 3
 
 #pragma pack(push, 1)
 enum EGameState

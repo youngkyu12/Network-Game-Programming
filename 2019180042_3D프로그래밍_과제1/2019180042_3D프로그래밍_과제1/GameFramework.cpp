@@ -7,7 +7,6 @@
 #include "GraphicsPipeline.h" // CGraphicsPipeline 관련 오류(E0276) 해결
 extern uint8_t MyPlayerID;
 
-
 void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 {
 	::srand(timeGetTime());
@@ -143,10 +142,6 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 {
 	switch (nMessageID)
 	{
-		if (m_eGameState == GameOver)
-		{
-			break;
-		}
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
@@ -163,11 +158,10 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			}
 			break;
 		case 'P':
-			if (m_eGameState == Ready || m_eGameState == Playing)
-			{
-				break;
-			}
+<<<<<<< Updated upstream
 			m_eGameState = Ready;
+=======
+>>>>>>> Stashed changes
 			break;
 		case 'F':
 			//m_pPlayer[0]->m_pShieldObject->SetActive(true);
@@ -214,6 +208,7 @@ void CGameFramework::ProcessInput()
 	bool mouseinput = false;
 	static bool A_PressedPrev = false; // 이전상태 기억
 	static bool F_PressedPrev = false; // 이전상태 기억
+	static bool P_PressedPrev = false; // 이전상태 기억
 	
 	static UCHAR pKeyBuffer[256];
 	if ( GetKeyboardState ( pKeyBuffer ) )
@@ -240,7 +235,7 @@ void CGameFramework::ProcessInput()
 		A_PressedPrev = A_PressedNow;
 
 		bool F_PressedNow = (pKeyBuffer['F'] & 0xF0) ? true : false;
-		if (F_PressedNow == true && F_PressedPrev == false && m_pPlayer[0]->m_pShieldObject->m_bActive == false )
+		if (F_PressedNow == true && F_PressedPrev == false && m_pPlayer[0]->m_pShieldObject->m_bActive == false && m_eGameState == Playing)
 		{
 			keyPKT.shield = 1;
 			keyinput = true;
@@ -250,6 +245,15 @@ void CGameFramework::ProcessInput()
 			keyPKT.shield = 0;
 		}
 		F_PressedPrev = F_PressedNow;
+
+		bool P_PressedNow = (pKeyBuffer['P'] & 0xF0) ? true : false;
+		if (P_PressedNow == true && P_PressedPrev == false && m_eGameState == None)
+		{
+			m_eGameState = Ready;
+			keyPKT.header.GameState = m_eGameState;
+			keyinput = true;
+		}
+		P_PressedPrev = P_PressedNow;
 	}
 
 	if ( !stop ) {
@@ -384,7 +388,7 @@ void CGameFramework::RenderScene()
 	for (CGameObject* obj : drawList)
 	{
 		// 필요 시 반투명 alpha로 채우기: RenderFilled(hdc, pCamera, color, alpha)
-		obj->RenderFilled(m_hDCFrameBuffer, m_pCamera, RGB(128, 128, 128));
+		//obj->RenderFilled(m_hDCFrameBuffer, m_pCamera, RGB(128, 128, 128));
 		obj->Render(m_hDCFrameBuffer, m_pCamera);
 	}
 }
@@ -425,7 +429,7 @@ void CGameFramework::HandlePacket()
 				objIndex = player.Player_ID;
 			}
 
-			if ( m_pScene && objIndex >= 0 && objIndex < 10 ) //10명까지
+			if ( m_pScene && objIndex >= 0 && objIndex < MAX_PLAYERS ) //10명까지
 			{
 				//GameObject에서 Player로 변환 과정 m_pPlayer[objIndex]
 				CPlayer* Other_player = m_pPlayer[objIndex];
@@ -440,7 +444,9 @@ void CGameFramework::HandlePacket()
 						Other_player->FireBullet ();
 					}
 					Other_player->PrevFire = player.fire;
-					Other_player->m_pShieldObject->m_bActive = player.shield;
+					if (Other_player->m_pShieldObject) {
+						Other_player->m_pShieldObject->m_bActive = player.shield;
+					}
 
 					if ( oldHp != DEAD_PLAYER && player.hp == DEAD_PLAYER ) OnPlayerDeath ( player.Player_ID );
 					else if ( oldHp == DEAD_PLAYER && player.hp != DEAD_PLAYER ) OnPlayerSpawn ( player.Player_ID );
@@ -460,6 +466,77 @@ void CGameFramework::DrawUI()
 {
 	int oldBkMode = ::SetBkMode(m_hDCFrameBuffer, TRANSPARENT);
 	COLORREF oldTextColor = ::SetTextColor(m_hDCFrameBuffer, RGB(0, 0, 255));
+	const TCHAR* bannerText = NULL;
+
+	// Playing 상태 경과 시간 누적용(함수 정적 변수)
+	static float s_playingElapsedSec = 0.0f;
+	if (m_eGameState == Playing) {
+		// 프레임 경과 시간 누적
+		s_playingElapsedSec += m_GameTimer.GetTimeElapsed();
+	}
+	else {
+		// 다른 상태로 전환 시 리셋
+		s_playingElapsedSec = 0.0f;
+	}
+
+	// 1) 상단 중앙 배너 그리기
+	switch (m_eGameState)
+	{
+	case None:
+		bannerText = _T("\"P\"를 눌러 준비하세요");
+		break;
+	case Ready:
+		bannerText = _T("준비완료");
+		break;
+	case Playing:
+		if (s_playingElapsedSec < 3.0f) {
+			bannerText = _T("게임시작!");
+		}
+		else {
+			bannerText = _T("");; // 3초 이후에는 배너 미표시
+		}
+		break;
+	}
+
+	const int bannerMarginTop = 8;    // 상단 여백
+	const int bannerHeightPx = 36;    // 폰트 높이 (픽셀). 크게/작게 조절
+	const int bannerWeight = FW_BOLD; // 굵기(FW_NORMAL, FW_BOLD 등)
+
+	HFONT hBannerFont = ::CreateFont(
+		bannerHeightPx,        // nHeight
+		0,                     // nWidth (0: 높이에 맞춰 자동)
+		0,                     // nEscapement
+		0,                     // nOrientation
+		bannerWeight,          // fnWeight
+		FALSE,                 // fdwItalic
+		FALSE,                 // fdwUnderline
+		FALSE,                 // fdwStrikeOut
+		DEFAULT_CHARSET,       // fdwCharSet
+		OUT_DEFAULT_PRECIS,    // fdwOutputPrecision
+		CLIP_DEFAULT_PRECIS,   // fdwClipPrecision
+		ANTIALIASED_QUALITY,   // fdwQuality (가독성 향상)
+		DEFAULT_PITCH | FF_DONTCARE, // fdwPitchAndFamily
+		_T("Segoe UI")         // lpszFace (원하는 폰트명)
+	);
+
+	HFONT hOldFont = (HFONT)::SelectObject(m_hDCFrameBuffer, hBannerFont);
+	::SetTextColor(m_hDCFrameBuffer, RGB(20, 20, 20)); // 배너 색상
+
+	SIZE bannerSize{};
+	::GetTextExtentPoint32(m_hDCFrameBuffer, bannerText, (int)_tcslen(bannerText), &bannerSize);
+
+	int clientW = m_rcClient.right - m_rcClient.left;
+	int bannerX = m_rcClient.left + (clientW - bannerSize.cx) / 2; // 중앙 정렬 X
+	int bannerY = bannerMarginTop;                                 // 상단 여백 Y
+
+	::TextOut(m_hDCFrameBuffer, bannerX, bannerY, bannerText, (int)_tcslen(bannerText));
+
+	// 폰트/색상 복원 및 삭제
+	::SelectObject(m_hDCFrameBuffer, hOldFont);
+	::DeleteObject(hBannerFont);
+
+	// 2) 플레이어 상태 리스트(기존 UI)
+	::SetTextColor(m_hDCFrameBuffer, RGB(0, 0, 255));
 
 	int x = m_rcClient.left + 10;
 	int y = 20;
