@@ -149,9 +149,6 @@ void CGameObject::UpdateBoundingBox()
 void CGameObject::Animate(float fElapsedTime)
 {
 	if (m_fRotationSpeed != 0.0f) Rotate(m_xmf3RotationAxis, m_fRotationSpeed * fElapsedTime);
-	if (m_fMovingSpeed != 0.0f) {
-		//Move(m_xmf3MovingDirection, m_fMovingSpeed * fElapsedTime);
-	}
 
 	UpdateBoundingBox();
 }
