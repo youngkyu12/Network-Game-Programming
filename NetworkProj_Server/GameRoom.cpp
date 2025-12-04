@@ -160,11 +160,8 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	uint8_t PrevState = player->GetMyState();
 	player->SetMyState(header->GameState);
 	cout << (int)(player->GetMyState()) << endl;
-<<<<<<< Updated upstream
-	if (PrevState != header->GameState && header->GameState == 1)
-=======
+
 	if (PrevState == None && header->GameState == Ready)
->>>>>>> Stashed changes
 	{
 		// 상태의 변화가 있고 해당 값이 1일때만 실행.
 		Check_State();

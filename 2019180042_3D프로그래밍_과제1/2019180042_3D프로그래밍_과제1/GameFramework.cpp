@@ -157,15 +157,6 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 				stop = true;
 			}
 			break;
-		case 'P':
-<<<<<<< Updated upstream
-			m_eGameState = Ready;
-=======
->>>>>>> Stashed changes
-			break;
-		case 'F':
-			//m_pPlayer[0]->m_pShieldObject->SetActive(true);
-			break;
 		}
 		break;
 	default:
