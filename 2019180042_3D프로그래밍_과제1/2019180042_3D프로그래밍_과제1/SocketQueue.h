@@ -1,5 +1,5 @@
 #pragma once
-#define MAX_PLAYERS 10
+#define MAX_PLAYERS 3
 #define DEAD_PLAYER 0
 
 enum Packet_ID
