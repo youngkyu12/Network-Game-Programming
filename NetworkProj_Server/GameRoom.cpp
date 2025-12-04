@@ -4,22 +4,22 @@
 
 GameRoom::GameRoom()
 {
-	// »ý¼ºÇÒ¶§ ÃÊ±âÈ­
+	// ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½ ï¿½Ê±ï¿½È­
 	InitializeCriticalSection(&_cs);
 
 	m_nObjects = 4;
 	m_ppObjects = new GameObject * [m_nObjects];
 
-	int cols = 2;            // °¡·Î·Î 4°³
-	int rows = 2;            // ¼¼·Î·Î 4°³
-	float spacingX = 80.0f;  // XÃà °£°Ý
-	float spacingZ = 80.0f;  // ZÃà °£°Ý
+	int cols = 2;            // ï¿½ï¿½ï¿½Î·ï¿½ 4ï¿½ï¿½
+	int rows = 2;            // ï¿½ï¿½ï¿½Î·ï¿½ 4ï¿½ï¿½
+	float spacingX = 80.0f;  // Xï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	float spacingZ = 80.0f;  // Zï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 	for (int i = 0; i < m_nObjects; ++i) {
 		int row = i / cols;
 		int col = i % cols;
 
-		// °¡¿îµ¥ ±âÁØÀ¸·Î ÁÂ¿ì/¾ÕµÚ·Î ¹ú¾îÁö°Ô ¹èÄ¡
+		// ï¿½ï¿½ï¿½îµ¥ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Â¿ï¿½/ï¿½ÕµÚ·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
 		float x = (col - (cols - 1) / 2.0f) * spacingX;
 		float z = (row - (rows - 1) / 2.0f) * spacingZ;
 		m_ppObjects[i] = new GameObject();
@@ -33,7 +33,7 @@ GameRoom::GameRoom()
 
 GameRoom::~GameRoom()
 {
-	// Á¾·á ½Ã Á¦°Å
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	DeleteCriticalSection(&_cs);
 	for ( int i = 0; i < m_nObjects; i++ ) if ( m_ppObjects[i] ) delete m_ppObjects[i];
 	if ( m_ppObjects ) delete[] m_ppObjects;
@@ -94,7 +94,7 @@ void GameRoom::Remove_Player(Player* player)
 	{
 		if ((*p)->Player_ID == player->Player_ID)
 		{
-			//Ã£¾ÒÀ¸¸é »èÁ¦
+			//Ã£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			player->SetEmptyBoundingBox();
 			PlayerManager.erase(p);
 			break;
@@ -104,11 +104,11 @@ void GameRoom::Remove_Player(Player* player)
 
 }
 
-// µð¹ö±ë¿ë
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void GameRoom::Check_PLayer()
 {
 	EnterCriticalSection(&_cs);
-	cout << PlayerManager.size()<< " ¸í Á¢¼Ó ¿Ï·á" << endl;
+	cout << PlayerManager.size()<< " ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½" << endl;
 	LeaveCriticalSection(&_cs);
 }
 
@@ -124,7 +124,7 @@ void GameRoom::Check_State()
 	bool allReady = true;
 	for (auto player : PlayerManager)
 	{
-		cout << "Player " << player->Player_ID << " »óÅÂ " << player->GetMyState() << endl;
+		cout << "Player " << player->Player_ID << " ï¿½ï¿½ï¿½ï¿½ " << player->GetMyState() << endl;
 		if (player->GetMyState() != Ready)
 		{
 			allReady = false;
@@ -134,7 +134,7 @@ void GameRoom::Check_State()
 
 	if (allReady)
 	{
-		cout << "¸ðµç ÇÃ·¹ÀÌ¾î ÁØºñ. 2·Î º¯°æ" << endl;
+		cout << "ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Øºï¿½. 2ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½" << endl;
 		for (auto player : PlayerManager)
 		{
 			player->SetMyState(Playing);
@@ -148,8 +148,8 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 {
 	/*
 	---------------------------------------
-	 ¿©±â ³»ºÎ¿¡¼­ GameRoom::Move¿Í °°Àº
-	 ±âÁ¸¿¡ ¼³°èÇØ µÎ¾ú´ø ÇÔ¼öµé·Î Ã³¸®ÇÏ¸é µË´Ï´Ù.
+	 ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î¿ï¿½ï¿½ï¿½ GameRoom::Moveï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î¾ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½Ë´Ï´ï¿½.
 	---------------------------------------
 	*/
 
@@ -159,15 +159,15 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	cout << (int)(player->GetMyState()) << endl;
 	if (PrevState == None && header->GameState == Ready)
 	{
-		// »óÅÂÀÇ º¯È­°¡ ÀÖ°í ÇØ´ç °ªÀÌ 1ÀÏ¶§¸¸ ½ÇÇà.
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È­ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ 1ï¿½Ï¶ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 		Check_State();
 	}
 
 	switch (header->ID)
 	{
-	case MOVE: //ÀÌµ¿ÆÐÅ¶
+	case MOVE: //ï¿½Ìµï¿½ï¿½ï¿½Å¶
 	{
-		//cout << "MOVE ½ºÀ§Ä¡¹® Á¤»ó ÀÛµ¿" << endl;
+		//cout << "MOVE ï¿½ï¿½ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ûµï¿½" << endl;
 		MovePacket* testpkt = (MovePacket*)buffer;
 
 		if (testpkt->keyW == 1) Move(player, 'W');
@@ -175,18 +175,18 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 
 		if (testpkt->yaw != 0) Rotate(player, testpkt->yaw);
 
-		if (testpkt->FireFlag == 1)// True ÀÌ¸é... 
+		if (testpkt->FireFlag == 1)// True ï¿½Ì¸ï¿½... 
 		{
 			RayHitResult res = ProcessFire(player);
 			player->Fire(); 
-			// ¹ß»ç Ã³¸® ¹× °á°ú
+			// ï¿½ß»ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
 		}
 
-		if (testpkt->shield == 1) // ½¯µå ¿Â
+		if (testpkt->shield == 1) // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
 		{
-			cout << "½¯µå ¿Â Ã³¸® ¿äÃ»" << endl;
-			// ½¯µå ¿Â Ã³¸®
-			// ½¯µå Å¸ÀÌ¸Ó ½ÃÀÛ µîµî
+			cout << "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½Ã»" << endl;
+			// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Ã³ï¿½ï¿½
+			// ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 			if (player->GetCooldownFlag() == 0) {
 				player->Shield();
 			}
@@ -217,11 +217,11 @@ void GameRoom::Move(Player* player, char key)
 		break;
 	}
 
-	// Ãæµ¹ °Ë»ç ÈÄ À§Ä¡ °áÁ¤
+	// ï¿½æµ¹ ï¿½Ë»ï¿½ ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 	XMFLOAT3 resolvedPos;
 	if (CheckPlayerByPlayerCollisions(player, xmf3Shift, resolvedPos))
 	{
-		// ÀÌµ¿ °¡´É: ½ÇÁ¦ ÀÌµ¿·® = (°áÁ¤µÈ À§Ä¡ - ÇöÀç À§Ä¡)
+		// ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½ï¿½ = (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ - ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡)
 		XMFLOAT3 cur = player->GetPosition();
 		XMFLOAT3 delta(resolvedPos.x - cur.x, resolvedPos.y - cur.y, resolvedPos.z - cur.z);
 		player->Move(delta);
@@ -229,13 +229,13 @@ void GameRoom::Move(Player* player, char key)
 	}
 	else
 	{
-		// ÀÌµ¿ ºÒ°¡: À§Ä¡ º¯È­ ¾øÀ½
+		// ï¿½Ìµï¿½ ï¿½Ò°ï¿½: ï¿½ï¿½Ä¡ ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½
 	}
 }
 
 void GameRoom::Rotate (Player* player, float yaw )
 {
-	//µ¥ÀÌÅÍ¸¦ ¼öÁ¤ÇÒ‹š´Â playermanager¿¡ Á¢±ÙÇÏ¸é ¾ÈµË´Ï´Ù.
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ò‹ï¿½ï¿½ï¿½ playermanagerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ÈµË´Ï´ï¿½.
 	player->Rotate (0.0f , yaw , 0.0f);
 }
 
@@ -246,12 +246,12 @@ bool GameRoom::CheckPlayerByPlayerCollisions(Player* mover, const XMFLOAT3& desi
 		return false;
 	}
 
-	// ÇöÀç À§Ä¡
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
 	const XMFLOAT3 curPos = mover->GetPosition();
-	// ÀÌµ¿ ÈÄ ¸ñÇ¥ À§Ä¡(Ãæµ¹ ¾øÀ» ¶§ ¹ÝÈ¯ÇÒ À§Ä¡)
+	// ï¿½Ìµï¿½ ï¿½ï¿½ ï¿½ï¿½Ç¥ ï¿½ï¿½Ä¡(ï¿½æµ¹ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½Ä¡)
 	const XMFLOAT3 targetPos(curPos.x + desiredShift.x, curPos.y + desiredShift.y, curPos.z + desiredShift.z);
 
-	// ÀÌµ¿ Àü/ÈÄ OOBB ÁØºñ
+	// ï¿½Ìµï¿½ ï¿½ï¿½/ï¿½ï¿½ OOBB ï¿½Øºï¿½
 	mover->UpdateBoundingBox();
 	BoundingOrientedBox movedBox = mover->GetBoundingBox();
 	movedBox.Center.x += desiredShift.x;
@@ -263,7 +263,7 @@ bool GameRoom::CheckPlayerByPlayerCollisions(Player* mover, const XMFLOAT3& desi
 	if (movedBox.Center.x < -100.0f || movedBox.Center.x > 100.0f ||
 		movedBox.Center.z < -100.0f || movedBox.Center.z > 100.0f)
 	{
-		// ¸Ê °æ°è ¹ÛÀ¸·Î ³ª°¨
+		// ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		blocked = true;
 	}
 
@@ -277,15 +277,15 @@ bool GameRoom::CheckPlayerByPlayerCollisions(Player* mover, const XMFLOAT3& desi
 
 			other->UpdateBoundingBox();
 			if (!other->HasBoundingBox()) {
-				// ºñÈ°¼ºÈ­µÈ Ãæµ¹Ã¼´Â ¹«½Ã
+				// ï¿½ï¿½È°ï¿½ï¿½È­ï¿½ï¿½ ï¿½æµ¹Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 				continue;
 			}
 			const BoundingOrientedBox& otherBox = other->GetBoundingBox();
 
 			if (movedBox.Intersects(otherBox))
 			{
-				// Ãæµ¹ ¹ß°ß
-				cout << "Player " << mover->Player_ID << " Ãæµ¹ with Player " << other->Player_ID << endl;
+				// ï¿½æµ¹ ï¿½ß°ï¿½
+				cout << "Player " << mover->Player_ID << " ï¿½æµ¹ with Player " << other->Player_ID << endl;
 				blocked = true;
 				break;
 			}
@@ -308,13 +308,13 @@ bool GameRoom::CheckPlayerByPlayerCollisions(Player* mover, const XMFLOAT3& desi
 
 	if (blocked)
 	{
-		// Ãæµ¹: ÀÌµ¿ ºÒ°¡ -> ÇöÀç À§Ä¡ ¹ÝÈ¯
+		// ï¿½æµ¹: ï¿½Ìµï¿½ ï¿½Ò°ï¿½ -> ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½È¯
 		outResolvedPos = curPos;
 		return false;
 	}
 	else
 	{
-		// Ãæµ¹ ¾øÀ½: ÀÌµ¿ °¡´É -> ¸ñÇ¥ À§Ä¡ ¹ÝÈ¯
+		// ï¿½æµ¹ ï¿½ï¿½ï¿½ï¿½: ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ -> ï¿½ï¿½Ç¥ ï¿½ï¿½Ä¡ ï¿½ï¿½È¯
 		outResolvedPos = targetPos;
 		return true;
 	}
@@ -325,22 +325,22 @@ RayHitResult GameRoom::ProcessFire(Player* shooter)
 	RayHitResult result;
 	if (!shooter) return result;
 
-	// Ray Á¤º¸ ÁØºñ (¿øÁ¡, ¹æÇâ)
+	// Ray ï¿½ï¿½ï¿½ï¿½ ï¿½Øºï¿½ (ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½)
 	const XMFLOAT3 originF = shooter->GetPosition();
 	XMFLOAT3 dirF = shooter->GetLook();
-	dirF = Vector3::Normalize(dirF); // ¾ÈÀü»ó ÇÑ ¹ø ´õ Á¤±ÔÈ­
+	dirF = Vector3::Normalize(dirF); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
 
 	XMVECTOR origin = XMLoadFloat3(&originF);
 	XMVECTOR direction = XMLoadFloat3(&dirF);
 
-	// ÃÖ´ë »ç°Å¸®(ÇÊ¿ä ½Ã Á¶Á¤)
+	// ï¿½Ö´ï¿½ ï¿½ï¿½Å¸ï¿½(ï¿½Ê¿ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	const float kMaxRange = 1000.0f;
 
 	float nearestDist = kMaxRange;
 	Player* nearestTarget = nullptr;
 
 	EnterCriticalSection(&_cs);
-	// ÃÖ½Å OOBB °»½Å
+	// ï¿½Ö½ï¿½ OOBB ï¿½ï¿½ï¿½ï¿½
 	for (size_t i = 0; i < PlayerManager.size(); ++i)
 	{
 		Player* target = PlayerManager[i];
@@ -349,15 +349,15 @@ RayHitResult GameRoom::ProcessFire(Player* shooter)
 		target->UpdateBoundingBox();
 
 		if ( !target->HasBoundingBox () ) {
-			// ºñÈ°¼ºÈ­µÈ Ãæµ¹Ã¼´Â ¹«½Ã
+			// ï¿½ï¿½È°ï¿½ï¿½È­ï¿½ï¿½ ï¿½æµ¹Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			continue;
 		}
 
-		// Ray-OOBB ±³Â÷ °Ë»ç
+		// Ray-OOBB ï¿½ï¿½ï¿½ï¿½ ï¿½Ë»ï¿½
 		float dist = 0.0f;
 		if (target->GetBoundingBox().Intersects(origin, direction, dist))
 		{
-			// »ç°Å¸® ³»ÀÌ°í ´õ °¡±î¿î ´ë»óÀÌ¸é °»½Å
+			// ï¿½ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 			if (dist >= 0.0f && dist < nearestDist)
 			{
 				if (target->GetShieldFlag() != 1) {
@@ -373,11 +373,11 @@ RayHitResult GameRoom::ProcessFire(Player* shooter)
 
 		target->UpdateBoundingBox();
 
-		// Ray-OOBB ±³Â÷ °Ë»ç
+		// Ray-OOBB ï¿½ï¿½ï¿½ï¿½ ï¿½Ë»ï¿½
 		float dist = 0.0f;
 		if (target->GetBoundingBox().Intersects(origin, direction, dist))
 		{
-			// »ç°Å¸® ³»ÀÌ°í ´õ °¡±î¿î ´ë»óÀÌ¸é °»½Å
+			// ï¿½ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 			if (dist >= 0.0f && dist < nearestDist)
 			{
 				nearestDist = dist;
@@ -385,27 +385,27 @@ RayHitResult GameRoom::ProcessFire(Player* shooter)
 			}
 		}
 	}
-	// ÇÇ°Ý Ã³¸®
+	// ï¿½Ç°ï¿½ Ã³ï¿½ï¿½
 	if (nearestTarget)
 	{
-		// ÇÇ°Ý À§Ä¡: origin + direction * nearestDist
+		// ï¿½Ç°ï¿½ ï¿½ï¿½Ä¡: origin + direction * nearestDist
 		XMVECTOR hitPosV = XMVectorMultiplyAdd(direction, XMVectorReplicate(nearestDist), origin);
 		XMFLOAT3 hitPosF;
 		XMStoreFloat3(&hitPosF, hitPosV);
 
-		// HP °¨¼Ò(¿¹: 10)
+		// HP ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½: 10)
 		const uint16_t damage = 10;
 		uint16_t hp = nearestTarget->GetHP();
 		uint16_t newHp = (hp > damage) ? (hp - damage) : 0;
 		nearestTarget->SetHP(newHp);
 		if (nearestTarget->GetHP() == 0)
 		{
-			nearestTarget->SetEmptyBoundingBox (); // Ãæµ¹Ã¼ ºñÈ°¼ºÈ­
+			nearestTarget->SetEmptyBoundingBox (); // ï¿½æµ¹Ã¼ ï¿½ï¿½È°ï¿½ï¿½È­
 		}
 
-		// ÇÇ°Ý °á°ú Ãâ·Â
-		cout << "Player " << shooter->Player_ID << " °¡ Player " << nearestTarget->Player_ID
-			<< " ¸¦ ÇÇ°Ý! ³²Àº HP: " << newHp << endl;
+		// ï¿½Ç°ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+		cout << "Player " << shooter->Player_ID << " ï¿½ï¿½ Player " << nearestTarget->Player_ID
+			<< " ï¿½ï¿½ ï¿½Ç°ï¿½! ï¿½ï¿½ï¿½ï¿½ HP: " << newHp << endl;
 
 		result.hit = true;
 		result.hitPos = hitPosF;

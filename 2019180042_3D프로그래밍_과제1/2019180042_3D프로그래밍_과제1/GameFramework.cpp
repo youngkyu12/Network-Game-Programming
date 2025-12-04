@@ -4,7 +4,7 @@
 
 #include "stdafx.h"
 #include "GameFramework.h"
-#include "GraphicsPipeline.h" // CGraphicsPipeline °ü·Ã ¿À·ù(E0276) ÇØ°á
+#include "GraphicsPipeline.h" // CGraphicsPipeline ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(E0276) ï¿½Ø°ï¿½
 extern uint8_t MyPlayerID;
 
 void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
@@ -28,7 +28,7 @@ void CGameFramework::OnDestroy()
 
 	if (m_hBitmapFrameBuffer) ::DeleteObject(m_hBitmapFrameBuffer);
 	if (m_hDCFrameBuffer) ::DeleteDC(m_hDCFrameBuffer);
-	// GameObject¿¡¼­ Player·Î º¯È¯ °úÁ¤
+	// GameObjectï¿½ï¿½ï¿½ï¿½ Playerï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½
 	//for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]) delete m_ppBullets[i];
 }
 
@@ -94,8 +94,8 @@ void CGameFramework::BuildObjects()
 	m_pScene = new CScene(m_pPlayer[0]);
 	m_pScene->BuildObjects();
 	CPlayer::RegisterPlayers(reinterpret_cast<CPlayer**>(m_pPlayer), MAX_PLAYERS, m_pScene);
-	// ÃÑ¾Ë »ý¼º
-	/* GameObject¿¡¼­ Player·Î º¯È¯ °úÁ¤
+	// ï¿½Ñ¾ï¿½ ï¿½ï¿½ï¿½ï¿½
+	/* GameObjectï¿½ï¿½ï¿½ï¿½ Playerï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½
 	CCubeMesh* pBulletMesh = new CCubeMesh(1.0f, 4.0f, 1.0f);
 	for (int i = 0; i < BULLETS; i++)
 	{
@@ -119,7 +119,7 @@ void CGameFramework::ReleaseObjects()
 
 	if (m_pCamera) delete m_pCamera;
 
-	// GameObject¿¡¼­ Player·Î º¯È¯ °úÁ¤
+	// GameObjectï¿½ï¿½ï¿½ï¿½ Playerï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (m_pPlayer[i]) delete m_pPlayer[i];
@@ -170,7 +170,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 	}
 }
 
-// Å°º¸µå ¸Þ½ÃÁö Ã³¸®
+// Å°ï¿½ï¿½ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
 LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
 	switch (nMessageID)
@@ -203,15 +203,15 @@ void CGameFramework::ProcessInput()
 
 	bool keyinput = false;
 	bool mouseinput = false;
-	static bool A_PressedPrev = false; // ÀÌÀü»óÅÂ ±â¾ï
-	static bool F_PressedPrev = false; // ÀÌÀü»óÅÂ ±â¾ï
-	static bool P_PressedPrev = false; // ÀÌÀü»óÅÂ ±â¾ï
+	static bool A_PressedPrev = false; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+	static bool F_PressedPrev = false; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+	static bool P_PressedPrev = false; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 	
 	static UCHAR pKeyBuffer[256];
 	if ( GetKeyboardState ( pKeyBuffer ) )
 	{
-		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w Àü¼Û
-		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s Àü¼Û
+		keyPKT.keyW = (pKeyBuffer['W'] & 0xF0) ? 1 : 0;// char w ï¿½ï¿½ï¿½ï¿½
+		keyPKT.keyS = (pKeyBuffer['S'] & 0xF0) ? 1 : 0; // char s ï¿½ï¿½ï¿½ï¿½
 
 		if (keyPKT.keyS || keyPKT.keyW)
 		{
@@ -219,7 +219,7 @@ void CGameFramework::ProcessInput()
 		}
 
 		bool A_PressedNow = (pKeyBuffer['A'] & 0xF0) ? true : false;
-		// AÅ° ´Ü¹ß¼ºÀ¸·Î ÀÔ·Â¹Þ±â, °ÔÀÓ½ÃÀÛÀü¿£ ¹ß»ç ±ÝÁö
+		// AÅ° ï¿½Ü¹ß¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·Â¹Þ±ï¿½, ï¿½ï¿½ï¿½Ó½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ ï¿½ï¿½ï¿½ï¿½
 		if (A_PressedNow == true && A_PressedPrev == false && m_pPlayer[0]->PrevFire == false && m_eGameState == Playing)
 		{
 			keyPKT.FireFlag = 1;
@@ -279,7 +279,7 @@ void CGameFramework::ProcessInput()
 void CGameFramework::AnimateObjects()
 {
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
-	//GameObject¿¡¼­ Player·Î º¯È¯ °úÁ¤
+	//GameObjectï¿½ï¿½ï¿½ï¿½ Playerï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if ( m_pPlayer[i]->hp != DEAD_PLAYER )m_pPlayer[i]->Animate ( fTimeElapsed );
@@ -287,7 +287,7 @@ void CGameFramework::AnimateObjects()
 	//
 	if (m_pScene) m_pScene->Animate(fTimeElapsed);
 	
-	/* GameObject¿¡¼­ Player·Î º¯È¯ °úÁ¤
+	/* GameObjectï¿½ï¿½ï¿½ï¿½ Playerï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½
 	for (int i = 0; i < BULLETS; i++)
 	{
 		if (m_ppBullets[i] && m_ppBullets[i]->m_bActive)
@@ -306,7 +306,7 @@ void CGameFramework::FrameAdvance()
 		ProcessInput ();
 		HandlePacket ();
 
-		//GameObject¿¡¼­ Player·Î º¯È¯ °úÁ¤ Ä«¸Þ¶ó ¾÷µ¥ÀÌÆ®¸¸ ½ÇÇà
+		//GameObjectï¿½ï¿½ï¿½ï¿½ Playerï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		m_pPlayer[0]->Update ( m_GameTimer.GetTimeElapsed () );
 		//m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 
@@ -321,7 +321,7 @@ void CGameFramework::FrameAdvance()
 		RenderScene();
 		DrawUI();
 	}
-	/*GameObject¿¡¼­ Player·Î º¯È¯ °úÁ¤
+	/*GameObjectï¿½ï¿½ï¿½ï¿½ Playerï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½
 	for (int i = 0; i < BULLETS; i++)
 	{
 		if (m_ppBullets[i] && m_ppBullets[i]->m_bActive)
@@ -341,20 +341,20 @@ void CGameFramework::FrameAdvance()
 
 void CGameFramework::RenderScene()
 {
-	// °øÅë ¼Â¾÷
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½Â¾ï¿½
 	CGraphicsPipeline::SetViewport(&m_pCamera->m_Viewport);
 	CGraphicsPipeline::SetViewPerspectiveProjectTransform(&m_pCamera->m_xmf4x4ViewPerspectiveProject);
 
-	// 1) ¾À°ú ÇÃ·¹ÀÌ¾î¸¦ ÇÏ³ªÀÇ ¸®½ºÆ®·Î °áÇÕ
+	// 1) ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¸¦ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	std::vector<CGameObject*> drawList;
-	drawList.reserve(static_cast<size_t>((m_pScene ? m_pScene->m_nObjects : 0)) + static_cast<size_t>(MAX_PLAYERS)); // lnt-arithmetic-overflow °æ°í ÇØ°á
+	drawList.reserve(static_cast<size_t>((m_pScene ? m_pScene->m_nObjects : 0)) + static_cast<size_t>(MAX_PLAYERS)); // lnt-arithmetic-overflow ï¿½ï¿½ï¿½ ï¿½Ø°ï¿½
 
 	if (m_pScene)
 	{
-		// º®Àº ¸ÕÀú ±×¸®±â(¹è°æ)
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½)
 		m_pScene->m_pWallsObject->Render(m_hDCFrameBuffer, m_pCamera);
 
-		// ¾À ¿ÀºêÁ§Æ® Ãß°¡
+		// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ß°ï¿½
 		for (int i = 0; i < (m_pScene ? m_pScene->m_nObjects : 0); ++i)
 		{
 			if (m_pScene->m_ppObjects[i] && m_pScene->m_ppObjects[i]->m_bActive)
@@ -362,14 +362,14 @@ void CGameFramework::RenderScene()
 		}
 	}
 
-	// ÇÃ·¹ÀÌ¾î Ãß°¡
+	// ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ß°ï¿½
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		if (m_pPlayer[i] && m_pPlayer[i]->hp > 0)
 			drawList.push_back(m_pPlayer[i]);
 	}
 
-	// 2) ºä Çà·Ä·Î º¯È¯ÇÑ Z(¿ø°Å¸® ¸ÕÀú) ±âÁØ Á¤·Ä
+	// 2) ï¿½ï¿½ ï¿½ï¿½Ä·ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ Z(ï¿½ï¿½ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	XMMATRIX V = XMLoadFloat4x4(&m_pCamera->m_xmf4x4View);
 	std::sort(drawList.begin(), drawList.end(),
 		[&](CGameObject* a, CGameObject* b)
@@ -378,13 +378,13 @@ void CGameFramework::RenderScene()
 			XMVECTOR vb = XMVector3TransformCoord(XMLoadFloat3(&b->GetPosition()), V);
 			float za = XMVectorGetZ(va);
 			float zb = XMVectorGetZ(vb);
-			return za > zb; // ¿ø°Å¸® ¸ÕÀú
+			return za > zb; // ï¿½ï¿½ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 		});
 
-	// 3) Á¤·ÄµÈ ¼ø¼­·Î ¸é Ã¤¿ò ÈÄ ¿ÍÀÌ¾î ·»´õ
+	// 3) ï¿½ï¿½ï¿½Äµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Ã¤ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½
 	for (CGameObject* obj : drawList)
 	{
-		// ÇÊ¿ä ½Ã ¹ÝÅõ¸í alpha·Î Ã¤¿ì±â: RenderFilled(hdc, pCamera, color, alpha)
+		// ï¿½Ê¿ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ alphaï¿½ï¿½ Ã¤ï¿½ï¿½ï¿½: RenderFilled(hdc, pCamera, color, alpha)
 		//obj->RenderFilled(m_hDCFrameBuffer, m_pCamera, RGB(128, 128, 128));
 		obj->Render(m_hDCFrameBuffer, m_pCamera);
 	}
@@ -392,13 +392,13 @@ void CGameFramework::RenderScene()
 
 void CGameFramework::HandlePacket()
 {
-	// ¸®ÆÑÅä¸µ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ä¸µ
 	PlayerState player;
 	while (recv_Queue.pop(player)) 
 	{
 		XMFLOAT3 Look = { player.Lookx,player.Looky,player.Lookz };
 		if ( player.Player_ID == MyPlayerID )
-		{	//GameObject¿¡¼­ Player·Î º¯È¯ °úÁ¤ m_pPlayer -> m_pPlayer[0]
+		{	//GameObjectï¿½ï¿½ï¿½ï¿½ Playerï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½ m_pPlayer -> m_pPlayer[0]
 			int oldHp = m_pPlayer[0]->hp;
 			m_pPlayer[0]->hp = player.hp;
 			m_pPlayer[0]->SetPosition ( player.pos_x , player.pos_y , player.pos_z );
@@ -407,7 +407,7 @@ void CGameFramework::HandlePacket()
 			{
 				m_pPlayer[0]->FireBullet ();
 			}
-			m_pPlayer[0]->PrevFire = player.fire; // ÇöÀç »óÅÂ¸¦ °ú°ÅÀÇ »óÅÂ°ªÀ¸·Î ÀúÀå.(´ÙÀ½ ÅÏ »ç¿ëÀ» À§ÇØ¼­)
+			m_pPlayer[0]->PrevFire = player.fire; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.(ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½)
 			m_pPlayer[0]->m_pShieldObject->m_bActive = player.shield;
 
 			if ( oldHp != DEAD_PLAYER && player.hp == DEAD_PLAYER ) OnPlayerDeath ( MyPlayerID );
@@ -416,7 +416,7 @@ void CGameFramework::HandlePacket()
 		else
 		{
 			int objIndex = -1;
-			// ³» IDº¸´Ù ÀÛÀ¸¸é ±×´ë·Î... Å©¸é -1ÇÏ¿© ¶¯°ÜÁÜ(¿ø·¡ ³»°¡ Â÷ÁöÇß¾î¾ßÇÒ °ø°£À» ¶¯°ÜÁÖ±â)
+			// ï¿½ï¿½ IDï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½... Å©ï¿½ï¿½ -1ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½)
 			if ( player.Player_ID < MyPlayerID )
 			{
 				objIndex = player.Player_ID + 1;
@@ -426,9 +426,9 @@ void CGameFramework::HandlePacket()
 				objIndex = player.Player_ID;
 			}
 
-			if ( m_pScene && objIndex >= 0 && objIndex < MAX_PLAYERS ) //10¸í±îÁö
+			if ( m_pScene && objIndex >= 0 && objIndex < MAX_PLAYERS ) //10ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			{
-				//GameObject¿¡¼­ Player·Î º¯È¯ °úÁ¤ m_pPlayer[objIndex]
+				//GameObjectï¿½ï¿½ï¿½ï¿½ Playerï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½ m_pPlayer[objIndex]
 				CPlayer* Other_player = m_pPlayer[objIndex];
 				if ( Other_player )
 				{
@@ -454,7 +454,7 @@ void CGameFramework::HandlePacket()
 		}
 		if ( m_eGameState == Playing && m_alivePlayers.size () <= 1 ) 
 		{
-			TriggerGameOver ( "¸ðµç ÇÃ·¹ÀÌ¾î°¡ »ç¸ÁÇß°Å³ª ÃÖÈÄÀÇ »ýÁ¸ÀÚ¸¸ ³²¾Ò½À´Ï´Ù." );
+			TriggerGameOver ( "ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ß°Å³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½ ï¿½ï¿½ï¿½Ò½ï¿½ï¿½Ï´ï¿½." );
 		}
 	}
 }
@@ -465,43 +465,43 @@ void CGameFramework::DrawUI()
 	COLORREF oldTextColor = ::SetTextColor(m_hDCFrameBuffer, RGB(0, 0, 255));
 	const TCHAR* bannerText = NULL;
 
-	// Playing »óÅÂ °æ°ú ½Ã°£ ´©Àû¿ë(ÇÔ¼ö Á¤Àû º¯¼ö)
+	// Playing ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	static float s_playingElapsedSec = 0.0f;
 	if (m_eGameState == Playing) {
-		// ÇÁ·¹ÀÓ °æ°ú ½Ã°£ ´©Àû
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½
 		s_playingElapsedSec += m_GameTimer.GetTimeElapsed();
 	}
 	else {
-		// ´Ù¸¥ »óÅÂ·Î ÀüÈ¯ ½Ã ¸®¼Â
+		// ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		s_playingElapsedSec = 0.0f;
 	}
 
-	// 1) »ó´Ü Áß¾Ó ¹è³Ê ±×¸®±â
+	// 1) ï¿½ï¿½ï¿½ ï¿½ß¾ï¿½ ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½
 	switch (m_eGameState)
 	{
 	case None:
-		bannerText = _T("\"P\"¸¦ ´­·¯ ÁØºñÇÏ¼¼¿ä");
+		bannerText = _T("\"P\"ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Øºï¿½ï¿½Ï¼ï¿½ï¿½ï¿½");
 		break;
 	case Ready:
-		bannerText = _T("ÁØºñ¿Ï·á");
+		bannerText = _T("ï¿½Øºï¿½Ï·ï¿½");
 		break;
 	case Playing:
 		if (s_playingElapsedSec < 3.0f) {
-			bannerText = _T("°ÔÀÓ½ÃÀÛ!");
+			bannerText = _T("ï¿½ï¿½ï¿½Ó½ï¿½ï¿½ï¿½!");
 		}
 		else {
-			bannerText = _T("");; // 3ÃÊ ÀÌÈÄ¿¡´Â ¹è³Ê ¹ÌÇ¥½Ã
+			bannerText = _T("");; // 3ï¿½ï¿½ ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½
 		}
 		break;
 	}
 
-	const int bannerMarginTop = 8;    // »ó´Ü ¿©¹é
-	const int bannerHeightPx = 36;    // ÆùÆ® ³ôÀÌ (ÇÈ¼¿). Å©°Ô/ÀÛ°Ô Á¶Àý
-	const int bannerWeight = FW_BOLD; // ±½±â(FW_NORMAL, FW_BOLD µî)
+	const int bannerMarginTop = 8;    // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	const int bannerHeightPx = 36;    // ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ (ï¿½È¼ï¿½). Å©ï¿½ï¿½/ï¿½Û°ï¿½ ï¿½ï¿½ï¿½ï¿½
+	const int bannerWeight = FW_BOLD; // ï¿½ï¿½ï¿½ï¿½(FW_NORMAL, FW_BOLD ï¿½ï¿½)
 
 	HFONT hBannerFont = ::CreateFont(
 		bannerHeightPx,        // nHeight
-		0,                     // nWidth (0: ³ôÀÌ¿¡ ¸ÂÃç ÀÚµ¿)
+		0,                     // nWidth (0: ï¿½ï¿½ï¿½Ì¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½)
 		0,                     // nEscapement
 		0,                     // nOrientation
 		bannerWeight,          // fnWeight
@@ -511,28 +511,28 @@ void CGameFramework::DrawUI()
 		DEFAULT_CHARSET,       // fdwCharSet
 		OUT_DEFAULT_PRECIS,    // fdwOutputPrecision
 		CLIP_DEFAULT_PRECIS,   // fdwClipPrecision
-		ANTIALIASED_QUALITY,   // fdwQuality (°¡µ¶¼º Çâ»ó)
+		ANTIALIASED_QUALITY,   // fdwQuality (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
 		DEFAULT_PITCH | FF_DONTCARE, // fdwPitchAndFamily
-		_T("Segoe UI")         // lpszFace (¿øÇÏ´Â ÆùÆ®¸í)
+		_T("Segoe UI")         // lpszFace (ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½)
 	);
 
 	HFONT hOldFont = (HFONT)::SelectObject(m_hDCFrameBuffer, hBannerFont);
-	::SetTextColor(m_hDCFrameBuffer, RGB(20, 20, 20)); // ¹è³Ê »ö»ó
+	::SetTextColor(m_hDCFrameBuffer, RGB(20, 20, 20)); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 	SIZE bannerSize{};
 	::GetTextExtentPoint32(m_hDCFrameBuffer, bannerText, (int)_tcslen(bannerText), &bannerSize);
 
 	int clientW = m_rcClient.right - m_rcClient.left;
-	int bannerX = m_rcClient.left + (clientW - bannerSize.cx) / 2; // Áß¾Ó Á¤·Ä X
-	int bannerY = bannerMarginTop;                                 // »ó´Ü ¿©¹é Y
+	int bannerX = m_rcClient.left + (clientW - bannerSize.cx) / 2; // ï¿½ß¾ï¿½ ï¿½ï¿½ï¿½ï¿½ X
+	int bannerY = bannerMarginTop;                                 // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Y
 
 	::TextOut(m_hDCFrameBuffer, bannerX, bannerY, bannerText, (int)_tcslen(bannerText));
 
-	// ÆùÆ®/»ö»ó º¹¿ø ¹× »èÁ¦
+	// ï¿½ï¿½Æ®/ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	::SelectObject(m_hDCFrameBuffer, hOldFont);
 	::DeleteObject(hBannerFont);
 
-	// 2) ÇÃ·¹ÀÌ¾î »óÅÂ ¸®½ºÆ®(±âÁ¸ UI)
+	// 2) ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®(ï¿½ï¿½ï¿½ï¿½ UI)
 	::SetTextColor(m_hDCFrameBuffer, RGB(0, 0, 255));
 
 	int x = m_rcClient.left + 10;
@@ -541,12 +541,12 @@ void CGameFramework::DrawUI()
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		// »ì¾ÆÀÖ´Â ÇÃ·¹ÀÌ¾î¸¸ Ç¥½Ã
+		// ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¸¸ Ç¥ï¿½ï¿½
 		if (m_pPlayer[i] && m_pPlayer[i]->hp != DEAD_PLAYER)
 		{
 			TCHAR szInfo[64];
 
-			// ³» Ä³¸¯ÅÍ´Â »¡°£»ö
+			// ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			if (i == MyPlayerID) {
 				::SetTextColor(m_hDCFrameBuffer, RGB(255, 0, 0));
 				_stprintf_s(szInfo, _T("P %d (Me) HP:%d"), i, m_pPlayer[i]->hp);
@@ -557,7 +557,7 @@ void CGameFramework::DrawUI()
 			}
 
 			::TextOut(m_hDCFrameBuffer, x, y, szInfo, _tcslen(szInfo));
-			y += lineHeight; // ´ÙÀ½ ÁÙ·Î ÀÌµ¿
+			y += lineHeight; // ï¿½ï¿½ï¿½ï¿½ ï¿½Ù·ï¿½ ï¿½Ìµï¿½
 		}
 	}
 	::SetBkMode(m_hDCFrameBuffer, oldBkMode);
@@ -582,17 +582,17 @@ void CGameFramework::ResetPlayerLists () {
 }
 
 void CGameFramework::OnPlayerSpawn ( uint8_t id ) {
-	// »ì¾ÆÀÖ´Â ÁýÇÕ¿¡ Ãß°¡
+	// ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½Õ¿ï¿½ ï¿½ß°ï¿½
 	m_alivePlayers.insert ( id );
-	// Á×Àº ¸ñ·Ï¿¡ Á¸ÀçÇÏ¸é Á¦°Å(¸®½ºÆù ´ëºñ)
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
 	auto it = std::find ( m_deadPlayers.begin () , m_deadPlayers.end () , id );
 	if ( it != m_deadPlayers.end () ) m_deadPlayers.erase ( it );
 }
 
 void CGameFramework::OnPlayerDeath ( uint8_t id ) {
-	// »ì¾ÆÀÖ´Â ÁýÇÕ¿¡¼­ Á¦°Å
+	// ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½Õ¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	m_alivePlayers.erase ( id );
-	// Áßº¹ ¹æÁö ÈÄ ¾Õ¿¡ »ðÀÔ(¹æ±Ý Á×Àº »ç¶÷ÀÌ ¾ÕÂÊ)
+	// ï¿½ßºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Õ¿ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	if ( !IsInDead ( id ) ) m_deadPlayers.push_front ( id );
 }
 
@@ -600,9 +600,9 @@ void CGameFramework::TriggerGameOver ( const char* reason ) {
 	if ( IsGameOver () ) return;
 	m_eGameState = GameOver;
 
-	// ÃÖÁ¾ ·©Å· ±¸¼º: »ýÁ¸ÀÚ(¿ì½Â) ¡æ Á×Àº ¼ø¼­(¾Õ¿¡¼­ºÎÅÍ ¼øÀ§)
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å· ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½) ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½Õ¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	m_vFinalRanks.clear ();
-	for ( auto id : m_alivePlayers ) m_vFinalRanks.push_back ( id ); // ¿©·¯ ¸í »ýÁ¸ ½Ã µ¿¼øÀ§ Ãë±Þ
+	for ( auto id : m_alivePlayers ) m_vFinalRanks.push_back ( id ); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 	for ( auto id : m_deadPlayers )  m_vFinalRanks.push_back ( id );
 
 	if ( reason ) {
@@ -616,10 +616,10 @@ void CGameFramework::TriggerGameOver ( const char* reason ) {
 }
 
 void CGameFramework::RenderResultScene ( HDC hdc ) {
-	// ¹è°æ Å¬¸®¾î
+	// ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
 	ClearFrameBuffer ( RGB ( 240 , 240 , 240 ) );
 
-	// ÅØ½ºÆ® ¼³Á¤
+	// ï¿½Ø½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
 	::SetBkMode ( m_hDCFrameBuffer , TRANSPARENT );
 	::SetTextColor ( m_hDCFrameBuffer , RGB ( 20 , 20 , 20 ) );
 
@@ -627,25 +627,25 @@ void CGameFramework::RenderResultScene ( HDC hdc ) {
 	int y = 40;
 	const int dy = 24;
 
-	// Á¦¸ñ
+	// ï¿½ï¿½ï¿½ï¿½
 	TextOut ( m_hDCFrameBuffer , x , y , _T ( "Game Over" ) , ( int )_tcslen ( _T ( "Game Over" ) ) );
 	y += dy;
 
-	// ·©Å· Ãâ·Â
+	// ï¿½ï¿½Å· ï¿½ï¿½ï¿½
 	y += dy;
 	TextOut ( m_hDCFrameBuffer , x , y , _T ( "Ranking:" ) , ( int )_tcslen ( _T ( "Ranking:" ) ) );
 	y += dy;
 
 	for ( size_t i = 0; i < m_vFinalRanks.size (); ++i ) {
 		TCHAR line[64];
-		_stprintf_s ( line , _T ( "%zuÀ§: Player %u" ) , i + 1 , ( unsigned )m_vFinalRanks[i] );
+		_stprintf_s ( line , _T ( "%zuï¿½ï¿½: Player %u" ) , i + 1 , ( unsigned )m_vFinalRanks[i] );
 		TextOut ( m_hDCFrameBuffer , x , y , line , ( int )_tcslen ( line ) );
 		y += dy;
 	}
 
-	// ¾È³»
+	// ï¿½È³ï¿½
 	y += dy;
-	TextOut ( m_hDCFrameBuffer , x , y , _T ( "ESC: Á¾·á " ) , 8 );
+	TextOut ( m_hDCFrameBuffer , x , y , _T ( "ESC: ï¿½ï¿½ï¿½ï¿½ " ) , 8 );
 }
 
 
