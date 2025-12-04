@@ -260,26 +260,35 @@ bool GameRoom::CheckPlayerByPlayerCollisions(Player* mover, const XMFLOAT3& desi
 
 	bool blocked = false;
 
+	if (movedBox.Center.x < -200.0f || movedBox.Center.x > 200.0f ||
+		movedBox.Center.z < -200.0f || movedBox.Center.z > 200.0f)
+	{
+		// 맵 경계 밖으로 나감
+		blocked = true;
+	}
+
 	EnterCriticalSection(&_cs);
 	const size_t count = PlayerManager.size();
-	for (size_t i = 0; i < count; ++i)
-	{
-		Player* other = PlayerManager[i];
-		if (!other || other == mover) continue;
-
-		other->UpdateBoundingBox();
-		if ( !other->HasBoundingBox () ) {
-			// 비활성화된 충돌체는 무시
-			continue;
-		}
-		const BoundingOrientedBox& otherBox = other->GetBoundingBox();
-
-		if (movedBox.Intersects(otherBox))
+	if (mover->GetMyState() == Playing) {
+		for (size_t i = 0; i < count; ++i)
 		{
-			// 충돌 발견
-			cout << "Player " << mover->Player_ID << " 충돌 with Player " << other->Player_ID << endl;
-			blocked = true;
-			break;
+			Player* other = PlayerManager[i];
+			if (!other || other == mover) continue;
+
+			other->UpdateBoundingBox();
+			if (!other->HasBoundingBox()) {
+				// 비활성화된 충돌체는 무시
+				continue;
+			}
+			const BoundingOrientedBox& otherBox = other->GetBoundingBox();
+
+			if (movedBox.Intersects(otherBox))
+			{
+				// 충돌 발견
+				cout << "Player " << mover->Player_ID << " 충돌 with Player " << other->Player_ID << endl;
+				blocked = true;
+				break;
+			}
 		}
 	}
 	for (size_t i = 0; i < m_nObjects; ++i)

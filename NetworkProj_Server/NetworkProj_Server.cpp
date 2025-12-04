@@ -13,8 +13,8 @@ recvData는 데이터를 받을 위치를 계산한 포인터 변수 입니다.
 DWORD WINAPI WorkerThreadMain(LPVOID lpParam)
 {
 	Player* myPlayer = (Player*)lpParam;
-	myPlayer->SetPosition(0, 0, -50 + (myPlayer->Player_ID * 100));
-	myPlayer->SetLook(0, 0, 1 - (myPlayer->Player_ID * 2));
+	myPlayer->SetPosition(0, 0, 0);
+	myPlayer->SetLook(0, 0, 1);
 	myPlayer->UpdateBoundingBox();
 
 	while (true)
