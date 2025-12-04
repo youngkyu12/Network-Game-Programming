@@ -170,7 +170,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	{
 		//cout << "MOVE 스위치문 정상 작동" << endl;
 		MovePacket* testpkt = (MovePacket*)buffer;
-
+		EnterCriticalSection(&_cs);
 		if (testpkt->keyW == 1) Move(player, 'W');
 		else if (testpkt->keyS == 1) Move(player, 'S');
 
@@ -192,6 +192,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 				player->Shield();
 			}
 		}
+		LeaveCriticalSection(&_cs);
 		break;
 	}
 	default:
@@ -340,7 +341,6 @@ RayHitResult GameRoom::ProcessFire(Player* shooter)
 	float nearestDist = kMaxRange;
 	Player* nearestTarget = nullptr;
 
-	EnterCriticalSection(&_cs);
 	// 최신 OOBB 갱신
 	for (size_t i = 0; i < PlayerManager.size(); ++i)
 	{
@@ -412,7 +412,6 @@ RayHitResult GameRoom::ProcessFire(Player* shooter)
 		result.hitPos = hitPosF;
 		result.hitPlayerId = nearestTarget->Player_ID;
 	}
-	LeaveCriticalSection(&_cs);
 
 	return result;
 }
