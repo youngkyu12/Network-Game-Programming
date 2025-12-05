@@ -185,10 +185,12 @@ void CTankPlayer::OnUpdateTransform()
 
 void CTankPlayer::Render(HDC hDCFrameBuffer, CCamera* pCamera)
 {
-	
-	if(m_pShieldObject->m_bActive)
-		m_pShieldObject->Render(hDCFrameBuffer, pCamera);
 	CPlayer::Render(hDCFrameBuffer, pCamera);
+	if (pCamera->IsInFrustum(m_xmOOBB)) {
+		if (m_pShieldObject->m_bActive)
+			m_pShieldObject->Render(hDCFrameBuffer, pCamera);
+	}
+	
 	for (int i = 0; i < BULLETS; i++) if (m_ppBullets[i]->m_bActive) m_ppBullets[i]->Render(hDCFrameBuffer, pCamera);
 
 }
