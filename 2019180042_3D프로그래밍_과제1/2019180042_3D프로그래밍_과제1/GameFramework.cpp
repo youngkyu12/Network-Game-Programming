@@ -135,6 +135,7 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 		break;
 	case WM_LBUTTONDOWN:
 		::SetCapture(hWnd);
+		::GetCursorPos ( &m_ptOldCursorPos );
 		if (stop) {
 			stop = false;
 		}
@@ -159,6 +160,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			if (stop) {
 				stop = false;
 				::SetCapture(hWnd);
+				::GetCursorPos ( &m_ptOldCursorPos );
 			}
 			else {
 				stop = true;
