@@ -139,7 +139,7 @@ void Player::Fire()
 	}
 	FireTimer.Start();
 	is_Firing = 1;
-	cout << "서버내 fireflag 1로 변경" << endl;
+	//cout << "서버내 fireflag 1로 변경" << endl;
 }
 
 void Player::Shield()
@@ -151,7 +151,7 @@ void Player::Shield()
 	}
 	ShieldTimer.Start();
 	ShieldOn = 1;
-	cout << "서버내 Shield 1로 변경" << endl;
+	//cout << "서버내 Shield 1로 변경" << endl;
 }
 
 void Player::SetEmptyBoundingBox ()
