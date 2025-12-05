@@ -131,7 +131,13 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 	switch (nMessageID)
 	{
 	case WM_MOUSEMOVE:
-		::SetCapture ( hWnd );
+		//::SetCapture ( hWnd );
+		break;
+	case WM_LBUTTONDOWN:
+		::SetCapture(hWnd);
+		if (stop) {
+			stop = false;
+		}
 		break;
 	default:
 		break;
@@ -152,9 +158,11 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		case 'D':
 			if (stop) {
 				stop = false;
+				::SetCapture(hWnd);
 			}
 			else {
 				stop = true;
+				::ReleaseCapture();
 			}
 			break;
 		}
@@ -171,10 +179,12 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 	{
 	case WM_ACTIVATE:
 	{
+		/*
 		if (LOWORD(wParam) == WA_INACTIVE)
 			m_GameTimer.Stop();
 		else
 			m_GameTimer.Start();
+		*/
 		break;
 	}
 	case WM_MOUSEMOVE:

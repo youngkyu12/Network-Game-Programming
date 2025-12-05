@@ -170,7 +170,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 	{
 		//cout << "MOVE 스위치문 정상 작동" << endl;
 		MovePacket* testpkt = (MovePacket*)buffer;
-		EnterCriticalSection(&_cs);
+		//EnterCriticalSection(&_cs);
 		if (testpkt->keyW == 1) Move(player, 'W');
 		else if (testpkt->keyS == 1) Move(player, 'S');
 
@@ -192,7 +192,7 @@ void GameRoom::HandlePacket(Player* player, BYTE* buffer)
 				player->Shield();
 			}
 		}
-		LeaveCriticalSection(&_cs);
+		//LeaveCriticalSection(&_cs);
 		break;
 	}
 	default:
